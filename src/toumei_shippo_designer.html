@@ -661,8 +661,8 @@ function blendFromTime(hours, minutes) {
   // Dawn (6) and dusk (18) = maximum blend
   const dist = Math.min(Math.abs(t - 6), Math.abs(t - 18));
   const maxDist = 6;
-  const primaryRatio = 0.5 + 0.4 * (dist / maxDist);
-  return primaryRatio; // 0.5 to 0.9
+  const primaryRatio = 0.3 + 0.6 * (dist / maxDist);
+  return primaryRatio; // 0.3 to 0.9 (wider range for visual diversity)
 }
 
 // --- Weather parameters ---
@@ -734,7 +734,7 @@ function drawFibonacci(ctx, params, mode) {
   const c = CENTER;
   
   const goldenAngle = 137.508 * Math.PI / 180;
-  const numPoints = 80 + Math.floor(weight / 50);
+  const numPoints = 40 + Math.floor(weight / 25);  // wider range: 40-192 (was 80-156)
   const maxR = s * 0.42;
   const heightRatio = height / 50;
   
@@ -746,7 +746,7 @@ function drawFibonacci(ctx, params, mode) {
     const x = c + r * Math.cos(angle) + nx;
     const y = c + r * Math.sin(angle) + ny;
     
-    const dotSize = (1.5 + (weight / 3000) * 3) * wood.lineWeight;
+    const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;  // wider range for weight influence
     
     if (mode === 'laser') {
       ctx.beginPath();
@@ -780,7 +780,7 @@ function drawVoronoi(ctx, params, mode) {
   const rng = mulberry32(seed);
   const s = SCALE;
   
-  const numCells = 15 + Math.floor(weight / 300);
+  const numCells = 8 + Math.floor(weight / 200);  // wider range: 8-27 (was 15-28)
   const points = [];
   
   for (let i = 0; i < numCells; i++) {
@@ -823,21 +823,16 @@ function drawVoronoi(ctx, params, mode) {
 function drawReactionDiffusion(ctx, params, mode) {
   const { seed, weight, height, weather, wood } = params;
   const rng = mulberry32(seed);
-  
-  const gridSize = 70;
+
+  // Use 1D Float32Arrays for performance (2D indexing via y*w+x)
+  const gridSize = 100;
   const cellSize = SCALE / gridSize;
-  let gridA = [], gridB = [];
-  
-  for (let i = 0; i < gridSize; i++) {
-    gridA[i] = []; gridB[i] = [];
-    for (let j = 0; j < gridSize; j++) {
-      gridA[i][j] = 1;
-      gridB[i][j] = 0;
-    }
-  }
-  
-  // Seed spots based on weight
-  const spots = 3 + Math.floor(weight / 800);
+  const n = gridSize * gridSize;
+  let gridA = new Float32Array(n).fill(1);
+  let gridB = new Float32Array(n).fill(0);
+
+  // Seed spots based on weight — more spots = denser pattern
+  const spots = 5 + Math.floor(weight / 500);
   for (let s = 0; s < spots; s++) {
     const cx = Math.floor(rng() * (gridSize - 10) + 5);
     const cy = Math.floor(rng() * (gridSize - 10) + 5);
@@ -847,51 +842,57 @@ function drawReactionDiffusion(ctx, params, mode) {
         if (dx*dx + dy*dy <= r*r) {
           const nx = cx+dx, ny = cy+dy;
           if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize) {
-            gridB[nx][ny] = 1;
+            gridB[ny*gridSize+nx] = 1;
           }
         }
       }
     }
   }
-  
-  const dA = 1.0, dB = 0.5;
-  const f = 0.035 + weather.turbulence * 0.01;
-  const k = 0.060 + (height / 50 - 1) * 0.005;
-  const iterations = 400;
-  
+
+  // Standard Gray-Scott model (Da/Db ≈ 2:1 is critical for pattern formation)
+  const dA = 0.21, dB = 0.105;
+  // Weather drives pattern type: calm→spots, moderate→stripes, turbulent→coral
+  const baseF = 0.030 + weather.turbulence * 0.028;
+  const baseK = 0.057 + weather.flowCurvature * 0.010;
+  const f = baseF + (height / 50 - 1) * 0.003;
+  const k = baseK + (height / 50 - 1) * 0.002;
+  const iterations = 3000;
+
+  const gs = gridSize;
   for (let iter = 0; iter < iterations; iter++) {
-    const newA = gridA.map(r => [...r]);
-    const newB = gridB.map(r => [...r]);
-    
-    for (let i = 1; i < gridSize-1; i++) {
-      for (let j = 1; j < gridSize-1; j++) {
-        const a = gridA[i][j], b = gridB[i][j];
-        const lapA = gridA[i+1][j]+gridA[i-1][j]+gridA[i][j+1]+gridA[i][j-1]-4*a;
-        const lapB = gridB[i+1][j]+gridB[i-1][j]+gridB[i][j+1]+gridB[i][j-1]-4*b;
+    const newA = new Float32Array(n);
+    const newB = new Float32Array(n);
+    for (let y = 1; y < gs-1; y++) {
+      for (let x = 1; x < gs-1; x++) {
+        const idx = y*gs+x;
+        const a = gridA[idx], b = gridB[idx];
+        const lapA = gridA[idx-1]+gridA[idx+1]+gridA[idx-gs]+gridA[idx+gs]-4*a;
+        const lapB = gridB[idx-1]+gridB[idx+1]+gridB[idx-gs]+gridB[idx+gs]-4*b;
         const abb = a * b * b;
-        newA[i][j] = a + (dA * lapA - abb + f * (1-a)) * 0.9;
-        newB[i][j] = b + (dB * lapB + abb - (k+f) * b) * 0.9;
-        newA[i][j] = Math.max(0, Math.min(1, newA[i][j]));
-        newB[i][j] = Math.max(0, Math.min(1, newB[i][j]));
+        newA[idx] = Math.max(0, Math.min(1, a + dA * lapA - abb + f * (1-a)));
+        newB[idx] = Math.max(0, Math.min(1, b + dB * lapB + abb - (k+f) * b));
       }
     }
     gridA = newA; gridB = newB;
   }
-  
-  for (let i = 0; i < gridSize; i++) {
-    for (let j = 0; j < gridSize; j++) {
-      const val = gridA[i][j] - gridB[i][j];
+
+  // Render based on chemical B concentration
+  for (let y = 0; y < gs; y++) {
+    for (let x = 0; x < gs; x++) {
+      const bVal = gridB[y*gs+x];
       if (mode === 'laser') {
-        const brightness = Math.floor(val * 255);
-        ctx.fillStyle = `rgb(${brightness},${brightness-10},${brightness-20})`;
-        ctx.fillRect(i*cellSize, j*cellSize, cellSize+0.5, cellSize+0.5);
+        if (bVal > 0.1) {
+          const alpha = Math.min(bVal * 2.5, 1.0);
+          ctx.fillStyle = `rgba(44,38,30,${alpha})`;
+          const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
+          ctx.fillRect(x*cellSize, y*cellSize, sz, sz);
+        }
       } else {
-        // V-groove: only draw lines where edges are strong
-        if (val < 0.4) {
-          const depth = (0.4 - val) / 0.4;
+        if (bVal > 0.08) {
+          const depth = Math.min(bVal * 2, 1);
           ctx.fillStyle = `rgba(60,50,35,${depth * 0.8})`;
-          const w = cellSize * (0.5 + depth * wood.lineWeight);
-          ctx.fillRect(i*cellSize, j*cellSize, w, w);
+          const w2 = cellSize * (0.5 + depth * wood.lineWeight);
+          ctx.fillRect(x*cellSize, y*cellSize, w2, w2);
         }
       }
     }
@@ -955,14 +956,14 @@ function drawFractal(ctx, params, mode) {
 // --- SECONDARY ALGORITHMS (texture overlay) ---
 
 function drawFlowField(ctx, params, mode, alpha) {
-  const { seed, weather, wood } = params;
+  const { seed, weight, weather, wood } = params;
   const rng = mulberry32(seed + 1000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const freq = 0.008 / wood.lineSpacing;
-  const lines = Math.floor(40 * alpha);
+  const lines = Math.floor((25 + weight / 150) * alpha);  // weight affects line count
   
-  ctx.globalAlpha = alpha * 0.4;
+  ctx.globalAlpha = alpha * 0.7;  // was 0.4 — stronger secondary presence
   for (let l = 0; l < lines; l++) {
     let x = rng() * s, y = rng() * s;
     ctx.beginPath();
@@ -987,8 +988,8 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const spacing = 6 * wood.lineSpacing;
-  
-  ctx.globalAlpha = alpha * 0.3;
+
+  ctx.globalAlpha = alpha * 0.6;  // was 0.3 — stronger secondary presence
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
@@ -1006,10 +1007,10 @@ function drawSineInterference(ctx, params, mode, alpha) {
   const { seed, weight, wood } = params;
   const s = SCALE;
   const c = CENTER;
-  const freq1 = 0.03 + (weight / 5000) * 0.02;
-  const freq2 = 0.05 + (seed % 100) / 5000;
-  
-  ctx.globalAlpha = alpha * 0.35;
+  const freq1 = 0.03 + (weight / 3000) * 0.03;  // stronger weight influence
+  const freq2 = 0.05 + (seed % 100) / 3000;  // more seed-dependent variation
+
+  ctx.globalAlpha = alpha * 0.6;  // was 0.35 — stronger secondary presence
   const spacing = 4 * wood.lineSpacing;
   
   for (let y = 0; y < s; y += spacing) {
@@ -1032,8 +1033,8 @@ function drawLissajous(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
-  
-  ctx.globalAlpha = alpha * 0.35;
+
+  ctx.globalAlpha = alpha * 0.6;  // was 0.35 — stronger secondary presence
   const curves = 3 + Math.floor(rng() * 4);
   
   for (let curve = 0; curve < curves; curve++) {
@@ -1060,8 +1061,8 @@ function drawWaveFunction(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
-  
-  ctx.globalAlpha = alpha * 0.3;
+
+  ctx.globalAlpha = alpha * 0.55;  // was 0.3 — stronger secondary presence
   const rings = 8 + Math.floor(rng() * 8);
   
   for (let r = 1; r <= rings; r++) {
