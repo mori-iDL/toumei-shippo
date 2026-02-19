@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node（将来パッケージ導入時）
+node_modules/
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build/Output
+dist/
+build/
+tmp/
+
+# Agent Memory（自動生成、セッション固有）
+.claude/agent-memory/
+.claude/agent-memory-local/
+
+# Test outputs
+*.tmp.html
