@@ -365,6 +365,7 @@ canvas.vgroove-canvas {
     <div class="field">
       <label>名前（ひらがな）</label>
       <input type="text" id="name" value="ゆいか" placeholder="ひらがなで入力">
+      <div id="name-warning" style="color:#e8a040;font-size:11px;margin-top:2px;display:none;"></div>
     </div>
 
     <div class="row2">
@@ -1738,17 +1739,37 @@ function updateDisplayValues() {
   document.getElementById('grain-val').textContent = document.getElementById('grain-angle').value + '°';
 }
 
+// --- 名前入力バリデーション ---
+function validateName() {
+  const nameEl = document.getElementById('name');
+  const warnEl = document.getElementById('name-warning');
+  const name = nameEl.value;
+  if (!name) { warnEl.style.display = 'none'; return; }
+
+  // ひらがな（ぁ-ゖ）と長音（ー）のみ許可
+  const nonHiragana = name.replace(/[\u3041-\u3096\u30FC]/g, '');
+  if (nonHiragana.length > 0) {
+    const chars = [...new Set(nonHiragana)].join('');
+    warnEl.textContent = `⚠ 「${chars}」はひらがなではありません。母音分析に影響する場合があります`;
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+}
+
 // Bind all inputs — use both 'input' and 'change' to catch all element types
 document.querySelectorAll('input').forEach(el => {
   el.addEventListener('input', () => { updateDisplayValues(); debouncedRender(); });
   el.addEventListener('change', () => { updateDisplayValues(); debouncedRender(); });
 });
+document.getElementById('name').addEventListener('input', validateName);
 document.querySelectorAll('select').forEach(el => {
   el.addEventListener('change', () => { debouncedRender(); });
 });
 
 // Initial render after DOM is ready
 updateDisplayValues();
+validateName();
 setTimeout(() => { render(); }, 100);
 </script>
 </body>
