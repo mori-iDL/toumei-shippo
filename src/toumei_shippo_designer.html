@@ -353,7 +353,7 @@ canvas.vgroove-canvas {
 
 <header>
   <h1>とうめいしっぽ</h1>
-  <span class="sub">Parametric Panel Designer — 70×70×15mm</span>
+  <span class="sub">Parametric Panel Designer — 70×70×15mm（有効描画: 64×64mm）</span>
 </header>
 
 <div class="app">
@@ -502,7 +502,7 @@ canvas.vgroove-canvas {
       <div class="canvas-card">
         <div class="canvas-header">
           <span class="type laser">● LASER ENGRAVING</span>
-          <span class="size">70×70mm</span>
+          <span class="size">70×70mm（有効64×64）</span>
         </div>
         <div class="canvas-wrap">
           <canvas id="laser-canvas" width="350" height="350"></canvas>
@@ -516,7 +516,7 @@ canvas.vgroove-canvas {
       <div class="canvas-card">
         <div class="canvas-header">
           <span class="type vgroove">● V-GROOVE NC</span>
-          <span class="size">70×70mm</span>
+          <span class="size">70×70mm（有効64×64）</span>
         </div>
         <div class="canvas-wrap">
           <canvas id="vgroove-canvas" width="350" height="350" class="vgroove-canvas"></canvas>
@@ -545,6 +545,8 @@ canvas.vgroove-canvas {
 
 const SCALE = 350; // canvas px = 70mm
 const CENTER = SCALE / 2;
+const MARGIN_PX = 15;                          // 3mm × 5px/mm — 加工安全マージン
+const PATTERN_SIZE = SCALE - MARGIN_PX * 2;    // 320px = 64mm — 有効描画エリア
 
 // --- Seed generation from inputs ---
 function hashString(str) {
@@ -605,6 +607,19 @@ function analyzeVowels(name) {
   }
   const total = Object.values(counts).reduce((s,v)=>s+v, 0) || 1;
   return { counts, total, dominant: Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] };
+}
+
+// 母音頻度プロファイルを正規化 — 全母音が声を持つ「混ざる＋主役」方式
+function computeVowelWeights(vowels) {
+  const vowelKeys = ['a', 'i', 'u', 'e', 'o'];
+  const total = vowelKeys.reduce((s, k) => s + (vowels.counts[k] || 0), 0) || 1;
+  const weights = {};
+  let dominant = 'a', maxW = 0;
+  for (const k of vowelKeys) {
+    weights[k] = (vowels.counts[k] || 0) / total;
+    if (weights[k] > maxW) { maxW = weights[k]; dominant = k; }
+  }
+  return { weights, dominant };
 }
 
 function nameFrequencyProfile(name) {
@@ -1166,8 +1181,11 @@ function gatherInputs() {
     }
   }
   
+  // 母音プロファイルを計算（「混ざる＋主役を立てる」方式）
+  const vowelWeights = computeVowelWeights(vowels);
+
   if (algoSecondary === 'auto') {
-    secondary = VOWEL_ALGO[vowels.dominant] || VOWEL_ALGO['a'];
+    secondary = VOWEL_ALGO[vowelWeights.dominant] || VOWEL_ALGO['a'];
   } else {
     secondary = { key: algoSecondary, name: algoSecondary, jp: '' };
     for (const v of Object.values(VOWEL_ALGO)) {
@@ -1187,7 +1205,7 @@ function gatherInputs() {
     species, wood: WOOD_PARAMS[species],
     grainAngle, prefecture, city, geo,
     year, month, day, hours, minutes,
-    season, vowels, nameFreq,
+    season, vowels, vowelWeights, nameFreq,
     primary, secondary, blend, seed,
   };
 }
@@ -1200,8 +1218,23 @@ function render() {
   document.getElementById('primary-reason').textContent = 
     inp.primary.jp ? `← ${SEASON_JP[inp.season]}生まれ → ${inp.primary.jp}` : '';
   document.getElementById('secondary-name').textContent = inp.secondary.name;
-  document.getElementById('secondary-reason').textContent = 
-    inp.secondary.jp ? `← 「${inp.vowels.dominant}」音優位 → ${inp.secondary.jp}` : '';
+  // 主役母音＋参加母音を表示
+  if (inp.secondary.jp && inp.vowelWeights) {
+    const vowelJpMap = {a:'あ', i:'い', u:'う', e:'え', o:'お'};
+    const active = Object.entries(inp.vowelWeights.weights)
+      .filter(([, w]) => w >= 0.05)
+      .sort((a, b) => b[1] - a[1]);
+    if (active.length > 1) {
+      const others = active.slice(1).map(([v]) => vowelJpMap[v]).join('・');
+      document.getElementById('secondary-reason').textContent =
+        `← 「${vowelJpMap[inp.vowelWeights.dominant]}」が主旋律、${others}が和音`;
+    } else {
+      document.getElementById('secondary-reason').textContent =
+        `← 「${vowelJpMap[inp.vowelWeights.dominant]}」音 → ${inp.secondary.jp}`;
+    }
+  } else {
+    document.getElementById('secondary-reason').textContent = '';
+  }
   
   const pRatio = Math.round(inp.blend * 10);
   const sRatio = 10 - pRatio;
@@ -1227,9 +1260,15 @@ function render() {
   lctx.strokeStyle = '#2c261e';
   lctx.fillStyle = '#2c261e';
   
-  // Draw grain background
+  // Draw grain background (余白にも木目を描画 — 木の板としての佇まい)
   drawGrainOverlay(lctx, inp.grainAngle, inp.wood, 'laser');
-  
+
+  // パターン描画は64mm角の有効エリア内にクリッピング
+  lctx.save();
+  lctx.beginPath();
+  lctx.rect(MARGIN_PX, MARGIN_PX, PATTERN_SIZE, PATTERN_SIZE);
+  lctx.clip();
+
   // Draw primary algorithm
   try {
     const primaryFn = PRIMARY_FNS[inp.primary.key];
@@ -1238,24 +1277,29 @@ function render() {
       lctx.strokeStyle = '#2c261e';
       lctx.fillStyle = '#2c261e';
       if (primaryFn.length >= 4) {
-        // Secondary-type function used as primary (e.g. flow)
         primaryFn(lctx, params, 'laser', inp.blend);
       } else {
         primaryFn(lctx, params, 'laser');
       }
       lctx.restore();
     }
-    
-    // Draw secondary as texture overlay
-    const secondaryFn = SECONDARY_FNS[inp.secondary.key];
-    if (secondaryFn) {
-      lctx.save();
-      lctx.strokeStyle = '#2c261e';
-      lctx.fillStyle = '#2c261e';
-      secondaryFn(lctx, params, 'laser', 1 - inp.blend);
-      lctx.restore();
+
+    // Draw secondary — 全母音がそれぞれのアルゴリズムで声を持つ
+    const secondaryAlpha = 1 - inp.blend;
+    for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
+      if (weight < 0.05) continue; // 5%未満はノイズ防止で省略
+      const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
+      if (fn) {
+        lctx.save();
+        lctx.strokeStyle = '#2c261e';
+        lctx.fillStyle = '#2c261e';
+        fn(lctx, params, 'laser', secondaryAlpha * weight);
+        lctx.restore();
+      }
     }
   } catch(e) { console.error('Laser render error:', e); }
+
+  lctx.restore(); // クリッピング解除
   
   // --- V-GROOVE CANVAS ---
   const vc = document.getElementById('vgroove-canvas');
@@ -1267,8 +1311,15 @@ function render() {
   vctx.strokeStyle = '#3c3223';
   vctx.fillStyle = '#3c3223';
   
+  // 木目は余白にも描画
   drawGrainOverlay(vctx, inp.grainAngle, inp.wood, 'vgroove');
-  
+
+  // パターン描画は64mm角にクリッピング
+  vctx.save();
+  vctx.beginPath();
+  vctx.rect(MARGIN_PX, MARGIN_PX, PATTERN_SIZE, PATTERN_SIZE);
+  vctx.clip();
+
   try {
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
@@ -1282,16 +1333,23 @@ function render() {
       }
       vctx.restore();
     }
-    
-    const secondaryFn = SECONDARY_FNS[inp.secondary.key];
-    if (secondaryFn) {
-      vctx.save();
-      vctx.strokeStyle = '#3c3223';
-      vctx.fillStyle = '#3c3223';
-      secondaryFn(vctx, params, 'vgroove', 1 - inp.blend);
-      vctx.restore();
+
+    // Draw secondary — 全母音のアルゴリズムを重みに応じて描画
+    const secondaryAlphaV = 1 - inp.blend;
+    for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
+      if (weight < 0.05) continue;
+      const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
+      if (fn) {
+        vctx.save();
+        vctx.strokeStyle = '#3c3223';
+        vctx.fillStyle = '#3c3223';
+        fn(vctx, params, 'vgroove', secondaryAlphaV * weight);
+        vctx.restore();
+      }
     }
   } catch(e) { console.error('V-groove render error:', e); }
+
+  vctx.restore(); // クリッピング解除
   
   // --- STORY ---
   updateStory(inp);
@@ -1304,7 +1362,19 @@ function updateStory(inp) {
   const html = `
     <span class="highlight">${inp.name}</span>さんのパネルは、${inp.year}年${inp.month}月${inp.day}日 ${inp.hours}時${inp.minutes}分、${inp.city}の${inp.weather.label}の日に誕生した いのちの固有情報から生まれました。<br><br>
     ${seasonJp}生まれの${inp.name}さんには、<span class="algo-name">${inp.primary.name}</span>（${inp.primary.jp}）が大構造として選ばれています。
-    お名前の音韻分析では「<span class="highlight">${vowelJp[inp.vowels.dominant]}</span>」音が最も多く、テクスチャとして<span class="algo-name">${inp.secondary.name}</span>（${inp.secondary.jp}）が重なります。<br><br>
+    ${(() => {
+      const active = Object.entries(inp.vowelWeights.weights)
+        .filter(([, w]) => w >= 0.05)
+        .sort((a, b) => b[1] - a[1]);
+      const dominant = vowelJp[active[0][0]];
+      const dominantAlgo = VOWEL_ALGO[active[0][0]];
+      if (active.length > 1) {
+        const others = active.slice(1).map(([v]) => `「${vowelJp[v]}」`).join('・');
+        return `お名前の音韻分析では「<span class="highlight">${dominant}</span>」音が主旋律として<span class="algo-name">${dominantAlgo.name}</span>（${dominantAlgo.jp}）を奏で、${others}の母音がそれぞれの和音を添えています。`;
+      } else {
+        return `お名前の音韻分析では「<span class="highlight">${dominant}</span>」音が響き、テクスチャとして<span class="algo-name">${dominantAlgo.name}</span>（${dominantAlgo.jp}）が重なります。`;
+      }
+    })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
     体重 ${inp.weight}g が模様の密度を、身長 ${inp.height}cm がプロポーションを決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
     素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整し、木目方向 ${inp.grainAngle}° が背景のテクスチャとして息づいています。
