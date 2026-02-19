@@ -657,16 +657,20 @@ const VOWEL_ALGO = {
 const SEASON_JP = { spring:'春', summer:'夏', autumn:'秋', winter:'冬' };
 
 // --- Wood species parameters ---
+// 木材パラメータ — 範囲拡張版（P2: 視覚差異の強化）
+// lineSpacing: 0.5〜2.0（パターン密度に4倍差）
+// lineWeight:  0.5〜1.6（線の太さに3.2倍差）
+// grainStrength: 0.15〜1.0（木目の主張度）
 const WOOD_PARAMS = {
-  sugi:       { lineSpacing: 1.2, lineWeight: 0.8, grainStrength: 0.3, name: 'スギ', char: '柔・直' },
-  kuri:       { lineSpacing: 0.7, lineWeight: 1.2, grainStrength: 0.6, name: 'クリ', char: '硬・密' },
-  keyaki:     { lineSpacing: 0.9, lineWeight: 1.0, grainStrength: 0.8, name: 'ケヤキ', char: '力・杢' },
-  akamatsu:   { lineSpacing: 1.0, lineWeight: 0.9, grainStrength: 0.5, name: 'アカマツ', char: '脂・温' },
-  karamatsu:  { lineSpacing: 0.85, lineWeight: 1.1, grainStrength: 0.55, name: 'カラマツ', char: '堅・環' },
-  nara:       { lineSpacing: 0.75, lineWeight: 1.1, grainStrength: 0.7, name: 'ナラ', char: '重・緻' },
-  yamazakura: { lineSpacing: 0.9, lineWeight: 1.0, grainStrength: 0.45, name: 'ヤマザクラ', char: '艶・雅' },
-  hinoki:     { lineSpacing: 1.1, lineWeight: 0.85, grainStrength: 0.35, name: 'ヒノキ', char: '清・香' },
-  onigurumi:  { lineSpacing: 0.95, lineWeight: 0.95, grainStrength: 0.4, name: 'オニグルミ', char: '柔・暗' },
+  sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直' },
+  kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密' },
+  keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢' },
+  akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温' },
+  karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環' },
+  nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻' },
+  yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅' },
+  hinoki:     { lineSpacing: 1.6,  lineWeight: 0.5,  grainStrength: 0.2,  name: 'ヒノキ', char: '清・香' },
+  onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗' },
 };
 
 // --- Blend ratio from birth time ---
@@ -1108,9 +1112,11 @@ function drawGrainOverlay(ctx, grainAngle, wood, mode) {
   const spacing = 12 / wood.grainStrength;
   const numLines = Math.ceil(s * 2 / spacing);
   
-  ctx.globalAlpha = 0.06 * wood.grainStrength;
+  // Alpha: 0.10〜0.30 の範囲で木目の存在感を表現
+  // （旧: 0.06 * strength = max 0.048 → ほぼ不可視だった）
+  ctx.globalAlpha = 0.10 + wood.grainStrength * 0.20;
   ctx.strokeStyle = mode === 'laser' ? '#2c261e' : '#3c3223';
-  ctx.lineWidth = 0.5;
+  ctx.lineWidth = 0.3 + wood.grainStrength * 0.5;  // 木目線の太さも樹種で変える
   
   for (let i = -numLines; i < numLines; i++) {
     const offset = i * spacing;
