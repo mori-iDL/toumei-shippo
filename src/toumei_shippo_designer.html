@@ -543,6 +543,109 @@ canvas.vgroove-canvas {
 // PARAMETRIC PANEL DESIGNER ENGINE
 // ============================================================
 
+// --- DrawingRecorder: Canvas描画コマンドを記録してベクタ出力に変換 ---
+class DrawingRecorder {
+  constructor(ctx) {
+    this._ctx = ctx;           // 実際のCanvasContext
+    this._paths = [];          // 記録されたパス群
+    this._currentPath = null;  // 現在構築中のパス
+    // Canvasの状態をプロキシ
+    this.lineWidth = ctx.lineWidth;
+    this.strokeStyle = ctx.strokeStyle;
+    this.fillStyle = ctx.fillStyle;
+    this.globalAlpha = ctx.globalAlpha;
+    this.globalCompositeOperation = ctx.globalCompositeOperation;
+  }
+
+  // --- 状態の同期 ---
+  _syncState() {
+    this._ctx.lineWidth = this.lineWidth;
+    this._ctx.strokeStyle = this.strokeStyle;
+    this._ctx.fillStyle = this.fillStyle;
+    this._ctx.globalAlpha = this.globalAlpha;
+    this._ctx.globalCompositeOperation = this.globalCompositeOperation;
+  }
+
+  save() { this._syncState(); this._ctx.save(); }
+  restore() { this._ctx.restore();
+    this.lineWidth = this._ctx.lineWidth;
+    this.strokeStyle = this._ctx.strokeStyle;
+    this.fillStyle = this._ctx.fillStyle;
+    this.globalAlpha = this._ctx.globalAlpha;
+  }
+
+  // --- パス構築 ---
+  beginPath() {
+    this._syncState();
+    this._ctx.beginPath();
+    this._currentPath = { segments: [], lineWidth: this.lineWidth,
+      strokeStyle: this.strokeStyle, fillStyle: this.fillStyle,
+      globalAlpha: this.globalAlpha };
+  }
+
+  moveTo(x, y) { this._ctx.moveTo(x, y);
+    if (this._currentPath) this._currentPath.segments.push({ cmd: 'M', x, y }); }
+  lineTo(x, y) { this._ctx.lineTo(x, y);
+    if (this._currentPath) this._currentPath.segments.push({ cmd: 'L', x, y }); }
+
+  // --- 描画実行＋記録 ---
+  stroke() { this._syncState(); this._ctx.stroke();
+    if (this._currentPath && this._currentPath.segments.length > 0) {
+      this._paths.push({ ...this._currentPath, type: 'stroke' });
+    }
+  }
+  fill() { this._syncState(); this._ctx.fill();
+    if (this._currentPath && this._currentPath.segments.length > 0) {
+      this._paths.push({ ...this._currentPath, type: 'fill' });
+    }
+  }
+
+  arc(cx, cy, r, startAngle, endAngle, ccw) {
+    this._syncState();
+    this._ctx.arc(cx, cy, r, startAngle, endAngle, ccw);
+    // 完全な円（2πラジアン）は <circle> として記録
+    if (Math.abs(endAngle - startAngle - Math.PI * 2) < 0.01) {
+      if (this._currentPath) {
+        this._currentPath.segments.push({ cmd: 'CIRCLE', cx, cy, r });
+      }
+    } else {
+      // 部分弧はline近似（SVG arcは複雑なので）
+      const steps = Math.max(8, Math.ceil(Math.abs(endAngle - startAngle) / (Math.PI / 8)));
+      for (let i = 0; i <= steps; i++) {
+        const a = startAngle + (endAngle - startAngle) * (i / steps);
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        if (this._currentPath) {
+          this._currentPath.segments.push({ cmd: i === 0 ? 'M' : 'L', x, y });
+        }
+      }
+    }
+  }
+
+  fillRect(x, y, w, h) {
+    this._syncState();
+    this._ctx.fillRect(x, y, w, h);
+    this._paths.push({ type: 'fillRect', x, y, w, h,
+      fillStyle: this.fillStyle, globalAlpha: this.globalAlpha });
+  }
+
+  // --- クリッピング（記録はスキップ、実Canvasにのみ適用） ---
+  rect(x, y, w, h) { this._ctx.rect(x, y, w, h); }
+  clip() { this._ctx.clip(); }
+
+  // --- Canvas互換メソッド（描画には影響しないがアルゴリズムで使われる可能性） ---
+  clearRect(x, y, w, h) { this._ctx.clearRect(x, y, w, h); }
+  getImageData(x, y, w, h) { return this._ctx.getImageData(x, y, w, h); }
+  putImageData(data, x, y) { this._ctx.putImageData(data, x, y); }
+  createImageData(w, h) { return this._ctx.createImageData(w, h); }
+
+  // --- 記録データの取得 ---
+  getPaths() { return this._paths; }
+  clearPaths() { this._paths = []; this._currentPath = null; }
+}
+
+// モジュールスコープ: 最後のrender()で記録されたパスデータ
+let lastRecordedPaths = { laser: [], vgroove: [] };
+
 const SCALE = 350; // canvas px = 70mm
 const CENTER = SCALE / 2;
 const MARGIN_PX = 15;                          // 3mm × 5px/mm — 加工安全マージン
@@ -1258,14 +1361,18 @@ function render() {
   
   // --- LASER CANVAS ---
   const lc = document.getElementById('laser-canvas');
-  const lctx = lc.getContext('2d');
-  lctx.clearRect(0, 0, SCALE, SCALE);
-  lctx.fillStyle = '#f5ede0';
-  lctx.fillRect(0, 0, SCALE, SCALE);
-  
+  const rawLctx = lc.getContext('2d');
+  rawLctx.clearRect(0, 0, SCALE, SCALE);
+  rawLctx.fillStyle = '#f5ede0';
+  rawLctx.fillRect(0, 0, SCALE, SCALE);
+
+  // DrawingRecorderで描画コマンドを記録（ベクタ出力用）
+  const laserRec = new DrawingRecorder(rawLctx);
+  const lctx = laserRec;  // 以降lctxはRecorderを通す
+
   lctx.strokeStyle = '#2c261e';
   lctx.fillStyle = '#2c261e';
-  
+
   // Draw grain background (余白にも木目を描画 — 木の板としての佇まい)
   drawGrainOverlay(lctx, inp.grainAngle, inp.wood, 'laser');
 
@@ -1306,17 +1413,21 @@ function render() {
   } catch(e) { console.error('Laser render error:', e); }
 
   lctx.restore(); // クリッピング解除
-  
+  lastRecordedPaths.laser = laserRec.getPaths();
+
   // --- V-GROOVE CANVAS ---
   const vc = document.getElementById('vgroove-canvas');
-  const vctx = vc.getContext('2d');
-  vctx.clearRect(0, 0, SCALE, SCALE);
-  vctx.fillStyle = '#e8dcc8';
-  vctx.fillRect(0, 0, SCALE, SCALE);
-  
+  const rawVctx = vc.getContext('2d');
+  rawVctx.clearRect(0, 0, SCALE, SCALE);
+  rawVctx.fillStyle = '#e8dcc8';
+  rawVctx.fillRect(0, 0, SCALE, SCALE);
+
+  const vgrooveRec = new DrawingRecorder(rawVctx);
+  const vctx = vgrooveRec;
+
   vctx.strokeStyle = '#3c3223';
   vctx.fillStyle = '#3c3223';
-  
+
   // 木目は余白にも描画
   drawGrainOverlay(vctx, inp.grainAngle, inp.wood, 'vgroove');
 
@@ -1356,6 +1467,7 @@ function render() {
   } catch(e) { console.error('V-groove render error:', e); }
 
   vctx.restore(); // クリッピング解除
+  lastRecordedPaths.vgroove = vgrooveRec.getPaths();
   
   // --- STORY ---
   updateStory(inp);
@@ -1390,17 +1502,58 @@ function updateStory(inp) {
 
 // --- Export functions ---
 function exportSVG(mode) {
-  const canvas = document.getElementById(mode === 'laser' ? 'laser-canvas' : 'vgroove-canvas');
-  const dataUrl = canvas.toDataURL('image/png');
-  
+  const paths = lastRecordedPaths[mode] || [];
+  const pxToMm = 70 / SCALE;  // 0.2mm per px
+
+  let elements = '';
+
+  // クリッピング定義（パターンは64mm角エリア内）
+  elements += `  <defs>\n`;
+  elements += `    <clipPath id="pattern-clip">\n`;
+  elements += `      <rect x="${MARGIN_PX * pxToMm}" y="${MARGIN_PX * pxToMm}" `;
+  elements += `width="${PATTERN_SIZE * pxToMm}" height="${PATTERN_SIZE * pxToMm}"/>\n`;
+  elements += `    </clipPath>\n`;
+  elements += `  </defs>\n`;
+
+  // 木目グレインは余白にも描画（クリッピング外）
+  // パターンはクリッピング内
+  let grainElements = '';
+  let patternElements = '';
+  let inGrain = true;  // 最初のパスは木目（drawGrainOverlayが先に呼ばれる）
+
+  for (const p of paths) {
+    const svgEl = pathToSVG(p, pxToMm);
+    if (!svgEl) continue;
+
+    // 木目グレインは直線のみで構成されているので、パターン開始を検出
+    // （beginPathでCIRCLEが来たら or fillRectが来たら パターン開始）
+    if (inGrain && (p.type === 'fillRect' ||
+        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
+      inGrain = false;
+    }
+
+    if (inGrain) {
+      grainElements += '    ' + svgEl + '\n';
+    } else {
+      patternElements += '    ' + svgEl + '\n';
+    }
+  }
+
   const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-     width="70mm" height="70mm" viewBox="0 0 ${SCALE} ${SCALE}">
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="70mm" height="70mm" viewBox="0 0 70 70">
   <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove'}</title>
-  <desc>Generated: ${new Date().toISOString()}</desc>
-  <image width="${SCALE}" height="${SCALE}" href="${dataUrl}"/>
+  <desc>Generated: ${new Date().toISOString()} | Vector output from DrawingRecorder</desc>
+${elements}
+  <!-- 木目グレイン（余白含む全面） -->
+  <g id="grain" opacity="0.5">
+${grainElements}  </g>
+
+  <!-- パターン（64mm角有効エリア内） -->
+  <g id="pattern" clip-path="url(#pattern-clip)">
+${patternElements}  </g>
 </svg>`;
-  
+
   const blob = new Blob([svgContent], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1408,6 +1561,57 @@ function exportSVG(mode) {
   a.download = `toumei_shippo_${mode}_${Date.now()}.svg`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// パスデータをSVG要素文字列に変換
+function pathToSVG(p, scale) {
+  if (p.type === 'fillRect') {
+    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
+    return `<rect x="${(p.x * scale).toFixed(2)}" y="${(p.y * scale).toFixed(2)}" ` +
+      `width="${(p.w * scale).toFixed(2)}" height="${(p.h * scale).toFixed(2)}" ` +
+      `fill="${p.fillStyle}"${opacity}/>`;
+  }
+
+  if (!p.segments || p.segments.length === 0) return null;
+
+  // CIRCLEコマンドをチェック
+  const circleSegs = p.segments.filter(s => s.cmd === 'CIRCLE');
+  if (circleSegs.length === 1 && p.segments.length === 1) {
+    const c = circleSegs[0];
+    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
+    if (p.type === 'fill') {
+      return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
+        `r="${(c.r * scale).toFixed(2)}" fill="${p.fillStyle}"${opacity}/>`;
+    } else {
+      return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
+        `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${p.strokeStyle}" ` +
+        `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+    }
+  }
+
+  // パスデータ構築（M/Lコマンド）
+  let d = '';
+  for (const seg of p.segments) {
+    if (seg.cmd === 'M') d += `M${(seg.x * scale).toFixed(2)},${(seg.y * scale).toFixed(2)} `;
+    else if (seg.cmd === 'L') d += `L${(seg.x * scale).toFixed(2)},${(seg.y * scale).toFixed(2)} `;
+    else if (seg.cmd === 'CIRCLE') {
+      // 複合パス内のcircle → 円をパスで近似
+      const c = seg;
+      d += `M${((c.cx + c.r) * scale).toFixed(2)},${(c.cy * scale).toFixed(2)} `;
+      d += `A${(c.r * scale).toFixed(2)},${(c.r * scale).toFixed(2)} 0 1 0 ${((c.cx - c.r) * scale).toFixed(2)},${(c.cy * scale).toFixed(2)} `;
+      d += `A${(c.r * scale).toFixed(2)},${(c.r * scale).toFixed(2)} 0 1 0 ${((c.cx + c.r) * scale).toFixed(2)},${(c.cy * scale).toFixed(2)} `;
+    }
+  }
+
+  if (!d.trim()) return null;
+
+  const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
+  if (p.type === 'fill') {
+    return `<path d="${d.trim()}" fill="${p.fillStyle}"${opacity}/>`;
+  } else {
+    return `<path d="${d.trim()}" fill="none" stroke="${p.strokeStyle}" ` +
+      `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+  }
 }
 
 function exportPNG(mode) {
@@ -1419,19 +1623,80 @@ function exportPNG(mode) {
 }
 
 function exportDXF() {
-  // Simplified DXF export (polyline paths from canvas)
-  const inp = gatherInputs();
-  let dxf = `0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n`;
-  
-  // Add a note about scale: canvas 350px = 70mm, so factor = 0.2
-  const scale = 70 / SCALE;
-  
-  // Draw border
-  dxf += `0\nLWPOLYLINE\n8\n0\n70\n1\n`;
-  dxf += `10\n0\n20\n0\n10\n70\n20\n0\n10\n70\n20\n70\n10\n0\n20\n70\n`;
-  
-  dxf += `0\nENDSEC\n0\nEOF\n`;
-  
+  const paths = lastRecordedPaths.vgroove || [];
+  const pxToMm = 70 / SCALE;  // 0.2mm per px
+
+  let dxf = '';
+  // DXF Header
+  dxf += '0\nSECTION\n2\nHEADER\n';
+  dxf += '9\n$INSUNITS\n70\n4\n';  // mm単位
+  dxf += '0\nENDSEC\n';
+  // Tables (最小限)
+  dxf += '0\nSECTION\n2\nTABLES\n';
+  dxf += '0\nTABLE\n2\nLAYER\n70\n3\n';
+  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';       // 白
+  dxf += '0\nLAYER\n2\nGRAIN\n70\n0\n62\n8\n';        // グレー
+  dxf += '0\nLAYER\n2\nPATTERN\n70\n0\n62\n1\n';      // 赤（加工パス）
+  dxf += '0\nENDTAB\n0\nENDSEC\n';
+  // Entities
+  dxf += '0\nSECTION\n2\nENTITIES\n';
+
+  // 外枠（70mm角）
+  dxf += dxfPolyline([[0,0],[70,0],[70,70],[0,70]], true, 'BORDER');
+  // 有効エリア枠（64mm角）
+  const m = MARGIN_PX * pxToMm;
+  const e = m + PATTERN_SIZE * pxToMm;
+  dxf += dxfPolyline([[m,m],[e,m],[e,e],[m,e]], true, 'BORDER');
+
+  // パスデータをDXFエンティティに変換
+  let isGrain = true;
+  for (const p of paths) {
+    // 木目→パターンの境界検出（SVGと同じロジック）
+    if (isGrain && (p.type === 'fillRect' ||
+        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
+      isGrain = false;
+    }
+    const layer = isGrain ? 'GRAIN' : 'PATTERN';
+
+    if (p.type === 'fillRect') {
+      // fillRectは小さい矩形→DXFではPOINTまたはスキップ
+      // Reaction-Diffusionの微小矩形はDXFでは点として表現
+      const cx = (p.x + p.w / 2) * pxToMm;
+      const cy = 70 - (p.y + p.h / 2) * pxToMm; // DXFはY軸反転
+      if (p.w * pxToMm > 0.3) {
+        // 大きめの矩形はそのまま
+        const x1 = p.x * pxToMm, y1 = 70 - p.y * pxToMm;
+        const x2 = (p.x + p.w) * pxToMm, y2 = 70 - (p.y + p.h) * pxToMm;
+        dxf += dxfPolyline([[x1,y1],[x2,y1],[x2,y2],[x1,y2]], true, layer);
+      } else {
+        dxf += `0\nPOINT\n8\n${layer}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n`;
+      }
+      continue;
+    }
+
+    if (!p.segments || p.segments.length === 0) continue;
+
+    // CIRCLEをチェック
+    const circles = p.segments.filter(s => s.cmd === 'CIRCLE');
+    if (circles.length > 0) {
+      for (const c of circles) {
+        const cx = c.cx * pxToMm;
+        const cy = 70 - c.cy * pxToMm; // Y反転
+        const r = c.r * pxToMm;
+        dxf += `0\nCIRCLE\n8\n${layer}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n`;
+      }
+    }
+
+    // LINEセグメントをポリラインに変換
+    const lineSegs = p.segments.filter(s => s.cmd === 'M' || s.cmd === 'L');
+    if (lineSegs.length >= 2) {
+      const points = lineSegs.map(s => [s.x * pxToMm, 70 - s.y * pxToMm]);
+      dxf += dxfPolyline(points, false, layer);
+    }
+  }
+
+  dxf += '0\nENDSEC\n0\nEOF\n';
+
   const blob = new Blob([dxf], { type: 'application/dxf' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1439,6 +1704,17 @@ function exportDXF() {
   a.download = `toumei_shippo_vgroove_${Date.now()}.dxf`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// DXFポリライン生成ヘルパー
+function dxfPolyline(points, closed, layer) {
+  let dxf = `0\nLWPOLYLINE\n8\n${layer}\n`;
+  dxf += `90\n${points.length}\n`;  // 頂点数
+  dxf += `70\n${closed ? 1 : 0}\n`; // 閉じるフラグ
+  for (const [x, y] of points) {
+    dxf += `10\n${x.toFixed(3)}\n20\n${y.toFixed(3)}\n`;
+  }
+  return dxf;
 }
 
 // --- Event listeners ---
