@@ -341,7 +341,62 @@ canvas.vgroove-canvas {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* V溝ビット角度セレクター */
+/* V溝ビット構成セレクター */
+.bit-config-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.bit-config-tab {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.bit-config-tab.active {
+  border-color: var(--vgroove);
+  color: var(--vgroove);
+  background: rgba(74,144,217,0.1);
+}
+.bit-config-tab .config-name {
+  font-size: 12px;
+  font-weight: 400;
+  display: block;
+}
+.bit-config-tab .config-desc {
+  font-size: 8px;
+  opacity: 0.7;
+  margin-top: 1px;
+  display: block;
+}
+
+.bit-layer {
+  margin-bottom: 8px;
+}
+.bit-layer-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bit-layer-label .layer-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.bit-layer-label .layer-dot.primary { background: var(--vgroove); }
+.bit-layer-label .layer-dot.secondary { background: var(--accent2); }
+.bit-layer-label .layer-dot.detail { background: var(--accent); }
+
 .bit-angle-select {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -374,6 +429,25 @@ canvas.vgroove-canvas {
   opacity: 0.7;
   margin-top: 2px;
   display: block;
+}
+
+/* コスト見積もりバッジ */
+.cost-badge {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(74,144,217,0.08);
+  border: 1px solid rgba(74,144,217,0.2);
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cost-badge .cost-val {
+  color: var(--vgroove);
+  font-size: 12px;
 }
 
 /* ===== MOBILE RESPONSIVE ===== */
@@ -572,20 +646,123 @@ canvas.vgroove-canvas {
     </div>
 
     <div class="field">
-      <label>V溝ビット角度</label>
-      <div class="bit-angle-select">
-        <div class="bit-angle-btn" data-angle="30" onclick="setBitAngle(this)">
-          <span class="angle-deg">30°</span>
-          <span class="angle-desc">鋭く深い</span>
+      <label>V溝ビット構成</label>
+      <div class="bit-config-tabs">
+        <div class="bit-config-tab active" data-config="basic" onclick="setBitConfig(this)">
+          <span class="config-name">Basic</span>
+          <span class="config-desc">1本</span>
         </div>
-        <div class="bit-angle-btn active" data-angle="45" onclick="setBitAngle(this)">
-          <span class="angle-deg">45°</span>
-          <span class="angle-desc">標準</span>
+        <div class="bit-config-tab" data-config="dual" onclick="setBitConfig(this)">
+          <span class="config-name">Dual</span>
+          <span class="config-desc">2本組合せ</span>
         </div>
-        <div class="bit-angle-btn" data-angle="60" onclick="setBitAngle(this)">
-          <span class="angle-deg">60°</span>
-          <span class="angle-desc">なだらか</span>
+        <div class="bit-config-tab" data-config="triple" onclick="setBitConfig(this)">
+          <span class="config-name">Triple</span>
+          <span class="config-desc">3本組合せ</span>
         </div>
+      </div>
+
+      <!-- Basic: 単一ビット -->
+      <div id="bit-basic-panel">
+        <div class="bit-layer">
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn" data-angle="30" data-layer="all" onclick="setBitAngle(this, 'all')">
+              <span class="angle-deg">30°</span>
+              <span class="angle-desc">鋭く深い</span>
+            </div>
+            <div class="bit-angle-btn active" data-angle="45" data-layer="all" onclick="setBitAngle(this, 'all')">
+              <span class="angle-deg">45°</span>
+              <span class="angle-desc">標準</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="60" data-layer="all" onclick="setBitAngle(this, 'all')">
+              <span class="angle-deg">60°</span>
+              <span class="angle-desc">なだらか</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dual: 2本構成 -->
+      <div id="bit-dual-panel" style="display:none">
+        <div class="bit-layer">
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造（大きな彫り）</div>
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn" data-angle="30" data-layer="primary" onclick="setBitAngle(this, 'primary')">
+              <span class="angle-deg">30°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="45" data-layer="primary" onclick="setBitAngle(this, 'primary')">
+              <span class="angle-deg">45°</span>
+            </div>
+            <div class="bit-angle-btn active" data-angle="60" data-layer="primary" onclick="setBitAngle(this, 'primary')">
+              <span class="angle-deg">60°</span>
+            </div>
+          </div>
+        </div>
+        <div class="bit-layer">
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>ディテール（細かい彫り）</div>
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn active" data-angle="30" data-layer="secondary" onclick="setBitAngle(this, 'secondary')">
+              <span class="angle-deg">30°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="45" data-layer="secondary" onclick="setBitAngle(this, 'secondary')">
+              <span class="angle-deg">45°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="60" data-layer="secondary" onclick="setBitAngle(this, 'secondary')">
+              <span class="angle-deg">60°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Triple: 3本構成 -->
+      <div id="bit-triple-panel" style="display:none">
+        <div class="bit-layer">
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造</div>
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn" data-angle="30" data-layer="tri-primary" onclick="setBitAngle(this, 'tri-primary')">
+              <span class="angle-deg">30°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="45" data-layer="tri-primary" onclick="setBitAngle(this, 'tri-primary')">
+              <span class="angle-deg">45°</span>
+            </div>
+            <div class="bit-angle-btn active" data-angle="60" data-layer="tri-primary" onclick="setBitAngle(this, 'tri-primary')">
+              <span class="angle-deg">60°</span>
+            </div>
+          </div>
+        </div>
+        <div class="bit-layer">
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>中構造</div>
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn" data-angle="30" data-layer="tri-secondary" onclick="setBitAngle(this, 'tri-secondary')">
+              <span class="angle-deg">30°</span>
+            </div>
+            <div class="bit-angle-btn active" data-angle="45" data-layer="tri-secondary" onclick="setBitAngle(this, 'tri-secondary')">
+              <span class="angle-deg">45°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="60" data-layer="tri-secondary" onclick="setBitAngle(this, 'tri-secondary')">
+              <span class="angle-deg">60°</span>
+            </div>
+          </div>
+        </div>
+        <div class="bit-layer">
+          <div class="bit-layer-label"><span class="layer-dot detail"></span>微細ディテール</div>
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn active" data-angle="30" data-layer="tri-detail" onclick="setBitAngle(this, 'tri-detail')">
+              <span class="angle-deg">30°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="45" data-layer="tri-detail" onclick="setBitAngle(this, 'tri-detail')">
+              <span class="angle-deg">45°</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="60" data-layer="tri-detail" onclick="setBitAngle(this, 'tri-detail')">
+              <span class="angle-deg">60°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-badge" id="bit-cost-badge">
+        <span>工具交換: 0回 / 追加時間: 0分</span>
+        <span class="cost-val" id="bit-cost-val">+¥0</span>
       </div>
     </div>
 
@@ -1414,8 +1591,34 @@ function gatherInputs() {
   const weather = weatherEl ? weatherEl.dataset.weather : 'sunny';
   const species = document.getElementById('species').value;
   const grainAngle = parseInt(document.getElementById('grain-angle').value) || 0;
-  const bitAngleEl = document.querySelector('.bit-angle-btn.active');
-  const bitAngle = bitAngleEl ? parseInt(bitAngleEl.dataset.angle) : 45;
+  // マルチビット構成の取得
+  const bitConfigEl = document.querySelector('.bit-config-tab.active');
+  const bitConfig = bitConfigEl ? bitConfigEl.dataset.config : 'basic';
+
+  let bitAngles = {};
+  if (bitConfig === 'basic') {
+    const el = document.querySelector('#bit-basic-panel .bit-angle-btn.active');
+    const angle = el ? parseInt(el.dataset.angle) : 45;
+    bitAngles = { primary: angle, secondary: angle, detail: angle };
+  } else if (bitConfig === 'dual') {
+    const pEl = document.querySelector('#bit-dual-panel [data-layer="primary"].active');
+    const sEl = document.querySelector('#bit-dual-panel [data-layer="secondary"].active');
+    bitAngles = {
+      primary: pEl ? parseInt(pEl.dataset.angle) : 60,
+      secondary: sEl ? parseInt(sEl.dataset.angle) : 30,
+      detail: sEl ? parseInt(sEl.dataset.angle) : 30,
+    };
+  } else { // triple
+    const pEl = document.querySelector('#bit-triple-panel [data-layer="tri-primary"].active');
+    const sEl = document.querySelector('#bit-triple-panel [data-layer="tri-secondary"].active');
+    const dEl = document.querySelector('#bit-triple-panel [data-layer="tri-detail"].active');
+    bitAngles = {
+      primary: pEl ? parseInt(pEl.dataset.angle) : 60,
+      secondary: sEl ? parseInt(sEl.dataset.angle) : 45,
+      detail: dEl ? parseInt(dEl.dataset.angle) : 30,
+    };
+  }
+  const bitAngle = bitAngles.primary; // 後方互換
   const prefecture = document.getElementById('prefecture').value;
   const city = document.getElementById('city').value;
   const algoPrimary = document.getElementById('algo-primary').value;
@@ -1462,7 +1665,7 @@ function gatherInputs() {
     weather: WEATHER_PARAMS[weather],
     weatherKey: weather,
     species, wood: WOOD_PARAMS[species],
-    grainAngle, bitAngle, prefecture, city, geo,
+    grainAngle, bitAngle, bitAngles, bitConfig, prefecture, city, geo,
     year, month, day, hours, minutes,
     season, vowels, vowelWeights, nameFreq,
     primary, secondary, blend, seed,
@@ -1499,14 +1702,30 @@ function render() {
   const sRatio = 10 - pRatio;
   document.getElementById('blend-ratio').textContent = `${pRatio}:${sRatio}`;
 
-  // V溝ビット角度ラベル更新
-  const bitLabel = document.getElementById('vgroove-bit-label');
-  if (bitLabel) bitLabel.textContent = `${inp.bitAngle}°`;
-  
-  // Common params
+  // コスト見積もり更新
+  updateBitCostBadge(inp.bitConfig);
+
+  // V溝ヘッダーラベル更新
+  const vgLabel = document.getElementById('vgroove-bit-label');
+  if (vgLabel) {
+    if (inp.bitConfig === 'basic') {
+      vgLabel.textContent = inp.bitAngles.primary + '°';
+    } else if (inp.bitConfig === 'dual') {
+      vgLabel.textContent = inp.bitAngles.primary + '°/' + inp.bitAngles.secondary + '°';
+    } else {
+      vgLabel.textContent = inp.bitAngles.primary + '°/' + inp.bitAngles.secondary + '°/' + inp.bitAngles.detail + '°';
+    }
+  }
+
   // V溝ビット角度 → 深さと溝幅の関係: width = 2 * depth * tan(angle/2)
-  const bitAngleRad = (inp.bitAngle / 2) * Math.PI / 180;
-  const bitWidthFactor = 2 * Math.tan(bitAngleRad); // 30°=0.54, 45°=0.83, 60°=1.15
+  function angleToBwf(angle) {
+    return 2 * Math.tan((angle / 2) * Math.PI / 180);
+  }
+  const primaryBwf = angleToBwf(inp.bitAngles.primary);
+  const secondaryBwf = angleToBwf(inp.bitAngles.secondary);
+  const detailBwf = angleToBwf(inp.bitAngles.detail);
+
+  // Common params（レーザー用 + V溝プライマリ用のデフォルト）
   const params = {
     seed: inp.seed,
     weight: inp.weight,
@@ -1514,9 +1733,13 @@ function render() {
     weather: inp.weather,
     wood: inp.wood,
     grainAngle: inp.grainAngle,
-    bitAngle: inp.bitAngle,
-    bitWidthFactor: bitWidthFactor,
+    bitAngle: inp.bitAngles.primary,
+    bitWidthFactor: primaryBwf,
   };
+  // V溝セカンダリ用パラメータ
+  const paramsSecondary = { ...params, bitAngle: inp.bitAngles.secondary, bitWidthFactor: secondaryBwf };
+  // V溝ディテール用パラメータ（Triple時）
+  const paramsDetail = { ...params, bitAngle: inp.bitAngles.detail, bitWidthFactor: detailBwf };
   
   // --- LASER CANVAS ---
   const lc = document.getElementById('laser-canvas');
@@ -1597,6 +1820,7 @@ function render() {
   vctx.clip();
 
   try {
+    // プライマリアルゴリズム — params（primaryビット角度）で描画
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
       vctx.save();
@@ -1610,7 +1834,8 @@ function render() {
       vctx.restore();
     }
 
-    // Draw secondary — 全母音のアルゴリズムを重みに応じて描画
+    // セカンダリアルゴリズム — paramsSecondary（secondaryビット角度）で描画
+    // Dual/Triple時は異なるビット幅で副アルゴリズムが刻まれる
     const secondaryAlphaV = 1 - inp.blend;
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
@@ -1619,9 +1844,23 @@ function render() {
         vctx.save();
         vctx.strokeStyle = '#3c3223';
         vctx.fillStyle = '#3c3223';
-        fn(vctx, params, 'vgroove', secondaryAlphaV * weight);
+        fn(vctx, paramsSecondary, 'vgroove', secondaryAlphaV * weight);
         vctx.restore();
       }
+    }
+
+    // Triple時: ディテールレイヤー追加パス
+    // プライマリを極細ビットで重ね彫り（微細テクスチャとして）
+    if (inp.bitConfig === 'triple' && primaryFn) {
+      vctx.save();
+      vctx.strokeStyle = 'rgba(60,50,35,0.4)';
+      vctx.fillStyle = 'rgba(60,50,35,0.4)';
+      if (primaryFn.length >= 4) {
+        primaryFn(vctx, paramsDetail, 'vgroove', inp.blend * 0.35);
+      } else {
+        primaryFn(vctx, paramsDetail, 'vgroove');
+      }
+      vctx.restore();
     }
   } catch(e) { console.error('V-groove render error:', e); }
 
@@ -1654,7 +1893,19 @@ function updateStory(inp) {
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
     体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
-    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整し、木目方向 ${inp.grainAngle}° が背景のテクスチャとして息づいています。V溝加工は ${inp.bitAngle}° ビットで、${inp.bitAngle <= 30 ? '鋭く繊細な彫り' : inp.bitAngle >= 60 ? 'なだらかで柔らかな彫り' : '標準的な彫り'}を表現します。
+    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整し、木目方向 ${inp.grainAngle}° が背景のテクスチャとして息づいています。${(() => {
+      const desc30 = '鋭く繊細な彫り';
+      const desc45 = '標準的な彫り';
+      const desc60 = 'なだらかで柔らかな彫り';
+      const descAngle = a => a <= 30 ? desc30 : a >= 60 ? desc60 : desc45;
+      if (inp.bitConfig === 'basic') {
+        return `V溝加工は ${inp.bitAngles.primary}° ビットで、${descAngle(inp.bitAngles.primary)}を表現します。`;
+      } else if (inp.bitConfig === 'dual') {
+        return `V溝加工は2本のビットを組み合わせ——主構造に ${inp.bitAngles.primary}°（${descAngle(inp.bitAngles.primary)}）、ディテールに ${inp.bitAngles.secondary}°（${descAngle(inp.bitAngles.secondary)}）。ATC自動工具交換で、一枚の木に二つの表情を彫り込みます。`;
+      } else {
+        return `V溝加工は3本のビットを駆使——主構造 ${inp.bitAngles.primary}°、中構造 ${inp.bitAngles.secondary}°、微細ディテール ${inp.bitAngles.detail}°。三段階の彫りの深さが、木の表面に豊かな陰影を生み出します。`;
+      }
+    })()}
   `;
   document.getElementById('story-text').innerHTML = html;
 }
@@ -1702,7 +1953,13 @@ function exportSVG(mode) {
 <svg xmlns="http://www.w3.org/2000/svg"
      width="70mm" height="70mm" viewBox="0 0 70 70">
   <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove'}</title>
-  <desc>Generated: ${new Date().toISOString()} | Vector output from DrawingRecorder${mode === 'vgroove' ? ` | Bit Angle: ${document.querySelector('.bit-angle-btn.active')?.dataset.angle || 45}°` : ''}</desc>
+  <desc>Generated: ${new Date().toISOString()} | Vector output from DrawingRecorder${mode === 'vgroove' ? (() => {
+    const cfg = document.querySelector('.bit-config-tab.active')?.dataset.config || 'basic';
+    const inp = gatherInputs();
+    if (cfg === 'basic') return ` | Bit: ${inp.bitAngles.primary}°`;
+    if (cfg === 'dual') return ` | Dual Bit: ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}°`;
+    return ` | Triple Bit: ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}°/${inp.bitAngles.detail}°`;
+  })() : ''}</desc>
 ${elements}
   <!-- 木目グレイン（余白含む全面） -->
   <g id="grain" opacity="0.5">
@@ -1784,14 +2041,19 @@ function exportPNG(mode) {
 function exportDXF() {
   const paths = lastRecordedPaths.vgroove || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
-  const bitAngleEl = document.querySelector('.bit-angle-btn.active');
-  const bitAngle = bitAngleEl ? parseInt(bitAngleEl.dataset.angle) : 45;
+  const inp = gatherInputs();
 
   let dxf = '';
-  // DXF Header（ビット角度をコメントとして記録）
+  // DXF Header（ビット構成をコメントとして記録）
   dxf += '0\nSECTION\n2\nHEADER\n';
   dxf += '9\n$INSUNITS\n70\n4\n';  // mm単位
-  dxf += '999\nV-Groove Bit Angle: ' + bitAngle + ' degrees\n';
+  if (inp.bitConfig === 'basic') {
+    dxf += '999\nV-Groove Bit: ' + inp.bitAngles.primary + ' degrees (Basic)\n';
+  } else if (inp.bitConfig === 'dual') {
+    dxf += '999\nV-Groove Dual Bit: Primary=' + inp.bitAngles.primary + ' Secondary=' + inp.bitAngles.secondary + ' degrees\n';
+  } else {
+    dxf += '999\nV-Groove Triple Bit: Primary=' + inp.bitAngles.primary + ' Secondary=' + inp.bitAngles.secondary + ' Detail=' + inp.bitAngles.detail + ' degrees\n';
+  }
   dxf += '0\nENDSEC\n';
   // Tables (最小限)
   dxf += '0\nSECTION\n2\nTABLES\n';
@@ -1886,10 +2148,45 @@ function setWeather(el) {
   debouncedRender();
 }
 
-function setBitAngle(el) {
-  document.querySelectorAll('.bit-angle-btn').forEach(b => b.classList.remove('active'));
+// V溝ビット構成の切替（Basic/Dual/Triple）
+function setBitConfig(el) {
+  document.querySelectorAll('.bit-config-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const config = el.dataset.config;
+  // パネル表示切替
+  document.getElementById('bit-basic-panel').style.display = config === 'basic' ? '' : 'none';
+  document.getElementById('bit-dual-panel').style.display = config === 'dual' ? '' : 'none';
+  document.getElementById('bit-triple-panel').style.display = config === 'triple' ? '' : 'none';
+  updateBitCostBadge(config);
+  debouncedRender();
+}
+
+// V溝ビット角度の選択（レイヤー別）
+function setBitAngle(el, layer) {
+  // 同じレイヤー内のボタンだけをリセット
+  const panel = el.closest('.bit-layer') || el.closest('#bit-basic-panel');
+  if (panel) {
+    panel.querySelectorAll('.bit-angle-btn').forEach(b => b.classList.remove('active'));
+  }
   el.classList.add('active');
   debouncedRender();
+}
+
+// コスト見積もりバッジの更新
+// NC加工費: ¥5,000-8,000/h = ¥83-133/min、工具交換1回≈1分
+function updateBitCostBadge(config) {
+  const badge = document.getElementById('bit-cost-badge');
+  const costVal = document.getElementById('bit-cost-val');
+  if (!badge || !costVal) return;
+  const ncRatePerMin = 108; // ¥6,500/h の中央値 → ¥108/min
+  let toolChanges = 0;
+  if (config === 'dual') toolChanges = 1;
+  else if (config === 'triple') toolChanges = 2;
+  const addMinutes = toolChanges * 1; // 1分/回
+  const addCost = addMinutes * ncRatePerMin;
+  badge.querySelector('span:first-child').textContent =
+    `工具交換: ${toolChanges}回 / 追加時間: ${addMinutes}分`;
+  costVal.textContent = addCost > 0 ? `+¥${addCost}` : '+¥0';
 }
 
 // Debounced render for smooth interaction
