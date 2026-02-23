@@ -2045,12 +2045,17 @@ function exportSVG(mode) {
 
   let bodyContent = '';
 
+  // レーザー加工機はSVG opacityを無視し、すべてのパスを同じ深さで彫る
+  // opacity が低い副アルゴリズムの線を除外（閾値: 0.3）
+  const MIN_OPACITY_FOR_EXPORT = 0.3;
+
   if (mode === 'vgroove') {
     // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
     // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
     const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
 
     for (const p of paths) {
+      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
       const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer]);
       if (!svgEl) continue;
       const layerName = p.layer || 'default';
@@ -2078,6 +2083,7 @@ function exportSVG(mode) {
     // レーザーモード: 単一レイヤー（加工パスのみ）
     let patternElements = '';
     for (const p of paths) {
+      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
       const svgEl = pathToSVG(p, pxToMm);
       if (!svgEl) continue;
       patternElements += '    ' + svgEl + '\n';
@@ -2210,7 +2216,9 @@ function exportDXF() {
   // パスデータをDXFエンティティに変換（ビット角度→DXFレイヤー）
   const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
 
+  const MIN_OPACITY_DXF = 0.3;  // SVG同様、低opacityパスを除外
   for (const p of paths) {
+    if (p.globalAlpha < MIN_OPACITY_DXF) continue;
     const layer = DXF_LAYER_MAP[p.layer] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
