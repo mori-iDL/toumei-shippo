@@ -689,14 +689,6 @@ canvas.vgroove-canvas {
     </div>
 
     <div class="field">
-      <label>木目の方向</label>
-      <div class="range-row">
-        <input type="range" id="grain-angle" min="0" max="90" value="5" step="1">
-        <span class="range-val" id="grain-val">5°</span>
-      </div>
-    </div>
-
-    <div class="field">
       <label>V溝ビット構成 <span style="font-size:9px;color:var(--text-dim)">(深さ2.5mm固定)</span></label>
       <div class="bit-config-tabs">
         <div class="bit-config-tab active" data-config="single" onclick="setBitConfig(this)">
@@ -869,6 +861,7 @@ class DrawingRecorder {
     this._ctx = ctx;           // 実際のCanvasContext
     this._paths = [];          // 記録されたパス群
     this._currentPath = null;  // 現在構築中のパス
+    this._layer = null;        // 現在のレイヤー名（SVG出力時のグループ分け用）
     // Canvasの状態をプロキシ
     this.lineWidth = ctx.lineWidth;
     this.strokeStyle = ctx.strokeStyle;
@@ -876,6 +869,10 @@ class DrawingRecorder {
     this.globalAlpha = ctx.globalAlpha;
     this.globalCompositeOperation = ctx.globalCompositeOperation;
   }
+
+  // --- レイヤー管理（SVG/DXF出力でのグループ分け用） ---
+  setLayer(name) { this._layer = name; }
+  getLayer() { return this._layer; }
 
   // --- 状態の同期 ---
   _syncState() {
@@ -900,7 +897,7 @@ class DrawingRecorder {
     this._ctx.beginPath();
     this._currentPath = { segments: [], lineWidth: this.lineWidth,
       strokeStyle: this.strokeStyle, fillStyle: this.fillStyle,
-      globalAlpha: this.globalAlpha };
+      globalAlpha: this.globalAlpha, layer: this._layer };
   }
 
   moveTo(x, y) { this._ctx.moveTo(x, y);
@@ -945,7 +942,7 @@ class DrawingRecorder {
     this._syncState();
     this._ctx.fillRect(x, y, w, h);
     this._paths.push({ type: 'fillRect', x, y, w, h,
-      fillStyle: this.fillStyle, globalAlpha: this.globalAlpha });
+      fillStyle: this.fillStyle, globalAlpha: this.globalAlpha, layer: this._layer });
   }
 
   // --- クリッピング（記録はスキップ、実Canvasにのみ適用） ---
@@ -1660,7 +1657,7 @@ function gatherInputs() {
   const weatherEl = document.querySelector('.weather-btn.active');
   const weather = weatherEl ? weatherEl.dataset.weather : 'sunny';
   const species = document.getElementById('species').value;
-  const grainAngle = parseInt(document.getElementById('grain-angle').value) || 0;
+  const grainAngle = 0; // 木目オーバーレイは削除済み — 互換性のため残す
   // V溝ビット構成の取得
   const bitConfigEl = document.querySelector('.bit-config-tab.active');
   const bitConfig = bitConfigEl ? bitConfigEl.dataset.config : 'single';
@@ -1825,9 +1822,6 @@ function render() {
   lctx.strokeStyle = '#2c261e';
   lctx.fillStyle = '#2c261e';
 
-  // Draw grain background (余白にも木目を描画 — 木の板としての佇まい)
-  drawGrainOverlay(lctx, inp.grainAngle, inp.wood, 'laser');
-
   // パターン描画は64mm角の有効エリア内にクリッピング
   lctx.save();
   lctx.beginPath();
@@ -1880,9 +1874,6 @@ function render() {
   vctx.strokeStyle = '#3c3223';
   vctx.fillStyle = '#3c3223';
 
-  // 木目は余白にも描画
-  drawGrainOverlay(vctx, inp.grainAngle, inp.wood, 'vgroove');
-
   // パターン描画は64mm角にクリッピング
   vctx.save();
   vctx.beginPath();
@@ -1891,6 +1882,7 @@ function render() {
 
   try {
     // プライマリアルゴリズム — params（primaryビット角度）で描画
+    vctx.setLayer(inp.bitAngles.primary + 'deg');
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
       vctx.save();
@@ -1907,6 +1899,7 @@ function render() {
     // セカンダリアルゴリズム — paramsSecondary（secondaryビット角度）で描画
     // V溝NCではセカンダリは物理的に別ビットで彫る独立パス — レーザーより強い存在感
     // Dual/Triple時: ビット角度の違いが構造的差異として現れるよう、α値の下限を確保
+    vctx.setLayer(inp.bitAngles.secondary + 'deg');
     const secondaryAlphaV = Math.max(0.65, 1 - inp.blend);
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
@@ -1928,6 +1921,7 @@ function render() {
       // ディテールレイヤー: 30°ビットによるクロスハッチング
       // NC加工で30°の細いビットが斜めに走る仕上げ彫りを表現
       // キャンバス全体をカバーする破線の斜線群 — 点描では面積が足りず差異が出ない
+      vctx.setLayer('30deg');
       vctx.save();
       // 30°ビットの仕上げ彫り = 既存パターン表面を横切る浅い溝
       // 物理的には木肌の地色が見える = 明るい色のクロスハッチング
@@ -2003,7 +1997,7 @@ function updateStory(inp) {
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
     体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
-    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整し、木目方向 ${inp.grainAngle}° が背景のテクスチャとして息づいています。${(() => {
+    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
       const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
       if (inp.bitConfig === 'single') {
         return `V溝加工は ${inp.bitAngles.primary}° ビット（溝幅${gwMm(inp.bitAngles.primary)}mm）で彫り込みます。深さ${VGROOVE.depth}mm一定、角度が線の太さを決めます。`;
@@ -2018,63 +2012,88 @@ function updateStory(inp) {
 }
 
 // --- Export functions ---
+// V溝NCのSVGレイヤー色 — NC加工時にビット角度を視覚的に識別するため
+// 60°=赤（荒彫り・太溝）, 45°=緑（中仕上げ）, 30°=青（仕上げ・細溝）
+const SVG_LAYER_COLORS = {
+  '60deg': '#e74c3c',
+  '45deg': '#27ae60',
+  '30deg': '#2980b9',
+};
+
 function exportSVG(mode) {
   const paths = lastRecordedPaths[mode] || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
 
-  let elements = '';
+  // クリッピング定義
+  let defs = `  <defs>\n`;
+  defs += `    <clipPath id="pattern-clip">\n`;
+  defs += `      <rect x="${(MARGIN_PX * pxToMm).toFixed(1)}" y="${(MARGIN_PX * pxToMm).toFixed(1)}" `;
+  defs += `width="${(PATTERN_SIZE * pxToMm).toFixed(1)}" height="${(PATTERN_SIZE * pxToMm).toFixed(1)}"/>\n`;
+  defs += `    </clipPath>\n`;
+  defs += `  </defs>\n`;
 
-  // クリッピング定義（パターンは64mm角エリア内）
-  elements += `  <defs>\n`;
-  elements += `    <clipPath id="pattern-clip">\n`;
-  elements += `      <rect x="${MARGIN_PX * pxToMm}" y="${MARGIN_PX * pxToMm}" `;
-  elements += `width="${PATTERN_SIZE * pxToMm}" height="${PATTERN_SIZE * pxToMm}"/>\n`;
-  elements += `    </clipPath>\n`;
-  elements += `  </defs>\n`;
+  // desc情報（V溝時のみビット構成を記載）
+  let descExtra = '';
+  if (mode === 'vgroove') {
+    const inp = gatherInputs();
+    const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
+    if (inp.bitConfig === 'single') descExtra = ` | Single ${inp.bitAngles.primary}° (groove:${gwMm(inp.bitAngles.primary)}mm, depth:${VGROOVE.depth}mm)`;
+    else if (inp.bitConfig === 'dual') descExtra = ` | Dual ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}° (groove:${gwMm(inp.bitAngles.primary)}/${gwMm(inp.bitAngles.secondary)}mm, depth:${VGROOVE.depth}mm)`;
+    else descExtra = ` | Triple 60°/45°/30° (groove:${gwMm(60)}/${gwMm(45)}/${gwMm(30)}mm, depth:${VGROOVE.depth}mm)`;
+  }
 
-  // 木目グレインは余白にも描画（クリッピング外）
-  // パターンはクリッピング内
-  let grainElements = '';
-  let patternElements = '';
-  let inGrain = true;  // 最初のパスは木目（drawGrainOverlayが先に呼ばれる）
+  let bodyContent = '';
 
-  for (const p of paths) {
-    const svgEl = pathToSVG(p, pxToMm);
-    if (!svgEl) continue;
+  if (mode === 'vgroove') {
+    // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
+    // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
+    const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
 
-    // 木目グレインは直線のみで構成されているので、パターン開始を検出
-    // （beginPathでCIRCLEが来たら or fillRectが来たら パターン開始）
-    if (inGrain && (p.type === 'fillRect' ||
-        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
-      inGrain = false;
+    for (const p of paths) {
+      const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer]);
+      if (!svgEl) continue;
+      const layerName = p.layer || 'default';
+      if (!layerMap[layerName]) layerMap[layerName] = [];
+      layerMap[layerName].push(svgEl);
     }
 
-    if (inGrain) {
-      grainElements += '    ' + svgEl + '\n';
-    } else {
+    // レイヤー順: 60° → 45° → 30°（太い溝から細い溝の順）
+    const layerOrder = ['60deg', '45deg', '30deg', 'default'];
+    for (const layerName of layerOrder) {
+      const elements = layerMap[layerName];
+      if (!elements || elements.length === 0) continue;
+      const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
+      const angle = layerName.replace('deg', '');
+      const gwMm = a => VGROOVE.bits[parseInt(a)] ? VGROOVE.bits[parseInt(a)].grooveWidthMm.toFixed(2) : '?';
+      const label = layerName === 'default' ? 'other' : `V-bit ${angle}° groove=${gwMm(angle)}mm`;
+      bodyContent += `\n  <!-- ${label} -->\n`;
+      bodyContent += `  <g id="${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      for (const el of elements) {
+        bodyContent += `    ${el}\n`;
+      }
+      bodyContent += `  </g>\n`;
+    }
+  } else {
+    // レーザーモード: 単一レイヤー（加工パスのみ）
+    let patternElements = '';
+    for (const p of paths) {
+      const svgEl = pathToSVG(p, pxToMm);
+      if (!svgEl) continue;
       patternElements += '    ' + svgEl + '\n';
     }
+    bodyContent = `\n  <!-- パターン（64mm角有効エリア内） -->\n`;
+    bodyContent += `  <g id="pattern" clip-path="url(#pattern-clip)">\n`;
+    bodyContent += patternElements;
+    bodyContent += `  </g>\n`;
   }
 
   const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
      width="70mm" height="70mm" viewBox="0 0 70 70">
-  <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove'}</title>
-  <desc>Generated: ${new Date().toISOString()} | Vector output from DrawingRecorder${mode === 'vgroove' ? (() => {
-    const inp = gatherInputs();
-    const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
-    if (inp.bitConfig === 'single') return ` | Single ${inp.bitAngles.primary}° (groove:${gwMm(inp.bitAngles.primary)}mm, depth:${VGROOVE.depth}mm)`;
-    if (inp.bitConfig === 'dual') return ` | Dual ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}° (groove:${gwMm(inp.bitAngles.primary)}/${gwMm(inp.bitAngles.secondary)}mm, depth:${VGROOVE.depth}mm)`;
-    return ` | Triple 60°/45°/30° (groove:${gwMm(60)}/${gwMm(45)}/${gwMm(30)}mm, depth:${VGROOVE.depth}mm)`;
-  })() : ''}</desc>
-${elements}
-  <!-- 木目グレイン（余白含む全面） -->
-  <g id="grain" opacity="0.5">
-${grainElements}  </g>
-
-  <!-- パターン（64mm角有効エリア内） -->
-  <g id="pattern" clip-path="url(#pattern-clip)">
-${patternElements}  </g>
+  <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove NC'}</title>
+  <desc>Generated: ${new Date().toISOString()} | Vector output${descExtra}</desc>
+${defs}${bodyContent}
 </svg>`;
 
   const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -2087,12 +2106,16 @@ ${patternElements}  </g>
 }
 
 // パスデータをSVG要素文字列に変換
-function pathToSVG(p, scale) {
+// colorOverride: レイヤー色でstroke/fillを上書き（V溝NCのビット角度別色分け）
+function pathToSVG(p, scale, colorOverride) {
+  const fillColor = colorOverride || p.fillStyle;
+  const strokeColor = colorOverride || p.strokeStyle;
+
   if (p.type === 'fillRect') {
     const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     return `<rect x="${(p.x * scale).toFixed(2)}" y="${(p.y * scale).toFixed(2)}" ` +
       `width="${(p.w * scale).toFixed(2)}" height="${(p.h * scale).toFixed(2)}" ` +
-      `fill="${p.fillStyle}"${opacity}/>`;
+      `fill="${fillColor}"${opacity}/>`;
   }
 
   if (!p.segments || p.segments.length === 0) return null;
@@ -2104,10 +2127,10 @@ function pathToSVG(p, scale) {
     const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     if (p.type === 'fill') {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
-        `r="${(c.r * scale).toFixed(2)}" fill="${p.fillStyle}"${opacity}/>`;
+        `r="${(c.r * scale).toFixed(2)}" fill="${fillColor}"${opacity}/>`;
     } else {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
-        `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${p.strokeStyle}" ` +
+        `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${strokeColor}" ` +
         `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
     }
   }
@@ -2130,9 +2153,9 @@ function pathToSVG(p, scale) {
 
   const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
   if (p.type === 'fill') {
-    return `<path d="${d.trim()}" fill="${p.fillStyle}"${opacity}/>`;
+    return `<path d="${d.trim()}" fill="${fillColor}"${opacity}/>`;
   } else {
-    return `<path d="${d.trim()}" fill="none" stroke="${p.strokeStyle}" ` +
+    return `<path d="${d.trim()}" fill="none" stroke="${strokeColor}" ` +
       `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
   }
 }
@@ -2164,12 +2187,14 @@ function exportDXF() {
     dxf += '999\nV-Groove Triple: 60deg(' + gwMm(60) + 'mm) 45deg(' + gwMm(45) + 'mm) 30deg(' + gwMm(30) + 'mm)\n';
   }
   dxf += '0\nENDSEC\n';
-  // Tables (最小限)
+  // Tables — ビット角度ごとにレイヤー定義
+  // DXF色番号: 1=赤(60°), 3=緑(45°), 5=青(30°), 7=白(BORDER)
   dxf += '0\nSECTION\n2\nTABLES\n';
-  dxf += '0\nTABLE\n2\nLAYER\n70\n3\n';
-  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';       // 白
-  dxf += '0\nLAYER\n2\nGRAIN\n70\n0\n62\n8\n';        // グレー
-  dxf += '0\nLAYER\n2\nPATTERN\n70\n0\n62\n1\n';      // 赤（加工パス）
+  dxf += '0\nTABLE\n2\nLAYER\n70\n4\n';
+  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';      // 白 — 外枠・有効エリア枠
+  dxf += '0\nLAYER\n2\nBIT_60DEG\n70\n0\n62\n1\n';   // 赤 — 60°ビット（荒彫り）
+  dxf += '0\nLAYER\n2\nBIT_45DEG\n70\n0\n62\n3\n';   // 緑 — 45°ビット（中仕上げ）
+  dxf += '0\nLAYER\n2\nBIT_30DEG\n70\n0\n62\n5\n';   // 青 — 30°ビット（仕上げ）
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   // Entities
   dxf += '0\nSECTION\n2\nENTITIES\n';
@@ -2181,23 +2206,16 @@ function exportDXF() {
   const e = m + PATTERN_SIZE * pxToMm;
   dxf += dxfPolyline([[m,m],[e,m],[e,e],[m,e]], true, 'BORDER');
 
-  // パスデータをDXFエンティティに変換
-  let isGrain = true;
+  // パスデータをDXFエンティティに変換（ビット角度→DXFレイヤー）
+  const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
+
   for (const p of paths) {
-    // 木目→パターンの境界検出（SVGと同じロジック）
-    if (isGrain && (p.type === 'fillRect' ||
-        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
-      isGrain = false;
-    }
-    const layer = isGrain ? 'GRAIN' : 'PATTERN';
+    const layer = DXF_LAYER_MAP[p.layer] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
-      // fillRectは小さい矩形→DXFではPOINTまたはスキップ
-      // Reaction-Diffusionの微小矩形はDXFでは点として表現
       const cx = (p.x + p.w / 2) * pxToMm;
       const cy = 70 - (p.y + p.h / 2) * pxToMm; // DXFはY軸反転
       if (p.w * pxToMm > 0.3) {
-        // 大きめの矩形はそのまま
         const x1 = p.x * pxToMm, y1 = 70 - p.y * pxToMm;
         const x2 = (p.x + p.w) * pxToMm, y2 = 70 - (p.y + p.h) * pxToMm;
         dxf += dxfPolyline([[x1,y1],[x2,y1],[x2,y2],[x1,y2]], true, layer);
@@ -2321,7 +2339,6 @@ function debouncedRender() {
 function updateDisplayValues() {
   document.getElementById('weight-val').textContent = document.getElementById('weight').value;
   document.getElementById('height-val').textContent = parseFloat(document.getElementById('height').value).toFixed(1);
-  document.getElementById('grain-val').textContent = document.getElementById('grain-angle').value + '°';
 }
 
 // --- 名前入力バリデーション ---
