@@ -2013,12 +2013,13 @@ function updateStory(inp) {
 }
 
 // --- Export functions ---
-// V溝NCのSVGレイヤー色 — NC加工時にビット角度を視覚的に識別するため
+// V溝NCのSVGレイヤー色 — NC/レーザー加工ソフトでの確実な識別のため純色を使用
 // 60°=赤（荒彫り・太溝）, 45°=緑（中仕上げ）, 30°=青（仕上げ・細溝）
+// 注: xTool P2S等はSVG opacityを正しく処理しないため、必ず純色で出力する
 const SVG_LAYER_COLORS = {
-  '60deg': '#e74c3c',
-  '45deg': '#27ae60',
-  '30deg': '#2980b9',
+  '60deg': '#FF0000',
+  '45deg': '#00FF00',
+  '30deg': '#0000FF',
 };
 
 function exportSVG(mode) {
@@ -2052,11 +2053,20 @@ function exportSVG(mode) {
   if (mode === 'vgroove') {
     // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
     // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
+    //
+    // V溝NC固有のフィルタ:
+    // - opacity属性を出力しない（物理的な切削にはopacity概念がない）
+    // - stroke-width が細すぎるパスを除外（副アルゴリズムの細線はNC加工に不適）
+    //   閾値: 0.3mm（pxToMm換算で lineWidth >= 1.5px 相当）
+    const MIN_STROKE_WIDTH_MM = 0.3;
     const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
 
     for (const p of paths) {
       if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
-      const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer]);
+      // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
+      const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
+      if (strokeWidthMm < MIN_STROKE_WIDTH_MM) continue;
+      const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer], true);  // suppressOpacity=true
       if (!svgEl) continue;
       const layerName = p.layer || 'default';
       if (!layerMap[layerName]) layerMap[layerName] = [];
@@ -2114,15 +2124,16 @@ ${defs}${bodyContent}
 
 // パスデータをSVG要素文字列に変換
 // colorOverride: レイヤー色でstroke/fillを上書き（V溝NCのビット角度別色分け）
-function pathToSVG(p, scale, colorOverride) {
+// suppressOpacity: trueならopacity属性を出力しない（V溝NC用 — 物理切削にはopacity概念がない）
+function pathToSVG(p, scale, colorOverride, suppressOpacity) {
   const fillColor = colorOverride || p.fillStyle;
   const strokeColor = colorOverride || p.strokeStyle;
+  const opacityAttr = (!suppressOpacity && p.globalAlpha < 1) ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
 
   if (p.type === 'fillRect') {
-    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     return `<rect x="${(p.x * scale).toFixed(2)}" y="${(p.y * scale).toFixed(2)}" ` +
       `width="${(p.w * scale).toFixed(2)}" height="${(p.h * scale).toFixed(2)}" ` +
-      `fill="${fillColor}"${opacity}/>`;
+      `fill="${fillColor}"${opacityAttr}/>`;
   }
 
   if (!p.segments || p.segments.length === 0) return null;
@@ -2131,14 +2142,13 @@ function pathToSVG(p, scale, colorOverride) {
   const circleSegs = p.segments.filter(s => s.cmd === 'CIRCLE');
   if (circleSegs.length === 1 && p.segments.length === 1) {
     const c = circleSegs[0];
-    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     if (p.type === 'fill') {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
-        `r="${(c.r * scale).toFixed(2)}" fill="${fillColor}"${opacity}/>`;
+        `r="${(c.r * scale).toFixed(2)}" fill="${fillColor}"${opacityAttr}/>`;
     } else {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
         `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${strokeColor}" ` +
-        `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+        `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacityAttr}/>`;
     }
   }
 
@@ -2158,12 +2168,11 @@ function pathToSVG(p, scale, colorOverride) {
 
   if (!d.trim()) return null;
 
-  const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
   if (p.type === 'fill') {
-    return `<path d="${d.trim()}" fill="${fillColor}"${opacity}/>`;
+    return `<path d="${d.trim()}" fill="${fillColor}"${opacityAttr}/>`;
   } else {
     return `<path d="${d.trim()}" fill="none" stroke="${strokeColor}" ` +
-      `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+      `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacityAttr}/>`;
   }
 }
 
@@ -2217,8 +2226,12 @@ function exportDXF() {
   const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
 
   const MIN_OPACITY_DXF = 0.3;  // SVG同様、低opacityパスを除外
+  const MIN_STROKE_WIDTH_DXF = 0.3;  // SVG同様、細すぎるパスを除外（mm単位）
   for (const p of paths) {
     if (p.globalAlpha < MIN_OPACITY_DXF) continue;
+    // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
+    const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
+    if (strokeWidthMm < MIN_STROKE_WIDTH_DXF) continue;
     const layer = DXF_LAYER_MAP[p.layer] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
