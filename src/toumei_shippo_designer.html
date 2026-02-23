@@ -1923,9 +1923,10 @@ function render() {
       // キャンバス全体をカバーする破線の斜線群 — 点描では面積が足りず差異が出ない
       vctx.setLayer('30deg');
       vctx.save();
-      // 30°ビットの仕上げ彫り = 既存パターン表面を横切る浅い溝
-      // 物理的には木肌の地色が見える = 明るい色のクロスハッチング
-      vctx.strokeStyle = '#e8dcc8'; // V溝背景色（木肌色）= 彫り跡
+      // 30°ビットの仕上げ彫り = 細く浅い溝
+      // 他のビットと同じ暗い色で描画（溝は木を彫るので暗く見える）
+      // 細い線＋破線で60°/45°との差異化
+      vctx.strokeStyle = '#3c3223';
 
       const detailRng = mulberry32(paramsDetail.seed);
       const nw = Math.max(-1, Math.min(1, (params.weight - 3000) / 2000));
