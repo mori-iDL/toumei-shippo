@@ -652,6 +652,13 @@ const CENTER = SCALE / 2;
 const MARGIN_PX = 15;                          // 3mm × 5px/mm — 加工安全マージン
 const PATTERN_SIZE = SCALE - MARGIN_PX * 2;    // 320px = 64mm — 有効描画エリア
 
+// --- 体重・身長の質的正規化 ---
+// 日本人新生児平均を中心(0)に、-1〜+1の範囲で正規化
+// 体重: 軽い(-1)=繊細  →  重い(+1)=力強い
+// 身長: 短い(-1)=凝縮  →  長い(+1)=伸びやか
+function normalizeWeight(w) { return Math.max(-1, Math.min(1, (w - 3000) / 2000)); }
+function normalizeHeight(h) { return Math.max(-1, Math.min(1, (h - 49) / 11)); }
+
 // --- Seed generation from inputs ---
 function hashString(str) {
   let h = 0;
@@ -855,36 +862,41 @@ function drawFibonacci(ctx, params, mode) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const c = CENTER;
-  
-  const goldenAngle = 137.508 * Math.PI / 180;
-  const numPoints = 40 + Math.floor(weight / 25);  // wider range: 40-192 (was 80-156)
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+
+  // 螺旋角度: 身長が巻き密度にわずかに影響
+  const goldenAngle = 137.508 * Math.PI / 180 * (1 + nh * 0.02);
+  const numPoints = 40 + Math.floor(weight / 25);
   const maxR = s * 0.42;
-  const heightRatio = height / 50;
-  
+
   for (let i = 1; i < numPoints; i++) {
     const angle = i * goldenAngle + (weather.flowCurvature * 0.5);
-    const r = maxR * Math.sqrt(i / numPoints) * (0.8 + 0.4 * heightRatio);
+    // 身長: 短い→中心に凝縮、長い→外に展開（伸びやか）
+    const spreadFactor = 0.6 + 0.4 * (nh + 1);  // 0.2〜1.4
+    const r = maxR * Math.sqrt(i / numPoints) * spreadFactor;
     const nx = noise(i * 0.1, seed * 0.01) * weather.turbulence * 15;
     const ny = noise(seed * 0.01, i * 0.1) * weather.turbulence * 15;
     const x = c + r * Math.cos(angle) + nx;
     const y = c + r * Math.sin(angle) + ny;
-    
-    const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;  // wider range for weight influence
-    
+
+    // 体重: 軽い→小さなドット（繊細）、重い→大きなドット（力強い）
+    const dotSize = (0.5 + 4.5 * (nw + 1) / 2) * wood.lineWeight;
+
     if (mode === 'laser') {
       ctx.beginPath();
       ctx.arc(x, y, dotSize, 0, Math.PI * 2);
       ctx.fill();
-      // connecting spiral line
+      // 接続線: 体重で太さが変わる（重い→はっきり、軽い→ほぼ消える）
       if (i > 1) {
         const prevAngle = (i-1) * goldenAngle + (weather.flowCurvature * 0.5);
-        const prevR = maxR * Math.sqrt((i-1) / numPoints) * (0.8 + 0.4 * heightRatio);
+        const prevR = maxR * Math.sqrt((i-1) / numPoints) * spreadFactor;
         const px = c + prevR * Math.cos(prevAngle);
         const py = c + prevR * Math.sin(prevAngle);
         ctx.beginPath();
         ctx.moveTo(px, py);
         ctx.lineTo(x, y);
-        ctx.lineWidth = 0.5 * wood.lineWeight;
+        ctx.lineWidth = (0.2 + 0.6 * (nw + 1) / 2) * wood.lineWeight;
         ctx.stroke();
       }
     } else {
@@ -902,19 +914,25 @@ function drawVoronoi(ctx, params, mode) {
   const { seed, weight, height, weather, wood, grainAngle } = params;
   const rng = mulberry32(seed);
   const s = SCALE;
-  
-  const numCells = 8 + Math.floor(weight / 200);  // wider range: 8-27 (was 15-28)
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+
+  const numCells = 8 + Math.floor(weight / 200);
   const points = [];
-  
+
   for (let i = 0; i < numCells; i++) {
+    const rx = rng();
+    const ry = rng();
+    // 身長: 短い→中心寄り（凝縮）、長い→全面に展開（伸びやか）
+    const centerBias = 0.15 * (1 - (nh + 1) / 2);  // 短いほど中心バイアス
     points.push({
-      x: rng() * s,
-      y: rng() * s,
+      x: (rx * (1 - centerBias * 2) + centerBias) * s,
+      y: (ry * (1 - centerBias * 2) + centerBias) * s,
     });
   }
-  
-  // Simple voronoi via distance field
-  const res = 3;
+
+  // 体重: 重い→粗い解像度（力強い描画）、軽い→細かい（繊細）
+  const res = Math.max(2, Math.floor(3 + (1 - nw) * 1.5));
   for (let px = 0; px < s; px += res) {
     for (let py = 0; py < s; py += res) {
       let minD = Infinity, minD2 = Infinity;
@@ -923,10 +941,12 @@ function drawVoronoi(ctx, params, mode) {
         if (d < minD) { minD2 = minD; minD = d; }
         else if (d < minD2) { minD2 = d; }
       }
-      
+
       const edge = minD2 - minD;
-      const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing;
-      
+      // 体重: 重い→太いセル壁（力強い）、軽い→細いセル壁（繊細）
+      const wallFactor = 0.5 + (nw + 1) / 2 * 0.8;
+      const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing * wallFactor;
+
       if (edge < threshold) {
         if (mode === 'laser') {
           const alpha = 1 - edge / threshold;
@@ -946,9 +966,11 @@ function drawVoronoi(ctx, params, mode) {
 function drawReactionDiffusion(ctx, params, mode) {
   const { seed, weight, height, weather, wood } = params;
   const rng = mulberry32(seed);
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
 
-  // Use 1D Float32Arrays for performance (2D indexing via y*w+x)
-  const gridSize = 100;
+  // 身長: 長い→高解像度グリッド（伸びやかな曲線）、短い→低解像度（凝縮した塊）
+  const gridSize = Math.floor(80 + 30 * (nh + 1) / 2);
   const cellSize = SCALE / gridSize;
   const n = gridSize * gridSize;
   let gridA = new Float32Array(n).fill(1);
@@ -959,10 +981,11 @@ function drawReactionDiffusion(ctx, params, mode) {
   for (let s = 0; s < spots; s++) {
     const cx = Math.floor(rng() * (gridSize - 10) + 5);
     const cy = Math.floor(rng() * (gridSize - 10) + 5);
-    const r = 2 + Math.floor(rng() * 3);
-    for (let dx = -r; dx <= r; dx++) {
-      for (let dy = -r; dy <= r; dy++) {
-        if (dx*dx + dy*dy <= r*r) {
+    // 体重: 重い→大きなシードスポット（力強い構造）、軽い→小さなシード（繊細）
+    const spotR = 2 + Math.floor(rng() * 3) + Math.max(0, Math.floor((nw + 1) * 1.5));
+    for (let dx = -spotR; dx <= spotR; dx++) {
+      for (let dy = -spotR; dy <= spotR; dy++) {
+        if (dx*dx + dy*dy <= spotR*spotR) {
           const nx = cx+dx, ny = cy+dy;
           if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize) {
             gridB[ny*gridSize+nx] = 1;
@@ -977,8 +1000,9 @@ function drawReactionDiffusion(ctx, params, mode) {
   // Weather drives pattern type: calm→spots, moderate→stripes, turbulent→coral
   const baseF = 0.030 + weather.turbulence * 0.028;
   const baseK = 0.057 + weather.flowCurvature * 0.010;
-  const f = baseF + (height / 50 - 1) * 0.003;
-  const k = baseK + (height / 50 - 1) * 0.002;
+  // 身長: f/kへの影響範囲を拡大（パターン形状が変わる）
+  const f = baseF + nh * 0.008;
+  const k = baseK + nh * 0.005;
   const iterations = 3000;
 
   const gs = gridSize;
@@ -1007,14 +1031,16 @@ function drawReactionDiffusion(ctx, params, mode) {
         if (bVal > 0.1) {
           const alpha = Math.min(bVal * 2.5, 1.0);
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
-          const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
+          // 体重: 重い→大きな描画粒（力強い）、軽い→小さな描画粒（繊細）
+          const szFactor = 0.4 + bVal * (0.5 + 0.6 * (nw + 1) / 2);
+          const sz = cellSize * szFactor * wood.lineWeight;
           ctx.fillRect(x*cellSize, y*cellSize, sz, sz);
         }
       } else {
         if (bVal > 0.08) {
           const depth = Math.min(bVal * 2, 1);
           ctx.fillStyle = `rgba(60,50,35,${depth * 0.8})`;
-          const w2 = cellSize * (0.5 + depth * wood.lineWeight);
+          const w2 = cellSize * (0.3 + depth * wood.lineWeight * (0.8 + 0.4 * (nw + 1) / 2));
           ctx.fillRect(x*cellSize, y*cellSize, w2, w2);
         }
       }
@@ -1027,16 +1053,22 @@ function drawFractal(ctx, params, mode) {
   const rng = mulberry32(seed);
   const s = SCALE;
   const c = CENTER;
-  
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+
   function branch(x, y, angle, length, depth, maxDepth) {
     if (depth > maxDepth || length < 3) return;
-    
+
     const wobble = (rng() - 0.5) * weather.turbulence * 0.4;
-    const endX = x + length * Math.cos(angle + wobble);
-    const endY = y + length * Math.sin(angle + wobble);
-    
-    const lw = (maxDepth - depth + 1) * wood.lineWeight * 0.8;
-    
+    // 身長: 長い→縦方向バイアス（まっすぐ伸びる）、短い→放射状に広がる
+    const verticalBias = nh * 0.15 * Math.cos(angle + Math.PI/2);
+    const endX = x + length * Math.cos(angle + wobble + verticalBias);
+    const endY = y + length * Math.sin(angle + wobble + verticalBias);
+
+    // 体重: 重い→太い枝（力強い幹）、軽い→細い枝（繊細な枝ぶり）
+    const lwFactor = 0.4 + 0.8 * (nw + 1) / 2;
+    const lw = (maxDepth - depth + 1) * wood.lineWeight * lwFactor;
+
     if (mode === 'laser') {
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -1044,31 +1076,31 @@ function drawFractal(ctx, params, mode) {
       ctx.lineWidth = lw;
       ctx.stroke();
     } else {
-      // V-groove: thicker lines for deeper cuts
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
       ctx.lineWidth = lw * 1.5;
       ctx.stroke();
     }
-    
+
     const spread = 0.35 + (rng() * 0.2) + weather.flowCurvature * 0.15;
-    const shrink = 0.6 + rng() * 0.15;
+    // 身長: 長い→枝がゆっくり縮む（長い枝に）、短い→急速に縮む
+    const shrink = 0.55 + 0.1 * (nh + 1) / 2 + rng() * 0.15;
     const branches = 2 + (rng() < 0.3 ? 1 : 0);
-    
+
     for (let b = 0; b < branches; b++) {
       const bAngle = angle + (b - (branches-1)/2) * spread;
       branch(endX, endY, bAngle, length * shrink, depth + 1, maxDepth);
     }
   }
-  
+
   const maxDepth = 5 + Math.floor(height / 15);
   const startLen = s * 0.18 * (weight / 3000);
-  
+
   // Main trunk from bottom center
   ctx.strokeStyle = mode === 'laser' ? '#2c261e' : '#3c3223';
   branch(c, s * 0.85, -Math.PI/2, startLen, 0, maxDepth);
-  
+
   // Secondary branches from sides
   if (weather.turbulence > 0.3) {
     branch(c * 0.3, s * 0.7, -Math.PI/3, startLen * 0.5, 2, maxDepth);
@@ -1079,73 +1111,100 @@ function drawFractal(ctx, params, mode) {
 // --- SECONDARY ALGORITHMS (texture overlay) ---
 
 function drawFlowField(ctx, params, mode, alpha) {
-  const { seed, weight, weather, wood } = params;
+  const { seed, weight, height, weather, wood } = params;
   const rng = mulberry32(seed + 1000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
   const freq = 0.008 / wood.lineSpacing;
-  const lines = Math.floor((25 + weight / 150) * alpha);  // weight affects line count
-  
-  ctx.globalAlpha = alpha * 0.7;  // was 0.4 — stronger secondary presence
+  const lines = Math.floor((25 + weight / 150) * alpha);
+
+  ctx.globalAlpha = alpha * 0.7;
   for (let l = 0; l < lines; l++) {
     let x = rng() * s, y = rng() * s;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    const steps = 30 + Math.floor(weather.flowCurvature * 40);
+    // 身長: 長い→長い軌跡（伸びやか）、短い→短い軌跡（凝縮）
+    const steps = Math.floor(20 + 30 * (nh + 1) / 2 + weather.flowCurvature * 40);
+    // 体重: 重い→大きなステップ（力強いストローク）、軽い→小さなステップ（繊細な線）
+    const stepSize = 2 + (nw + 1) * 1.5;
     for (let st = 0; st < steps; st++) {
       const angle = noise(x * freq, y * freq) * Math.PI * 2 * (1 + weather.turbulence);
-      x += Math.cos(angle) * 3;
-      y += Math.sin(angle) * 3;
+      x += Math.cos(angle) * stepSize;
+      y += Math.sin(angle) * stepSize;
       if (x < 0 || x > s || y < 0 || y > s) break;
       ctx.lineTo(x, y);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.5 : 1.2) * wood.lineWeight;
+    // 体重: 重い→太い線、軽い→細い線
+    const baseLW = mode === 'laser' ? 0.3 : 0.8;
+    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.6) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawPerlinTexture(ctx, params, mode, alpha) {
-  const { seed, wood } = params;
+  const { seed, weight, height, wood } = params;
   const rng = mulberry32(seed + 2000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
-  const spacing = 6 * wood.lineSpacing;
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // 身長: 短い→密なライン間隔、長い→疎なライン間隔
+  const spacing = (4 + 4 * (nh + 1) / 2) * wood.lineSpacing;
+  // 身長: 長い→ラインに微小な傾き（伸びやかさの表現）
+  const tiltAngle = nh * 0.15;  // ラジアン（約±8.6度）
 
-  ctx.globalAlpha = alpha * 0.6;  // was 0.3 — stronger secondary presence
+  ctx.globalAlpha = alpha * 0.6;
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     for (let x = 0; x < s; x += 2) {
-      const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * 8;
-      ctx.lineTo(x, y + n);
+      // 体重: 重い→大きな揺れ幅（力強い）、軽い→小さな揺れ（繊細）
+      const amplitude = 4 + 8 * (nw + 1) / 2;
+      const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amplitude;
+      // 身長による傾き
+      const tiltOffset = x * Math.sin(tiltAngle);
+      ctx.lineTo(x, y + n + tiltOffset);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.3 : 0.8) * wood.lineWeight;
+    // 体重: 重い→太い線、軽い→細い線
+    const baseLW = mode === 'laser' ? 0.2 : 0.6;
+    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.4) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawSineInterference(ctx, params, mode, alpha) {
-  const { seed, weight, wood } = params;
+  const { seed, weight, height, wood } = params;
   const s = SCALE;
   const c = CENTER;
-  const freq1 = 0.03 + (weight / 3000) * 0.03;  // stronger weight influence
-  const freq2 = 0.05 + (seed % 100) / 3000;  // more seed-dependent variation
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  const freq1 = 0.03 + (weight / 3000) * 0.03;
+  const freq2 = 0.05 + (seed % 100) / 3000;
 
-  ctx.globalAlpha = alpha * 0.6;  // was 0.35 — stronger secondary presence
-  const spacing = 4 * wood.lineSpacing;
-  
+  ctx.globalAlpha = alpha * 0.6;
+  // 身長: 短い→密なライン間隔、長い→疎なライン間隔
+  const spacing = (3 + 3 * (nh + 1) / 2) * wood.lineSpacing;
+
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     for (let x = 0; x < s; x += 1) {
       const d = Math.hypot(x - c, y - c);
       const v = Math.sin(d * freq1) + Math.sin(x * freq2) * 0.5;
-      const ny = y + v * 6;
+      // 身長: 長い→縦方向の波成分を追加（伸びやかさ）
+      const verticalWave = Math.sin(y * freq2 * (1 + nh * 0.3)) * nh * 2;
+      // 体重: 重い→大きな振幅（力強いうねり）、軽い→小さな振幅（繊細な波）
+      const amplitude = 3 + 6 * (nw + 1) / 2;
+      const ny = y + v * amplitude + verticalWave;
       if (x === 0) ctx.moveTo(x, ny);
       else ctx.lineTo(x, ny);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.4 : 1.0) * wood.lineWeight;
+    // 体重: 重い→太い線、軽い→細い線
+    const baseLW = mode === 'laser' ? 0.25 : 0.7;
+    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.4) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1156,53 +1215,71 @@ function drawLissajous(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
 
-  ctx.globalAlpha = alpha * 0.6;  // was 0.35 — stronger secondary presence
+  ctx.globalAlpha = alpha * 0.6;
   const curves = 3 + Math.floor(rng() * 4);
-  
+
   for (let curve = 0; curve < curves; curve++) {
-    const a = 2 + Math.floor(rng() * 5);
+    const baseA = 2 + Math.floor(rng() * 5);
     const b = 3 + Math.floor(rng() * 5);
+    // 身長: 長い→a/b比を変えて縦長軌道、短い→正方向に近い軌道
+    const a = baseA + (nh > 0 ? Math.floor(nh * 2) : 0);
     const delta = rng() * Math.PI;
-    const radius = s * (0.15 + rng() * 0.25);
-    
+    // 体重: 重い→大きな曲線、軽い→小さな曲線
+    const radius = s * (0.1 + 0.05 * (nw + 1) / 2 + rng() * 0.25);
+    // 身長: 長い→Y方向に伸びやか、短い→凝縮
+    const yScale = 0.8 + 0.4 * (nh + 1) / 2;
+
     ctx.beginPath();
     for (let t = 0; t <= Math.PI * 2; t += 0.02) {
       const x = c + radius * Math.sin(a * t + delta);
-      const y = c + radius * Math.sin(b * t);
+      const y = c + radius * Math.sin(b * t) * yScale;
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.5 : 1.2) * wood.lineWeight;
+    // 体重: 重い→太い線、軽い→細い線
+    const baseLW = mode === 'laser' ? 0.3 : 0.8;
+    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.5) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawWaveFunction(ctx, params, mode, alpha) {
-  const { seed, wood } = params;
+  const { seed, weight, height, wood } = params;
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
+  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
+  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
 
-  ctx.globalAlpha = alpha * 0.55;  // was 0.3 — stronger secondary presence
+  ctx.globalAlpha = alpha * 0.55;
   const rings = 8 + Math.floor(rng() * 8);
-  
+
   for (let r = 1; r <= rings; r++) {
-    const radius = (s * 0.4 * r / rings);
+    // 身長: 長い→リング間隔が広い（伸びやか）、短い→密（凝縮）
+    const baseRadius = s * (0.25 + 0.2 * (nh + 1) / 2);
+    const radius = baseRadius * r / rings;
     const freq = 3 + Math.floor(rng() * 8);
-    const amp = 3 + rng() * 6;
-    
+    // 体重: 重い→大きな波形変位（力強い）、軽い→小さな波形（繊細）
+    const amp = (2 + rng() * 4) + 4 * (nw + 1) / 2;
+    // 身長: 長い→楕円（縦長）、短い→円に近い
+    const ellipseY = 0.8 + 0.4 * (nh + 1) / 2;
+
     ctx.beginPath();
     for (let a = 0; a <= Math.PI * 2; a += 0.03) {
       const wobble = Math.sin(a * freq) * amp;
       const x = c + (radius + wobble) * Math.cos(a);
-      const y = c + (radius + wobble) * Math.sin(a);
+      const y = c + (radius + wobble) * Math.sin(a) * ellipseY;
       if (a === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.lineWidth = (mode === 'laser' ? 0.4 : 1.0) * wood.lineWeight;
+    // 体重: 重い→太い線、軽い→細い線
+    const baseLW = mode === 'laser' ? 0.3 : 0.8;
+    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.3) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
