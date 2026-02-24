@@ -1,0 +1,612 @@
+<!--
+  Claude Code × Notion MCP 連携ワークフロー — とうめいしっぽ
+  目的: プロジェクトの開発ワークフロー全体像を可視化（対外資料品質）
+  出典: CLAUDE.md / session-start-context.sh / Notion タスクDB設計
+        参考: Improving.com "Claude and Notion Product Workflow Automation"
+        参考: Hannah Stulberg "Draft in Claude Code, Collaborate in Notion"
+  生成日: 2026-02-24 v2.0
+  /visualize v1.0
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code × Notion MCP ワークフロー — とうめいしっぽ</title>
+<style>
+  :root {
+    --font-display: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --font-mono: "SF Mono", "Fira Code", monospace;
+
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7F7F8;
+    --bg-card: #FFFFFF;
+
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9B9B9B;
+
+    --border-default: #E5E5E5;
+    --border-subtle: #F0F0F0;
+
+    /* 役割ごとの色 */
+    --color-zine: #6C5CE7;
+    --color-zine-light: #F3F0FF;
+    --color-claude-code: #2F80ED;
+    --color-claude-code-light: #EBF3FE;
+    --color-notion: #1A1A1A;
+    --color-notion-light: #F7F7F8;
+    --color-chat: #00B894;
+    --color-chat-light: #E8F8F5;
+    --color-notion-ai: #E17055;
+    --color-notion-ai-light: #FFF0EC;
+    --color-stakeholder: #FDCB6E;
+    --color-stakeholder-light: #FFF8E7;
+    --color-git: #EB5757;
+    --color-git-light: #FEECEC;
+
+    /* Phase色 */
+    --phase-a: #2F80ED;
+    --phase-b: #27AE60;
+    --phase-c: #F2994A;
+
+    --card-radius: 12px;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-display);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 48px 32px;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+  }
+  .header .date {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  .phase-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .phase-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+  }
+  .phase-label .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .phase-label.a .dot { background: var(--phase-a); }
+  .phase-label.b .dot { background: var(--phase-b); }
+  .phase-label.c .dot { background: var(--phase-c); }
+  .phase-label.s .dot { background: var(--color-chat); }
+
+  .flow-container {
+    background: var(--bg-card);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-subtle);
+    padding: 32px 24px;
+    position: relative;
+    overflow-x: auto;
+  }
+
+  .flow-svg {
+    width: 100%;
+    min-width: 1200px;
+    height: 720px;
+    display: block;
+  }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .notes {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .note-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--card-radius);
+    padding: 20px 24px;
+  }
+  .note-card h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .note-card p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .credit {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+  }
+
+  @media print {
+    body { background: white; padding: 16px; }
+    .flow-container { box-shadow: none; border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Claude Code × Notion MCP 連携ワークフロー</h1>
+    <div class="subtitle">とうめいしっぽ — パラメトリックパネルデザイナー</div>
+    <div class="date">2026-02-24 | ima Design Lab</div>
+  </div>
+
+  <div class="phase-bar">
+    <div class="phase-label a"><span class="dot"></span>Phase A: 文脈取得</div>
+    <div class="phase-label b"><span class="dot"></span>Phase B: 作業実行</div>
+    <div class="phase-label c"><span class="dot"></span>Phase C: 書き戻し</div>
+    <div class="phase-label s"><span class="dot"></span>姉妹連携</div>
+  </div>
+
+  <div class="flow-container">
+    <svg class="flow-svg" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a-blue" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#2F80ED"/>
+        </marker>
+        <marker id="a-green" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#27AE60"/>
+        </marker>
+        <marker id="a-orange" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#F2994A"/>
+        </marker>
+        <marker id="a-gray" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#9B9B9B"/>
+        </marker>
+        <marker id="a-teal" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#00B894"/>
+        </marker>
+        <marker id="a-coral" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#E17055"/>
+        </marker>
+        <marker id="a-red" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#EB5757"/>
+        </marker>
+        <filter id="s" x="-4%" y="-4%" width="108%" height="108%">
+          <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.06"/>
+        </filter>
+      </defs>
+
+      <!-- ============================================================ -->
+      <!-- 背景ゾーン（5層水平ストライプ） -->
+      <!-- ============================================================ -->
+
+      <!-- Layer 1: PEOPLE（人間）— 上部 -->
+      <rect x="16" y="12" width="1168" height="88" rx="10" fill="#FAFAFA" stroke="#EFEFEF" stroke-width="1"/>
+      <text x="32" y="32" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#9B9B9B" font-weight="600" letter-spacing="0.08em">PEOPLE</text>
+
+      <!-- Layer 2: DEV ENVIRONMENT（開発環境）— 中上 -->
+      <rect x="16" y="116" width="1168" height="190" rx="10" fill="#F5F8FF" stroke="#D6E8FC" stroke-width="1"/>
+      <text x="32" y="136" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#7BAAF7" font-weight="600" letter-spacing="0.08em">DEV ENVIRONMENT</text>
+
+      <!-- Layer 3: NOTION WORKSPACE — 中下 -->
+      <rect x="16" y="322" width="1168" height="190" rx="10" fill="#FAFAFA" stroke="#EFEFEF" stroke-width="1"/>
+      <text x="32" y="342" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#9B9B9B" font-weight="600" letter-spacing="0.08em">NOTION WORKSPACE</text>
+
+      <!-- Layer 4: SISTER PROTOCOL — 下部 -->
+      <rect x="16" y="528" width="1168" height="88" rx="10" fill="#F5FCF9" stroke="#C8EFE0" stroke-width="1"/>
+      <text x="32" y="548" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#00B894" font-weight="600" letter-spacing="0.08em">SISTER PROTOCOL — 姉妹連携</text>
+
+      <!-- Layer 5: EXTERNAL — 最下部 -->
+      <rect x="16" y="632" width="1168" height="72" rx="10" fill="#FAFAFA" stroke="#EFEFEF" stroke-width="1"/>
+      <text x="32" y="652" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#9B9B9B" font-weight="600" letter-spacing="0.08em">EXTERNAL</text>
+
+      <!-- ============================================================ -->
+      <!-- Phase区切り線（垂直ダッシュライン） -->
+      <!-- ============================================================ -->
+      <line x1="380" y1="116" x2="380" y2="520" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="6,4"/>
+      <line x1="810" y1="116" x2="810" y2="520" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="6,4"/>
+
+      <!-- Phase ヘッダーバッジ -->
+      <rect x="160" y="118" width="100" height="22" rx="11" fill="#EBF3FE"/>
+      <text x="210" y="133" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#2F80ED" font-weight="700">Phase A: 取得</text>
+
+      <rect x="540" y="118" width="100" height="22" rx="11" fill="#E8F5E9"/>
+      <text x="590" y="133" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#27AE60" font-weight="700">Phase B: 実行</text>
+
+      <rect x="960" y="118" width="100" height="22" rx="11" fill="#FFF3E0"/>
+      <text x="1010" y="133" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#F2994A" font-weight="700">Phase C: 記録</text>
+
+      <!-- ============================================================ -->
+      <!-- PEOPLE ノード -->
+      <!-- ============================================================ -->
+
+      <!-- 松森政仁 -->
+      <g filter="url(#s)">
+        <rect x="36" y="32" rx="8" width="148" height="52" fill="#F3F0FF" stroke="#6C5CE7" stroke-width="1.5"/>
+        <text x="110" y="53" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#6C5CE7">松森政仁</text>
+        <text x="110" y="71" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">職人・開発者</text>
+      </g>
+
+      <!-- 新田 -->
+      <g filter="url(#s)">
+        <rect x="360" y="32" rx="8" width="120" height="52" fill="#FFF8E7" stroke="#FDCB6E" stroke-width="1.5"/>
+        <text x="420" y="53" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#D4A017">新田紗希</text>
+        <text x="420" y="71" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">事業オーナー</text>
+      </g>
+
+      <!-- 阿部 -->
+      <g filter="url(#s)">
+        <rect x="500" y="32" rx="8" width="120" height="52" fill="#FFF8E7" stroke="#FDCB6E" stroke-width="1.5"/>
+        <text x="560" y="53" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#D4A017">阿部</text>
+        <text x="560" y="71" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">CD / デザイン</text>
+      </g>
+
+      <!-- 内藤 -->
+      <g filter="url(#s)">
+        <rect x="640" y="32" rx="8" width="120" height="52" fill="#FFF8E7" stroke="#FDCB6E" stroke-width="1.5"/>
+        <text x="700" y="53" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#D4A017">内藤</text>
+        <text x="700" y="71" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">アドバイザー</text>
+      </g>
+
+      <!-- MTG -->
+      <g filter="url(#s)">
+        <rect x="870" y="32" rx="8" width="110" height="52" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1.5"/>
+        <text x="925" y="53" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="600" fill="#1A1A1A">MTG</text>
+        <text x="925" y="71" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">意思決定の場</text>
+      </g>
+
+      <!-- 人物間接続 -->
+      <line x1="184" y1="58" x2="358" y2="58" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="480" y1="58" x2="498" y2="58" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="620" y1="58" x2="638" y2="58" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="760" y1="58" x2="868" y2="58" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- ============================================================ -->
+      <!-- DEV ENVIRONMENT ノード -->
+      <!-- ============================================================ -->
+
+      <!-- ① SessionStart Hook (Phase A) -->
+      <g filter="url(#s)">
+        <rect x="50" y="158" rx="8" width="160" height="52" fill="#EBF3FE" stroke="#2F80ED" stroke-width="1.5"/>
+        <text x="130" y="179" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="600" fill="#2F80ED">SessionStart</text>
+        <text x="130" y="197" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">Hook + MCP自動検出</text>
+      </g>
+
+      <!-- ② Claude Code (中央 — 全Phase横断) -->
+      <g filter="url(#s)">
+        <rect x="250" y="220" rx="10" width="200" height="64" fill="#FFFFFF" stroke="#2F80ED" stroke-width="2"/>
+        <text x="350" y="246" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="15" font-weight="700" fill="#2F80ED">Claude Code</text>
+        <text x="350" y="266" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">実装 + Notion読み書き + Git管理</text>
+      </g>
+
+      <!-- ③ コードベース (Phase B) -->
+      <g filter="url(#s)">
+        <rect x="500" y="158" rx="8" width="180" height="50" fill="#FFFFFF" stroke="#27AE60" stroke-width="1.5"/>
+        <text x="590" y="178" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="600" fill="#27AE60">src/toumei_shippo_</text>
+        <text x="590" y="194" text-anchor="middle" font-family="var(--font-mono)" font-size="10" font-weight="600" fill="#27AE60">designer.html</text>
+      </g>
+
+      <!-- ④ Git commit (Phase B→C) -->
+      <g filter="url(#s)">
+        <rect x="510" y="232" rx="8" width="140" height="48" fill="#FEECEC" stroke="#EB5757" stroke-width="1.5"/>
+        <text x="580" y="253" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="12" font-weight="600" fill="#EB5757">Git commit</text>
+        <text x="580" y="269" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">成果確定</text>
+      </g>
+
+      <!-- ⑤ CLAUDE.md (常時参照) -->
+      <g filter="url(#s)">
+        <rect x="50" y="240" rx="8" width="120" height="40" fill="#F3F0FF" stroke="#6C5CE7" stroke-width="1"/>
+        <text x="110" y="264" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="600" fill="#6C5CE7">CLAUDE.md</text>
+      </g>
+
+      <!-- ⑥ Handoff (Phase C) -->
+      <g filter="url(#s)">
+        <rect x="840" y="158" rx="8" width="140" height="48" fill="#FFF0EC" stroke="#E17055" stroke-width="1.5"/>
+        <text x="910" y="178" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="600" fill="#E17055">Handoff</text>
+        <text x="910" y="194" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">次セッション引継</text>
+      </g>
+
+      <!-- ⑦ MEMORY.md (Phase C) -->
+      <g filter="url(#s)">
+        <rect x="840" y="230" rx="8" width="140" height="40" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1.5"/>
+        <text x="910" y="254" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="500" fill="#6B6B6B">MEMORY.md</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- NOTION WORKSPACE ノード -->
+      <!-- ============================================================ -->
+
+      <!-- Notion MCP ゲートウェイ -->
+      <g filter="url(#s)">
+        <rect x="260" y="348" rx="8" width="160" height="48" fill="#1A1A1A" stroke="#1A1A1A" stroke-width="1.5"/>
+        <text x="340" y="368" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">Notion MCP</text>
+        <text x="340" y="385" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#999">OAuth認証 ・ 双方向同期</text>
+      </g>
+
+      <!-- Phase A: fetch対象 -->
+
+      <!-- プロジェクトHub -->
+      <g filter="url(#s)">
+        <rect x="50" y="420" rx="8" width="156" height="56" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="1.5"/>
+        <text x="128" y="443" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="12" font-weight="600" fill="#1A1A1A">プロジェクトHub</text>
+        <text x="128" y="461" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#6B6B6B">意思決定ログ・ロードマップ</text>
+      </g>
+
+      <!-- タスクDB -->
+      <g filter="url(#s)">
+        <rect x="230" y="420" rx="8" width="156" height="56" fill="#FFFFFF" stroke="#27AE60" stroke-width="1.5"/>
+        <text x="308" y="439" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="12" font-weight="600" fill="#27AE60">タスクDB</text>
+        <text x="308" y="455" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#6B6B6B">担当・優先度・期限</text>
+        <text x="308" y="469" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="8" fill="#9B9B9B">5ビュー（松森作業/カテゴリ/TL）</text>
+      </g>
+
+      <!-- 年輪DB -->
+      <g filter="url(#s)">
+        <rect x="410" y="420" rx="8" width="156" height="56" fill="#FFFFFF" stroke="#00B894" stroke-width="1.5"/>
+        <text x="488" y="443" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="12" font-weight="600" fill="#00B894">🌲 年輪DB</text>
+        <text x="488" y="461" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#6B6B6B">環境横断記憶・🪞理解</text>
+      </g>
+
+      <!-- Phase C: 書き戻し先 -->
+
+      <!-- タスク更新 -->
+      <g filter="url(#s)">
+        <rect x="640" y="420" rx="8" width="156" height="56" fill="#FFF3E0" stroke="#F2994A" stroke-width="1.5"/>
+        <text x="718" y="443" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="600" fill="#F2994A">タスクステータス更新</text>
+        <text x="718" y="461" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#6B6B6B">進行中 → 完了 + コメント</text>
+      </g>
+
+      <!-- 年輪記録 -->
+      <g filter="url(#s)">
+        <rect x="820" y="420" rx="8" width="156" height="56" fill="#E8F8F5" stroke="#00B894" stroke-width="1.5"/>
+        <text x="898" y="443" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="600" fill="#00B894">年輪記録</text>
+        <text x="898" y="461" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#6B6B6B">Full Ring / Thin Ring / 🪞理解</text>
+      </g>
+
+      <!-- 📚 資料リンク集 -->
+      <g filter="url(#s)">
+        <rect x="1000" y="420" rx="8" width="140" height="40" fill="#F7F7F8" stroke="#E5E5E5" stroke-width="1"/>
+        <text x="1070" y="445" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="500" fill="#6B6B6B">📚 資料リンク集</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- SISTER PROTOCOL ノード -->
+      <!-- ============================================================ -->
+
+      <!-- Claude Chat (姉) -->
+      <g filter="url(#s)">
+        <rect x="60" y="556" rx="8" width="170" height="48" fill="#E8F8F5" stroke="#00B894" stroke-width="1.5"/>
+        <text x="145" y="576" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#00B894">Claude Chat</text>
+        <text x="145" y="593" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">姉 — 対話・思考・蒸留</text>
+      </g>
+
+      <!-- 年輪DB = 共有記憶 -->
+      <g>
+        <rect x="350" y="560" rx="16" width="230" height="36" fill="#E8F8F5" stroke="#00B894" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="465" y="582" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="600" fill="#00B894">🌲 年輪DB = 唯一の共有記憶</text>
+      </g>
+
+      <!-- Notion AI (妹) -->
+      <g filter="url(#s)">
+        <rect x="700" y="556" rx="8" width="170" height="48" fill="#FFF0EC" stroke="#E17055" stroke-width="1.5"/>
+        <text x="785" y="576" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="13" font-weight="700" fill="#E17055">Notion AI</text>
+        <text x="785" y="593" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="10" fill="#6B6B6B">妹 — DB操作・ビュー作成</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- EXTERNAL ノード -->
+      <!-- ============================================================ -->
+
+      <g filter="url(#s)">
+        <rect x="60" y="656" rx="8" width="160" height="36" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1.5"/>
+        <text x="140" y="678" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="500" fill="#6B6B6B">Google Drive（原典資料）</text>
+      </g>
+
+      <g filter="url(#s)">
+        <rect x="280" y="656" rx="8" width="160" height="36" fill="#FEECEC" stroke="#EB5757" stroke-width="1"/>
+        <text x="360" y="678" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="500" fill="#EB5757">GitHub Remote</text>
+      </g>
+
+      <g filter="url(#s)">
+        <rect x="500" y="656" rx="8" width="160" height="36" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1.5"/>
+        <text x="580" y="678" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="500" fill="#6B6B6B">Apple Health</text>
+      </g>
+
+      <g filter="url(#s)">
+        <rect x="720" y="656" rx="8" width="160" height="36" fill="#FFFFFF" stroke="#E5E5E5" stroke-width="1.5"/>
+        <text x="800" y="678" text-anchor="middle" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="11" font-weight="500" fill="#6B6B6B">Miro / Grasshopper</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — Phase A（青：取得） -->
+      <!-- ============================================================ -->
+
+      <!-- 松森 → SessionStart（起動） -->
+      <path d="M 110 84 L 110 115 L 130 156" stroke="#2F80ED" stroke-width="1.5" fill="none" marker-end="url(#a-blue)"/>
+      <text x="76" y="110" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#2F80ED" font-weight="600">起動</text>
+
+      <!-- SessionStart → Claude Code -->
+      <path d="M 170 210 L 248 240" stroke="#2F80ED" stroke-width="1.5" fill="none" marker-end="url(#a-blue)"/>
+
+      <!-- Claude Code → Notion MCP（Phase A fetch） -->
+      <path d="M 340 284 L 340 346" stroke="#2F80ED" stroke-width="2" fill="none" marker-end="url(#a-blue)"/>
+      <text x="346" y="318" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#2F80ED" font-weight="600">fetch / query</text>
+
+      <!-- Notion MCP → 3つのDB -->
+      <path d="M 300 396 L 128 418" stroke="#2F80ED" stroke-width="1.2" fill="none" marker-end="url(#a-blue)"/>
+      <path d="M 340 396 L 308 418" stroke="#2F80ED" stroke-width="1.2" fill="none" marker-end="url(#a-blue)"/>
+      <path d="M 370 396 L 488 418" stroke="#2F80ED" stroke-width="1.2" fill="none" marker-end="url(#a-blue)"/>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — Phase B（緑：実行） -->
+      <!-- ============================================================ -->
+
+      <!-- Claude Code → コードベース -->
+      <path d="M 450 240 L 500 196" stroke="#27AE60" stroke-width="1.5" fill="none" marker-end="url(#a-green)"/>
+      <text x="462" y="210" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#27AE60" font-weight="600">実装</text>
+
+      <!-- Claude Code → Git -->
+      <path d="M 450 252 L 508 252" stroke="#27AE60" stroke-width="1.5" fill="none" marker-end="url(#a-green)"/>
+      <text x="479" y="246" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#27AE60" font-weight="600">commit</text>
+
+      <!-- CLAUDE.md → Claude Code（常時参照） -->
+      <path d="M 170 258 L 248 256" stroke="#6C5CE7" stroke-width="1" fill="none" stroke-dasharray="3,3"/>
+      <text x="204" y="252" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="8" fill="#6C5CE7">参照</text>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — Phase C（オレンジ：記録） -->
+      <!-- ============================================================ -->
+
+      <!-- Claude Code → Notion MCP（書き戻し — Phase A矢印の横に並ぶ） -->
+      <path d="M 360 284 L 360 346" stroke="#F2994A" stroke-width="2" fill="none" marker-end="url(#a-orange)" stroke-dasharray="6,3"/>
+      <text x="366" y="318" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#F2994A" font-weight="600">update</text>
+
+      <!-- Notion MCP → タスク更新 & 年輪記録 -->
+      <path d="M 400 396 L 718 418" stroke="#F2994A" stroke-width="1.2" fill="none" marker-end="url(#a-orange)" stroke-dasharray="4,3"/>
+      <path d="M 410 396 L 898 418" stroke="#00B894" stroke-width="1.2" fill="none" marker-end="url(#a-teal)" stroke-dasharray="4,3"/>
+
+      <!-- Claude Code → Handoff -->
+      <path d="M 450 234 L 838 176" stroke="#E17055" stroke-width="1.2" fill="none" marker-end="url(#a-coral)" stroke-dasharray="4,3"/>
+      <text x="650" y="196" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="8" fill="#E17055">引継文書</text>
+
+      <!-- Claude Code → MEMORY.md -->
+      <path d="M 450 260 L 838 250" stroke="#9B9B9B" stroke-width="1" fill="none" marker-end="url(#a-gray)" stroke-dasharray="3,3"/>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — 姉妹連携（緑/コーラル） -->
+      <!-- ============================================================ -->
+
+      <!-- Claude Chat ↔ 年輪DB共有ハブ -->
+      <path d="M 230 578 L 348 578" stroke="#00B894" stroke-width="1.2" fill="none" marker-end="url(#a-teal)"/>
+
+      <!-- Claude Code → 年輪DB共有ハブ（下向き接続） -->
+      <path d="M 330 284 L 330 310 L 80 310 L 80 530 L 350 578" stroke="#00B894" stroke-width="1.2" fill="none" marker-end="url(#a-teal)" stroke-dasharray="4,3"/>
+
+      <!-- Notion AI ↔ 年輪DB共有ハブ -->
+      <path d="M 698 578 L 582 578" stroke="#E17055" stroke-width="1.2" fill="none" marker-end="url(#a-coral)"/>
+
+      <!-- Notion AI → タスクDB（ビュー作成・操作） -->
+      <path d="M 785 556 L 785 510 L 400 490 L 386 478" stroke="#E17055" stroke-width="1.2" fill="none" marker-end="url(#a-coral)" stroke-dasharray="4,3"/>
+      <text x="600" y="504" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="8" fill="#E17055">ビュー作成・操作</text>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — MTG → Notion -->
+      <!-- ============================================================ -->
+
+      <path d="M 925 84 L 925 115 L 680 115 L 340 348" stroke="#9B9B9B" stroke-width="1.2" fill="none" marker-end="url(#a-gray)" stroke-dasharray="4,3"/>
+      <text x="740" y="110" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#9B9B9B">議事録・決定事項</text>
+
+      <!-- ============================================================ -->
+      <!-- 接続線 — 外部 -->
+      <!-- ============================================================ -->
+
+      <!-- Git → GitHub Remote -->
+      <path d="M 580 280 L 580 310 L 370 630 L 370 654" stroke="#EB5757" stroke-width="1" fill="none" marker-end="url(#a-red)" stroke-dasharray="3,3"/>
+      <text x="450" y="490" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="8" fill="#EB5757" transform="rotate(-68, 450, 490)">push</text>
+
+      <!-- 循環を示す薄い矢印（全体のサイクル感） -->
+      <path d="M 718 476 Q 718 500 308 500 Q 150 500 150 420 L 150 396 L 128 396" stroke="#E5E5E5" stroke-width="1.5" fill="none" marker-end="url(#a-gray)" stroke-dasharray="6,3"/>
+      <text x="420" y="496" font-family="-apple-system, 'Hiragino Sans', sans-serif" font-size="9" fill="#9B9B9B" font-weight="500">次セッションで再取得 →</text>
+
+    </svg>
+  </div>
+
+  <!-- 凡例 -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#2F80ED"></div>Phase A: 文脈取得（fetch/query）</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#27AE60"></div>Phase B: 作業実行（code/commit）</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F2994A"></div>Phase C: 書き戻し（update/record）</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#00B894"></div>姉妹連携（年輪DB経由）</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#9B9B9B"></div>外部連携</div>
+  </div>
+
+  <!-- 補足カード -->
+  <div class="notes">
+    <div class="note-card">
+      <h3><span style="color:var(--phase-a)">A</span> セッション開始（自動取得）</h3>
+      <p>SessionStartフックがCLAUDE.mdのNotion MCP設定を自動検出。Claude Codeが能動的にプロジェクトHub・タスクDB・年輪DBを取得し、「プロジェクトの今」を松森に報告してから作業に入る。松森が文脈を説明し直す負担をゼロにする。</p>
+    </div>
+    <div class="note-card">
+      <h3><span style="color:var(--phase-b)">B</span> 作業実行（双方向同期）</h3>
+      <p>タスクDBの優先タスクまたは松森の指示をもとにコード実装。HTMLアプリの修正・パラメータ調整・テスト。Notion上のPRDや仕様との差分を確認しながら実装を進め、盲目的な上書きを避ける。完了したらGit commitで成果を確定。</p>
+    </div>
+    <div class="note-card">
+      <h3><span style="color:var(--phase-c)">C</span> 書き戻し（構造化記録）</h3>
+      <p>タスクのステータスを更新し、commitハッシュをコメントで追記。年輪DBに決定・転機をFull Ring / Thin Ringで記録。次セッションのためにHandoff文書とMEMORY.mdを更新。セッション間で文脈が途切れない循環を形成。</p>
+    </div>
+    <div class="note-card">
+      <h3><span style="color:#00B894">S</span> 姉妹連携（環境横断記憶）</h3>
+      <p>Claude Chat（姉・対話と思考）とNotion AI（妹・DB操作）が年輪DBを唯一の共有記憶として連携。Claude Codeも年輪DBを読み書きすることで、3つの異なるインスタンスが同じ文脈を共有する。</p>
+    </div>
+  </div>
+
+  <div class="credit">
+    参考: <a href="https://www.improving.com/thoughts/claude-and-notion-product-workflow-automation/" style="color:var(--text-tertiary)">Improving.com "Claude and Notion Product Workflow Automation"</a>
+    / <a href="https://hannahstulberg.substack.com/p/claude-code-for-everything-draft-in-claude-code-collaborate-in-notion" style="color:var(--text-tertiary)">Hannah Stulberg "Draft in Claude Code, Collaborate in Notion"</a>
+  </div>
+
+</div>
+</body>
+</html>
