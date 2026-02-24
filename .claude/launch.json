@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "toumei-shippo",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "-d", "/Users/matsumorimasahito/Projects/Toumei-Shippo/.claude/worktrees/peaceful-goldwasser/src"],
+      "port": 8765
+    },
+    {
+      "name": "visualize",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8766", "-d", "/Users/matsumorimasahito/Projects/Toumei-Shippo/.claude/worktrees/peaceful-goldwasser/docs/visualize"],
+      "port": 8766
+    }
+  ]
+}

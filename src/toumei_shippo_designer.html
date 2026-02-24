@@ -341,11 +341,256 @@ canvas.vgroove-canvas {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* V溝ビット構成セレクター */
+.bit-config-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.bit-config-tab {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.bit-config-tab.active {
+  border-color: var(--vgroove);
+  color: var(--vgroove);
+  background: rgba(74,144,217,0.1);
+}
+.bit-config-tab .config-name {
+  font-size: 12px;
+  font-weight: 400;
+  display: block;
+}
+.bit-config-tab .config-desc {
+  font-size: 8px;
+  opacity: 0.7;
+  margin-top: 1px;
+  display: block;
+}
+
+.bit-layer {
+  margin-bottom: 8px;
+}
+.bit-layer-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bit-layer-label .layer-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.bit-layer-label .layer-dot.primary { background: var(--vgroove); }
+.bit-layer-label .layer-dot.secondary { background: var(--accent2); }
+.bit-layer-label .layer-dot.detail { background: var(--accent); }
+
+.bit-angle-select {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.bit-angle-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.bit-angle-btn.active {
+  border-color: var(--vgroove);
+  color: var(--vgroove);
+  background: rgba(74,144,217,0.1);
+}
+.bit-angle-btn .angle-deg {
+  font-size: 16px;
+  font-weight: 400;
+  display: block;
+}
+.bit-angle-btn .angle-desc {
+  font-size: 9px;
+  opacity: 0.7;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Dual組み合わせセレクター */
+.bit-combo-select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.bit-combo-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  font-family: 'IBM Plex Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bit-combo-btn.active {
+  border-color: var(--vgroove);
+  color: var(--vgroove);
+  background: rgba(74,144,217,0.1);
+}
+.bit-combo-btn .combo-label { font-weight: 400; }
+.bit-combo-btn .combo-desc { font-size: 9px; opacity: 0.7; }
+
+/* 層情報表示 */
+.bit-layer-info {
+  padding: 6px 0;
+}
+.bit-layer-info .bit-layer-label {
+  font-family: 'IBM Plex Mono', monospace;
+}
+.groove-width {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--accent3);
+  font-size: 10px;
+}
+.triple-fixed {
+  padding: 8px 10px;
+  background: var(--card);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* コスト見積もりバッジ */
+.cost-badge {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(74,144,217,0.08);
+  border: 1px solid rgba(74,144,217,0.2);
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cost-badge .cost-val {
+  color: var(--vgroove);
+  font-size: 12px;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
-  .input-panel { max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
-  .output-area { max-height: none; }
+  .input-panel {
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .output-area { max-height: none; padding: 16px; }
   .canvas-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  /* ヘッダー */
+  header {
+    padding: 16px 16px 12px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  header h1 { font-size: 20px; }
+  header .sub { font-size: 10px; }
+
+  /* 入力パネル */
+  .input-panel { padding: 16px 14px; }
+  .section-title { font-size: 12px; margin-bottom: 12px; }
+  .field { margin-bottom: 12px; }
+  .field label { font-size: 12px; margin-bottom: 6px; }
+  .field input, .field select {
+    padding: 12px 10px;
+    font-size: 14px;
+    min-height: 44px; /* iOS推奨タップターゲット */
+  }
+
+  /* レンジスライダー — タッチ操作向け */
+  .field input[type="range"] {
+    height: 8px;
+    margin: 8px 0;
+  }
+  .field input[type="range"]::-webkit-slider-thumb {
+    width: 24px; height: 24px;
+  }
+
+  /* 天気ボタン — タッチ向け */
+  .weather-btn {
+    padding: 12px 4px;
+    font-size: 14px;
+  }
+
+  /* V溝ビットボタン — タッチ向け */
+  .bit-angle-btn {
+    padding: 10px 4px;
+  }
+  .bit-combo-btn {
+    padding: 10px 8px;
+  }
+
+  /* 2カラム行 */
+  .row2 { gap: 8px; }
+
+  /* 出力エリア */
+  .output-area { padding: 12px; }
+
+  /* アルゴリズム表示 — 縦積み */
+  .algo-display {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .algo-blend .ratio { font-size: 16px; }
+  .algo-badge .name { font-size: 14px; }
+
+  /* キャンバス — 画面幅にフィット */
+  .canvas-wrap { padding: 12px; }
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .canvas-header { padding: 8px 12px; }
+  .canvas-header .size { display: none; } /* 小画面ではサイズ非表示 */
+
+  /* エクスポートボタン */
+  .export-row { padding: 8px 12px; }
+  .export-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+    min-height: 40px;
+  }
+
+  /* ストーリーカード */
+  .story-card { padding: 14px 16px; }
+  .story-card h3 { font-size: 13px; }
+  .story-text { font-size: 13px; line-height: 1.8; }
 }
 </style>
 </head>
@@ -444,10 +689,76 @@ canvas.vgroove-canvas {
     </div>
 
     <div class="field">
-      <label>木目の方向</label>
-      <div class="range-row">
-        <input type="range" id="grain-angle" min="0" max="90" value="5" step="1">
-        <span class="range-val" id="grain-val">5°</span>
+      <label>V溝ビット構成 <span style="font-size:9px;color:var(--text-dim)">(深さ2.5mm固定)</span></label>
+      <div class="bit-config-tabs">
+        <div class="bit-config-tab active" data-config="single" onclick="setBitConfig(this)">
+          <span class="config-name">Single</span>
+          <span class="config-desc">1本</span>
+        </div>
+        <div class="bit-config-tab" data-config="dual" onclick="setBitConfig(this)">
+          <span class="config-name">Dual</span>
+          <span class="config-desc">2本組合せ</span>
+        </div>
+        <div class="bit-config-tab" data-config="triple" onclick="setBitConfig(this)">
+          <span class="config-name">Triple</span>
+          <span class="config-desc">3本</span>
+        </div>
+      </div>
+
+      <!-- Single: 1本のビット角度を選択 -->
+      <div id="bit-single-panel">
+        <div class="bit-layer">
+          <div class="bit-angle-select">
+            <div class="bit-angle-btn" data-angle="30" onclick="setBitAngle(this)">
+              <span class="angle-deg">30°</span>
+              <span class="angle-desc">細 1.34mm</span>
+            </div>
+            <div class="bit-angle-btn active" data-angle="45" onclick="setBitAngle(this)">
+              <span class="angle-deg">45°</span>
+              <span class="angle-desc">中 2.07mm</span>
+            </div>
+            <div class="bit-angle-btn" data-angle="60" onclick="setBitAngle(this)">
+              <span class="angle-deg">60°</span>
+              <span class="angle-desc">太 2.89mm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dual: 2本の組み合わせを選択 -->
+      <div id="bit-dual-panel" style="display:none">
+        <div class="bit-combo-select">
+          <div class="bit-combo-btn active" data-primary="60" data-secondary="30" onclick="setBitCombo(this)">
+            <span class="combo-label">60° + 30°</span>
+            <span class="combo-desc">太2.89 + 細1.34mm</span>
+          </div>
+          <div class="bit-combo-btn" data-primary="60" data-secondary="45" onclick="setBitCombo(this)">
+            <span class="combo-label">60° + 45°</span>
+            <span class="combo-desc">太2.89 + 中2.07mm</span>
+          </div>
+          <div class="bit-combo-btn" data-primary="45" data-secondary="30" onclick="setBitCombo(this)">
+            <span class="combo-label">45° + 30°</span>
+            <span class="combo-desc">中2.07 + 細1.34mm</span>
+          </div>
+        </div>
+        <div class="bit-layer-info">
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 <span class="groove-width" id="dual-primary-width">2.89mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>ディテール <span class="groove-width" id="dual-secondary-width">1.34mm</span></div>
+        </div>
+      </div>
+
+      <!-- Triple: 3本固定 -->
+      <div id="bit-triple-panel" style="display:none">
+        <div class="triple-fixed">
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 60° — <span class="groove-width">2.89mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>中構造 45° — <span class="groove-width">2.07mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot detail"></span>微細 30° — <span class="groove-width">1.34mm</span></div>
+        </div>
+      </div>
+
+      <div class="cost-badge" id="bit-cost-badge">
+        <span>工具交換: 0回 / 追加時間: 0分</span>
+        <span class="cost-val" id="bit-cost-val">+¥0</span>
       </div>
     </div>
 
@@ -516,7 +827,7 @@ canvas.vgroove-canvas {
 
       <div class="canvas-card">
         <div class="canvas-header">
-          <span class="type vgroove">● V-GROOVE NC</span>
+          <span class="type vgroove">● V-GROOVE NC <span id="vgroove-bit-label">45°</span></span>
           <span class="size">70×70mm（有効64×64）</span>
         </div>
         <div class="canvas-wrap">
@@ -550,6 +861,7 @@ class DrawingRecorder {
     this._ctx = ctx;           // 実際のCanvasContext
     this._paths = [];          // 記録されたパス群
     this._currentPath = null;  // 現在構築中のパス
+    this._layer = null;        // 現在のレイヤー名（SVG出力時のグループ分け用）
     // Canvasの状態をプロキシ
     this.lineWidth = ctx.lineWidth;
     this.strokeStyle = ctx.strokeStyle;
@@ -557,6 +869,10 @@ class DrawingRecorder {
     this.globalAlpha = ctx.globalAlpha;
     this.globalCompositeOperation = ctx.globalCompositeOperation;
   }
+
+  // --- レイヤー管理（SVG/DXF出力でのグループ分け用） ---
+  setLayer(name) { this._layer = name; }
+  getLayer() { return this._layer; }
 
   // --- 状態の同期 ---
   _syncState() {
@@ -581,7 +897,7 @@ class DrawingRecorder {
     this._ctx.beginPath();
     this._currentPath = { segments: [], lineWidth: this.lineWidth,
       strokeStyle: this.strokeStyle, fillStyle: this.fillStyle,
-      globalAlpha: this.globalAlpha };
+      globalAlpha: this.globalAlpha, layer: this._layer };
   }
 
   moveTo(x, y) { this._ctx.moveTo(x, y);
@@ -626,12 +942,16 @@ class DrawingRecorder {
     this._syncState();
     this._ctx.fillRect(x, y, w, h);
     this._paths.push({ type: 'fillRect', x, y, w, h,
-      fillStyle: this.fillStyle, globalAlpha: this.globalAlpha });
+      fillStyle: this.fillStyle, globalAlpha: this.globalAlpha, layer: this._layer });
   }
 
   // --- クリッピング（記録はスキップ、実Canvasにのみ適用） ---
   rect(x, y, w, h) { this._ctx.rect(x, y, w, h); }
   clip() { this._ctx.clip(); }
+
+  // --- 線スタイル（V溝Triple破線パターン等で使用） ---
+  setLineDash(segments) { this._ctx.setLineDash(segments); }
+  getLineDash() { return this._ctx.getLineDash(); }
 
   // --- Canvas互換メソッド（描画には影響しないがアルゴリズムで使われる可能性） ---
   clearRect(x, y, w, h) { this._ctx.clearRect(x, y, w, h); }
@@ -651,13 +971,28 @@ const SCALE = 350; // canvas px = 70mm
 const CENTER = SCALE / 2;
 const MARGIN_PX = 15;                          // 3mm × 5px/mm — 加工安全マージン
 const PATTERN_SIZE = SCALE - MARGIN_PX * 2;    // 320px = 64mm — 有効描画エリア
+const PX_PER_MM = SCALE / 70;                  // 5 px/mm
 
-// --- 体重・身長の質的正規化 ---
-// 日本人新生児平均を中心(0)に、-1〜+1の範囲で正規化
-// 体重: 軽い(-1)=繊細  →  重い(+1)=力強い
-// 身長: 短い(-1)=凝縮  →  長い(+1)=伸びやか
-function normalizeWeight(w) { return Math.max(-1, Math.min(1, (w - 3000) / 2000)); }
-function normalizeHeight(h) { return Math.max(-1, Math.min(1, (h - 49) / 11)); }
+// V溝加工の物理定数 — 深さは固定、角度が溝幅を決める
+// 溝幅 w = 2 × depth × tan(angle/2)
+const VGROOVE = {
+  depth: 2.5,  // mm（固定）
+  bits: {},
+  dualCombos: [
+    { primary: 60, secondary: 30, label: '60°＋30°', desc: '最大コントラスト' },
+    { primary: 60, secondary: 45, label: '60°＋45°', desc: '太め主体' },
+    { primary: 45, secondary: 30, label: '45°＋30°', desc: '繊細主体' },
+  ],
+};
+// ビットごとの溝幅を事前計算
+[60, 45, 30].forEach(angle => {
+  const wMm = 2 * VGROOVE.depth * Math.tan((angle / 2) * Math.PI / 180);
+  VGROOVE.bits[angle] = {
+    angle,
+    grooveWidthMm: Math.round(wMm * 100) / 100,
+    grooveWidthPx: wMm * PX_PER_MM,
+  };
+});
 
 // --- Seed generation from inputs ---
 function hashString(str) {
@@ -862,49 +1197,48 @@ function drawFibonacci(ctx, params, mode) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const c = CENTER;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // V溝: 溝幅スケール — べき乗で差異を増幅（30°=0.45, 45°=1.08, 60°=2.07）
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
-  // 螺旋角度: 身長が巻き密度にわずかに影響
-  const goldenAngle = 137.508 * Math.PI / 180 * (1 + nh * 0.02);
-  const numPoints = 40 + Math.floor(weight / 25);
+  const goldenAngle = 137.508 * Math.PI / 180;
+  // V溝: 太い溝→要素を減らし存在感を出す / 細い溝→要素を増やし繊細に
+  const basePoints = 40 + Math.floor(weight / 25);
+  const numPoints = mode === 'vgroove' ? Math.round(basePoints / gwScale) : basePoints;
   const maxR = s * 0.42;
+  const heightRatio = height / 50;
 
   for (let i = 1; i < numPoints; i++) {
     const angle = i * goldenAngle + (weather.flowCurvature * 0.5);
-    // 身長: 短い→中心に凝縮、長い→外に展開（伸びやか）
-    const spreadFactor = 0.6 + 0.4 * (nh + 1);  // 0.2〜1.4
-    const r = maxR * Math.sqrt(i / numPoints) * spreadFactor;
+    const r = maxR * Math.sqrt(i / numPoints) * (0.8 + 0.4 * heightRatio);
     const nx = noise(i * 0.1, seed * 0.01) * weather.turbulence * 15;
     const ny = noise(seed * 0.01, i * 0.1) * weather.turbulence * 15;
     const x = c + r * Math.cos(angle) + nx;
     const y = c + r * Math.sin(angle) + ny;
 
-    // 体重: 軽い→小さなドット（繊細）、重い→大きなドット（力強い）
-    const dotSize = (0.5 + 4.5 * (nw + 1) / 2) * wood.lineWeight;
+    const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;
 
     if (mode === 'laser') {
       ctx.beginPath();
       ctx.arc(x, y, dotSize, 0, Math.PI * 2);
       ctx.fill();
-      // 接続線: 体重で太さが変わる（重い→はっきり、軽い→ほぼ消える）
       if (i > 1) {
         const prevAngle = (i-1) * goldenAngle + (weather.flowCurvature * 0.5);
-        const prevR = maxR * Math.sqrt((i-1) / numPoints) * spreadFactor;
+        const prevR = maxR * Math.sqrt((i-1) / numPoints) * (0.8 + 0.4 * heightRatio);
         const px = c + prevR * Math.cos(prevAngle);
         const py = c + prevR * Math.sin(prevAngle);
         ctx.beginPath();
         ctx.moveTo(px, py);
         ctx.lineTo(x, y);
-        ctx.lineWidth = (0.2 + 0.6 * (nw + 1) / 2) * wood.lineWeight;
+        ctx.lineWidth = 0.5 * wood.lineWeight;
         ctx.stroke();
       }
     } else {
-      // V-groove: variable width lines (deeper = wider)
-      const depth = dotSize * 0.8;
+      // V-groove: 溝幅が要素サイズと線幅を決める
+      const scaledDot = dotSize * (0.6 + gwScale * 0.7);
       ctx.beginPath();
-      ctx.arc(x, y, depth * 1.5, 0, Math.PI * 2);
-      ctx.lineWidth = depth;
+      ctx.arc(x, y, scaledDot * 1.2, 0, Math.PI * 2);
+      ctx.lineWidth = scaledDot * gwScale;
       ctx.stroke();
     }
   }
@@ -914,25 +1248,19 @@ function drawVoronoi(ctx, params, mode) {
   const { seed, weight, height, weather, wood, grainAngle } = params;
   const rng = mulberry32(seed);
   const s = SCALE;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // V溝: べき乗で差異を増幅
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
   const numCells = 8 + Math.floor(weight / 200);
   const points = [];
 
   for (let i = 0; i < numCells; i++) {
-    const rx = rng();
-    const ry = rng();
-    // 身長: 短い→中心寄り（凝縮）、長い→全面に展開（伸びやか）
-    const centerBias = 0.15 * (1 - (nh + 1) / 2);  // 短いほど中心バイアス
-    points.push({
-      x: (rx * (1 - centerBias * 2) + centerBias) * s,
-      y: (ry * (1 - centerBias * 2) + centerBias) * s,
-    });
+    points.push({ x: rng() * s, y: rng() * s });
   }
 
-  // 体重: 重い→粗い解像度（力強い描画）、軽い→細かい（繊細）
-  const res = Math.max(2, Math.floor(3 + (1 - nw) * 1.5));
+  // V溝: 太い溝→走査解像度を粗く（大胆な表現）/ 細い溝→細かく（繊細な表現）
+  const res = mode === 'vgroove' ? Math.max(2, Math.round(3 * gwScale)) : 3;
   for (let px = 0; px < s; px += res) {
     for (let py = 0; py < s; py += res) {
       let minD = Infinity, minD2 = Infinity;
@@ -943,9 +1271,8 @@ function drawVoronoi(ctx, params, mode) {
       }
 
       const edge = minD2 - minD;
-      // 体重: 重い→太いセル壁（力強い）、軽い→細いセル壁（繊細）
-      const wallFactor = 0.5 + (nw + 1) / 2 * 0.8;
-      const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing * wallFactor;
+      // V溝: 太い溝→エッジ検出閾値を広げ太い境界線に
+      const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing * (mode === 'vgroove' ? gwScale : 1);
 
       if (edge < threshold) {
         if (mode === 'laser') {
@@ -953,7 +1280,7 @@ function drawVoronoi(ctx, params, mode) {
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
           ctx.fillRect(px, py, res, res);
         } else {
-          const lineW = (threshold - edge) / threshold * 3 * wood.lineWeight;
+          const lineW = (threshold - edge) / threshold * 4 * wood.lineWeight * gwScale;
           ctx.fillStyle = `rgba(60,50,35,${0.7})`;
           ctx.fillRect(px, py, Math.max(1, lineW), Math.max(1, lineW));
         }
@@ -966,11 +1293,9 @@ function drawVoronoi(ctx, params, mode) {
 function drawReactionDiffusion(ctx, params, mode) {
   const { seed, weight, height, weather, wood } = params;
   const rng = mulberry32(seed);
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
 
-  // 身長: 長い→高解像度グリッド（伸びやかな曲線）、短い→低解像度（凝縮した塊）
-  const gridSize = Math.floor(80 + 30 * (nh + 1) / 2);
+  // Use 1D Float32Arrays for performance (2D indexing via y*w+x)
+  const gridSize = 100;
   const cellSize = SCALE / gridSize;
   const n = gridSize * gridSize;
   let gridA = new Float32Array(n).fill(1);
@@ -981,11 +1306,10 @@ function drawReactionDiffusion(ctx, params, mode) {
   for (let s = 0; s < spots; s++) {
     const cx = Math.floor(rng() * (gridSize - 10) + 5);
     const cy = Math.floor(rng() * (gridSize - 10) + 5);
-    // 体重: 重い→大きなシードスポット（力強い構造）、軽い→小さなシード（繊細）
-    const spotR = 2 + Math.floor(rng() * 3) + Math.max(0, Math.floor((nw + 1) * 1.5));
-    for (let dx = -spotR; dx <= spotR; dx++) {
-      for (let dy = -spotR; dy <= spotR; dy++) {
-        if (dx*dx + dy*dy <= spotR*spotR) {
+    const r = 2 + Math.floor(rng() * 3);
+    for (let dx = -r; dx <= r; dx++) {
+      for (let dy = -r; dy <= r; dy++) {
+        if (dx*dx + dy*dy <= r*r) {
           const nx = cx+dx, ny = cy+dy;
           if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize) {
             gridB[ny*gridSize+nx] = 1;
@@ -1000,9 +1324,8 @@ function drawReactionDiffusion(ctx, params, mode) {
   // Weather drives pattern type: calm→spots, moderate→stripes, turbulent→coral
   const baseF = 0.030 + weather.turbulence * 0.028;
   const baseK = 0.057 + weather.flowCurvature * 0.010;
-  // 身長: f/kへの影響範囲を拡大（パターン形状が変わる）
-  const f = baseF + nh * 0.008;
-  const k = baseK + nh * 0.005;
+  const f = baseF + (height / 50 - 1) * 0.003;
+  const k = baseK + (height / 50 - 1) * 0.002;
   const iterations = 3000;
 
   const gs = gridSize;
@@ -1024,6 +1347,9 @@ function drawReactionDiffusion(ctx, params, mode) {
   }
 
   // Render based on chemical B concentration
+  // V溝: べき乗で差異を増幅
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
   for (let y = 0; y < gs; y++) {
     for (let x = 0; x < gs; x++) {
       const bVal = gridB[y*gs+x];
@@ -1031,16 +1357,14 @@ function drawReactionDiffusion(ctx, params, mode) {
         if (bVal > 0.1) {
           const alpha = Math.min(bVal * 2.5, 1.0);
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
-          // 体重: 重い→大きな描画粒（力強い）、軽い→小さな描画粒（繊細）
-          const szFactor = 0.4 + bVal * (0.5 + 0.6 * (nw + 1) / 2);
-          const sz = cellSize * szFactor * wood.lineWeight;
+          const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
           ctx.fillRect(x*cellSize, y*cellSize, sz, sz);
         }
       } else {
         if (bVal > 0.08) {
           const depth = Math.min(bVal * 2, 1);
           ctx.fillStyle = `rgba(60,50,35,${depth * 0.8})`;
-          const w2 = cellSize * (0.3 + depth * wood.lineWeight * (0.8 + 0.4 * (nw + 1) / 2));
+          const w2 = cellSize * (0.3 + depth * wood.lineWeight * gwScale * 1.2);
           ctx.fillRect(x*cellSize, y*cellSize, w2, w2);
         }
       }
@@ -1053,21 +1377,18 @@ function drawFractal(ctx, params, mode) {
   const rng = mulberry32(seed);
   const s = SCALE;
   const c = CENTER;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // V溝: べき乗で差異を増幅
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
   function branch(x, y, angle, length, depth, maxDepth) {
     if (depth > maxDepth || length < 3) return;
 
     const wobble = (rng() - 0.5) * weather.turbulence * 0.4;
-    // 身長: 長い→縦方向バイアス（まっすぐ伸びる）、短い→放射状に広がる
-    const verticalBias = nh * 0.15 * Math.cos(angle + Math.PI/2);
-    const endX = x + length * Math.cos(angle + wobble + verticalBias);
-    const endY = y + length * Math.sin(angle + wobble + verticalBias);
+    const endX = x + length * Math.cos(angle + wobble);
+    const endY = y + length * Math.sin(angle + wobble);
 
-    // 体重: 重い→太い枝（力強い幹）、軽い→細い枝（繊細な枝ぶり）
-    const lwFactor = 0.4 + 0.8 * (nw + 1) / 2;
-    const lw = (maxDepth - depth + 1) * wood.lineWeight * lwFactor;
+    const lw = (maxDepth - depth + 1) * wood.lineWeight * 0.8;
 
     if (mode === 'laser') {
       ctx.beginPath();
@@ -1076,16 +1397,17 @@ function drawFractal(ctx, params, mode) {
       ctx.lineWidth = lw;
       ctx.stroke();
     } else {
+      // V溝: 溝幅で枝の太さを構造的に変える
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
-      ctx.lineWidth = lw * 1.5;
+      ctx.lineWidth = lw * (0.6 + gwScale * 0.8);
       ctx.stroke();
     }
 
     const spread = 0.35 + (rng() * 0.2) + weather.flowCurvature * 0.15;
-    // 身長: 長い→枝がゆっくり縮む（長い枝に）、短い→急速に縮む
-    const shrink = 0.55 + 0.1 * (nh + 1) / 2 + rng() * 0.15;
+    // V溝: 太い溝→枝が短くなり凝縮 / 細い溝→枝が長く伸びやか
+    const shrink = mode === 'vgroove' ? (0.55 + rng() * 0.15 + (1 - gwScale) * 0.1) : (0.6 + rng() * 0.15);
     const branches = 2 + (rng() < 0.3 ? 1 : 0);
 
     for (let b = 0; b < branches; b++) {
@@ -1094,7 +1416,9 @@ function drawFractal(ctx, params, mode) {
     }
   }
 
-  const maxDepth = 5 + Math.floor(height / 15);
+  // V溝: 太い溝→浅い分岐（大胆）/ 細い溝→深い分岐（繊細）
+  const baseDepth = 5 + Math.floor(height / 15);
+  const maxDepth = mode === 'vgroove' ? Math.max(3, Math.round(baseDepth / gwScale)) : baseDepth;
   const startLen = s * 0.18 * (weight / 3000);
 
   // Main trunk from bottom center
@@ -1111,24 +1435,29 @@ function drawFractal(ctx, params, mode) {
 // --- SECONDARY ALGORITHMS (texture overlay) ---
 
 function drawFlowField(ctx, params, mode, alpha) {
-  const { seed, weight, height, weather, wood } = params;
+  const { seed, weight, weather, wood } = params;
   const rng = mulberry32(seed + 1000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
   const freq = 0.008 / wood.lineSpacing;
-  const lines = Math.floor((25 + weight / 150) * alpha);
+  // V溝Secondary: べき乗2.5で劇的な差異（30°=0.37, 45°=1.10, 60°=2.49）
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const baseLines = Math.floor((25 + weight / 150) * alpha);
+  // V溝: 細い溝→50+本の繊細な流線 / 太い溝→8本の大胆なストローク
+  const lines = mode === 'vgroove' ? Math.max(5, Math.round(baseLines / gwScale)) : baseLines;
 
-  ctx.globalAlpha = alpha * 0.7;
+  // V溝: 物理的に別ビットで彫る独立パス — 母音weight分割でもαを保証
+  const effectiveAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.7;
+  ctx.globalAlpha = effectiveAlpha;
   for (let l = 0; l < lines; l++) {
     let x = rng() * s, y = rng() * s;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    // 身長: 長い→長い軌跡（伸びやか）、短い→短い軌跡（凝縮）
-    const steps = Math.floor(20 + 30 * (nh + 1) / 2 + weather.flowCurvature * 40);
-    // 体重: 重い→大きなステップ（力強いストローク）、軽い→小さなステップ（繊細な線）
-    const stepSize = 2 + (nw + 1) * 1.5;
+    // V溝: 太い溝→長い流れるストローク / 細い溝→短い繊細なタッチ
+    const baseSteps = 30 + Math.floor(weather.flowCurvature * 40);
+    const steps = mode === 'vgroove' ? Math.round(baseSteps * (0.3 + gwScale * 0.7)) : baseSteps;
+    const stepSize = mode === 'vgroove' ? 1.0 + gwScale * 2.5 : 3;
     for (let st = 0; st < steps; st++) {
       const angle = noise(x * freq, y * freq) * Math.PI * 2 * (1 + weather.turbulence);
       x += Math.cos(angle) * stepSize;
@@ -1136,75 +1465,65 @@ function drawFlowField(ctx, params, mode, alpha) {
       if (x < 0 || x > s || y < 0 || y > s) break;
       ctx.lineTo(x, y);
     }
-    // 体重: 重い→太い線、軽い→細い線
-    const baseLW = mode === 'laser' ? 0.3 : 0.8;
-    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.6) * wood.lineWeight;
+    // V溝: 溝幅を直接反映 — 30°=1.1px, 45°=3.3px, 60°=7.5px
+    ctx.lineWidth = (mode === 'laser' ? 0.5 : 4.0 * gwScale) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawPerlinTexture(ctx, params, mode, alpha) {
-  const { seed, weight, height, wood } = params;
+  const { seed, wood } = params;
   const rng = mulberry32(seed + 2000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
-  // 身長: 短い→密なライン間隔、長い→疎なライン間隔
-  const spacing = (4 + 4 * (nh + 1) / 2) * wood.lineSpacing;
-  // 身長: 長い→ラインに微小な傾き（伸びやかさの表現）
-  const tiltAngle = nh * 0.15;  // ラジアン（約±8.6度）
+  // V溝Secondary: べき乗2.5で劇的な差異
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  // V溝: 細い溝→密な波紋テクスチャ / 太い溝→疎で大胆な波
+  const spacing = mode === 'vgroove' ? 6 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 6 * wood.lineSpacing;
 
-  ctx.globalAlpha = alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     for (let x = 0; x < s; x += 2) {
-      // 体重: 重い→大きな揺れ幅（力強い）、軽い→小さな揺れ（繊細）
-      const amplitude = 4 + 8 * (nw + 1) / 2;
-      const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amplitude;
-      // 身長による傾き
-      const tiltOffset = x * Math.sin(tiltAngle);
-      ctx.lineTo(x, y + n + tiltOffset);
+      // V溝: 太い溝→大きなうねり / 細い溝→繊細な揺らぎ
+      const amp = mode === 'vgroove' ? 2 + gwScale * 10 : 8;
+      const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amp;
+      ctx.lineTo(x, y + n);
     }
-    // 体重: 重い→太い線、軽い→細い線
-    const baseLW = mode === 'laser' ? 0.2 : 0.6;
-    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.4) * wood.lineWeight;
+    ctx.lineWidth = (mode === 'laser' ? 0.3 : 4.0 * gwScale) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawSineInterference(ctx, params, mode, alpha) {
-  const { seed, weight, height, wood } = params;
+  const { seed, weight, wood } = params;
   const s = SCALE;
   const c = CENTER;
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
   const freq1 = 0.03 + (weight / 3000) * 0.03;
   const freq2 = 0.05 + (seed % 100) / 3000;
+  // V溝Secondary: べき乗2.5で劇的な差異
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
 
-  ctx.globalAlpha = alpha * 0.6;
-  // 身長: 短い→密なライン間隔、長い→疎なライン間隔
-  const spacing = (3 + 3 * (nh + 1) / 2) * wood.lineSpacing;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
+  // V溝: 細い溝→密な干渉縞 / 太い溝→疎で大きな波
+  const spacing = mode === 'vgroove' ? 4 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 4 * wood.lineSpacing;
 
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     for (let x = 0; x < s; x += 1) {
       const d = Math.hypot(x - c, y - c);
       const v = Math.sin(d * freq1) + Math.sin(x * freq2) * 0.5;
-      // 身長: 長い→縦方向の波成分を追加（伸びやかさ）
-      const verticalWave = Math.sin(y * freq2 * (1 + nh * 0.3)) * nh * 2;
-      // 体重: 重い→大きな振幅（力強いうねり）、軽い→小さな振幅（繊細な波）
-      const amplitude = 3 + 6 * (nw + 1) / 2;
-      const ny = y + v * amplitude + verticalWave;
+      const amp = mode === 'vgroove' ? 1 + gwScale * 12 : 6;
+      const ny = y + v * amp;
       if (x === 0) ctx.moveTo(x, ny);
       else ctx.lineTo(x, ny);
     }
-    // 体重: 重い→太い線、軽い→細い線
-    const baseLW = mode === 'laser' ? 0.25 : 0.7;
-    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.4) * wood.lineWeight;
+    ctx.lineWidth = (mode === 'laser' ? 0.4 : 4.0 * gwScale) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1215,71 +1534,66 @@ function drawLissajous(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // V溝Secondary: べき乗2.5で劇的な差異
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
 
-  ctx.globalAlpha = alpha * 0.6;
-  const curves = 3 + Math.floor(rng() * 4);
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
+  // V溝: 細い溝→多数の小さな軌跡 / 太い溝→少数の大きく太い軌跡
+  const baseCurves = 4 + Math.floor(rng() * 4);
+  const curves = mode === 'vgroove' ? Math.max(2, Math.round(baseCurves / gwScale)) : baseCurves;
 
   for (let curve = 0; curve < curves; curve++) {
-    const baseA = 2 + Math.floor(rng() * 5);
+    const a = 2 + Math.floor(rng() * 5);
     const b = 3 + Math.floor(rng() * 5);
-    // 身長: 長い→a/b比を変えて縦長軌道、短い→正方向に近い軌道
-    const a = baseA + (nh > 0 ? Math.floor(nh * 2) : 0);
     const delta = rng() * Math.PI;
-    // 体重: 重い→大きな曲線、軽い→小さな曲線
-    const radius = s * (0.1 + 0.05 * (nw + 1) / 2 + rng() * 0.25);
-    // 身長: 長い→Y方向に伸びやか、短い→凝縮
-    const yScale = 0.8 + 0.4 * (nh + 1) / 2;
+    // V溝: 太い溝→大きく広がる軌跡 / 細い溝→小さく凝縮
+    const baseRadius = s * (0.15 + rng() * 0.25);
+    const radius = mode === 'vgroove' ? baseRadius * (0.3 + gwScale * 0.5) : baseRadius;
 
     ctx.beginPath();
     for (let t = 0; t <= Math.PI * 2; t += 0.02) {
       const x = c + radius * Math.sin(a * t + delta);
-      const y = c + radius * Math.sin(b * t) * yScale;
+      const y = c + radius * Math.sin(b * t);
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    // 体重: 重い→太い線、軽い→細い線
-    const baseLW = mode === 'laser' ? 0.3 : 0.8;
-    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.5) * wood.lineWeight;
+    ctx.lineWidth = (mode === 'laser' ? 0.5 : 4.0 * gwScale) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
 }
 
 function drawWaveFunction(ctx, params, mode, alpha) {
-  const { seed, weight, height, wood } = params;
+  const { seed, wood } = params;
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
-  const nw = normalizeWeight(weight);   // -1(繊細) 〜 +1(力強い)
-  const nh = normalizeHeight(height);   // -1(凝縮) 〜 +1(伸びやか)
+  // V溝Secondary: べき乗2.5で劇的な差異
+  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
 
-  ctx.globalAlpha = alpha * 0.55;
-  const rings = 8 + Math.floor(rng() * 8);
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.55;
+  // V溝: 細い溝→多数の密な波紋 / 太い溝→少数の疎で太い波紋
+  const baseRings = 8 + Math.floor(rng() * 8);
+  const rings = mode === 'vgroove' ? Math.max(3, Math.round(baseRings / gwScale)) : baseRings;
 
   for (let r = 1; r <= rings; r++) {
-    // 身長: 長い→リング間隔が広い（伸びやか）、短い→密（凝縮）
-    const baseRadius = s * (0.25 + 0.2 * (nh + 1) / 2);
-    const radius = baseRadius * r / rings;
+    const radius = (s * 0.4 * r / rings);
     const freq = 3 + Math.floor(rng() * 8);
-    // 体重: 重い→大きな波形変位（力強い）、軽い→小さな波形（繊細）
-    const amp = (2 + rng() * 4) + 4 * (nw + 1) / 2;
-    // 身長: 長い→楕円（縦長）、短い→円に近い
-    const ellipseY = 0.8 + 0.4 * (nh + 1) / 2;
+    const baseAmp = 3 + rng() * 6;
+    const amp = mode === 'vgroove' ? baseAmp * (0.2 + gwScale * 0.8) : baseAmp;
 
     ctx.beginPath();
     for (let a = 0; a <= Math.PI * 2; a += 0.03) {
       const wobble = Math.sin(a * freq) * amp;
       const x = c + (radius + wobble) * Math.cos(a);
-      const y = c + (radius + wobble) * Math.sin(a) * ellipseY;
+      const y = c + (radius + wobble) * Math.sin(a);
       if (a === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    // 体重: 重い→太い線、軽い→細い線
-    const baseLW = mode === 'laser' ? 0.3 : 0.8;
-    ctx.lineWidth = (baseLW + (nw + 1) / 2 * 0.3) * wood.lineWeight;
+    ctx.lineWidth = (mode === 'laser' ? 0.4 : 4.0 * gwScale) * wood.lineWeight;
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1343,7 +1657,25 @@ function gatherInputs() {
   const weatherEl = document.querySelector('.weather-btn.active');
   const weather = weatherEl ? weatherEl.dataset.weather : 'sunny';
   const species = document.getElementById('species').value;
-  const grainAngle = parseInt(document.getElementById('grain-angle').value) || 0;
+  const grainAngle = 0; // 木目オーバーレイは削除済み — 互換性のため残す
+  // V溝ビット構成の取得
+  const bitConfigEl = document.querySelector('.bit-config-tab.active');
+  const bitConfig = bitConfigEl ? bitConfigEl.dataset.config : 'single';
+
+  let bitAngles = {};
+  if (bitConfig === 'single') {
+    const el = document.querySelector('#bit-single-panel .bit-angle-btn.active');
+    const angle = el ? parseInt(el.dataset.angle) : 45;
+    bitAngles = { primary: angle, secondary: angle, detail: angle };
+  } else if (bitConfig === 'dual') {
+    const combo = document.querySelector('#bit-dual-panel .bit-combo-btn.active');
+    const p = combo ? parseInt(combo.dataset.primary) : 60;
+    const s = combo ? parseInt(combo.dataset.secondary) : 30;
+    bitAngles = { primary: p, secondary: s, detail: s };
+  } else { // triple — 固定
+    bitAngles = { primary: 60, secondary: 45, detail: 30 };
+  }
+  const bitAngle = bitAngles.primary; // 後方互換
   const prefecture = document.getElementById('prefecture').value;
   const city = document.getElementById('city').value;
   const algoPrimary = document.getElementById('algo-primary').value;
@@ -1390,7 +1722,7 @@ function gatherInputs() {
     weather: WEATHER_PARAMS[weather],
     weatherKey: weather,
     species, wood: WOOD_PARAMS[species],
-    grainAngle, prefecture, city, geo,
+    grainAngle, bitAngle, bitAngles, bitConfig, prefecture, city, geo,
     year, month, day, hours, minutes,
     season, vowels, vowelWeights, nameFreq,
     primary, secondary, blend, seed,
@@ -1426,8 +1758,30 @@ function render() {
   const pRatio = Math.round(inp.blend * 10);
   const sRatio = 10 - pRatio;
   document.getElementById('blend-ratio').textContent = `${pRatio}:${sRatio}`;
-  
-  // Common params
+
+  // コスト見積もり更新
+  updateBitCostBadge(inp.bitConfig);
+
+  // V溝ヘッダーラベル更新
+  const vgLabel = document.getElementById('vgroove-bit-label');
+  if (vgLabel) {
+    if (inp.bitConfig === 'single') {
+      vgLabel.textContent = inp.bitAngles.primary + '°';
+    } else if (inp.bitConfig === 'dual') {
+      vgLabel.textContent = inp.bitAngles.primary + '°/' + inp.bitAngles.secondary + '°';
+    } else {
+      vgLabel.textContent = '60°/45°/30°';
+    }
+  }
+
+  // V溝物理計算: 深さ2.5mm固定、角度から物理的な溝幅（px）を取得
+  const gw = {
+    primary: VGROOVE.bits[inp.bitAngles.primary].grooveWidthPx,
+    secondary: VGROOVE.bits[inp.bitAngles.secondary].grooveWidthPx,
+    detail: VGROOVE.bits[inp.bitAngles.detail].grooveWidthPx,
+  };
+
+  // Common params（レーザー用 + V溝プライマリ用のデフォルト）
   const params = {
     seed: inp.seed,
     weight: inp.weight,
@@ -1435,6 +1789,23 @@ function render() {
     weather: inp.weather,
     wood: inp.wood,
     grainAngle: inp.grainAngle,
+    bitAngle: inp.bitAngles.primary,
+    grooveWidthPx: gw.primary,
+    bitWidthFactor: gw.primary / 10,  // 正規化（10px ≈ 1.0）
+  };
+  // V溝セカンダリ用パラメータ
+  const paramsSecondary = { ...params,
+    bitAngle: inp.bitAngles.secondary,
+    grooveWidthPx: gw.secondary,
+    bitWidthFactor: gw.secondary / 10,
+  };
+  // V溝ディテール用パラメータ（Triple時）
+  // seed をオフセットして、プライマリとは異なる位置に描画（同じ位置だと大きい要素の後ろに隠れる）
+  const paramsDetail = { ...params,
+    seed: params.seed + 7777,
+    bitAngle: inp.bitAngles.detail,
+    grooveWidthPx: gw.detail,
+    bitWidthFactor: gw.detail / 10,
   };
   
   // --- LASER CANVAS ---
@@ -1450,9 +1821,6 @@ function render() {
 
   lctx.strokeStyle = '#2c261e';
   lctx.fillStyle = '#2c261e';
-
-  // Draw grain background (余白にも木目を描画 — 木の板としての佇まい)
-  drawGrainOverlay(lctx, inp.grainAngle, inp.wood, 'laser');
 
   // パターン描画は64mm角の有効エリア内にクリッピング
   lctx.save();
@@ -1506,9 +1874,6 @@ function render() {
   vctx.strokeStyle = '#3c3223';
   vctx.fillStyle = '#3c3223';
 
-  // 木目は余白にも描画
-  drawGrainOverlay(vctx, inp.grainAngle, inp.wood, 'vgroove');
-
   // パターン描画は64mm角にクリッピング
   vctx.save();
   vctx.beginPath();
@@ -1516,6 +1881,8 @@ function render() {
   vctx.clip();
 
   try {
+    // プライマリアルゴリズム — params（primaryビット角度）で描画
+    vctx.setLayer(inp.bitAngles.primary + 'deg');
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
       vctx.save();
@@ -1529,8 +1896,11 @@ function render() {
       vctx.restore();
     }
 
-    // Draw secondary — 全母音のアルゴリズムを重みに応じて描画
-    const secondaryAlphaV = 1 - inp.blend;
+    // セカンダリアルゴリズム — paramsSecondary（secondaryビット角度）で描画
+    // V溝NCではセカンダリは物理的に別ビットで彫る独立パス — レーザーより強い存在感
+    // Dual/Triple時: ビット角度の違いが構造的差異として現れるよう、α値の下限を確保
+    vctx.setLayer(inp.bitAngles.secondary + 'deg');
+    const secondaryAlphaV = Math.max(0.65, 1 - inp.blend);
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
       const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
@@ -1538,9 +1908,64 @@ function render() {
         vctx.save();
         vctx.strokeStyle = '#3c3223';
         vctx.fillStyle = '#3c3223';
-        fn(vctx, params, 'vgroove', secondaryAlphaV * weight);
+        fn(vctx, paramsSecondary, 'vgroove', secondaryAlphaV * weight);
         vctx.restore();
       }
+    }
+
+    // Triple時: ディテールレイヤー（30°ビット = 最も繊細な溝）
+    // 副アルゴリズムを30°パラメータ＋破線スタイルで描画
+    // 破線 = NC加工で30°の細いビットが刻む繊細な点描的テクスチャを表現
+    // これにより Triple = 大構造(60°実線) + 中テクスチャ(45°実線) + 繊細なクロスハッチ(30°破線) の三層構成
+    if (inp.bitConfig === 'triple') {
+      // ディテールレイヤー: 30°ビットによるクロスハッチング
+      // NC加工で30°の細いビットが斜めに走る仕上げ彫りを表現
+      // キャンバス全体をカバーする破線の斜線群 — 点描では面積が足りず差異が出ない
+      vctx.setLayer('30deg');
+      vctx.save();
+      // 30°ビットの仕上げ彫り = 細く浅い溝
+      // 他のビットと同じ暗い色で描画（溝は木を彫るので暗く見える）
+      // 細い線＋破線で60°/45°との差異化
+      vctx.strokeStyle = '#3c3223';
+
+      const detailRng = mulberry32(paramsDetail.seed);
+      const nw = Math.max(-1, Math.min(1, (params.weight - 3000) / 2000));
+      const nh = Math.max(-1, Math.min(1, (params.height - 49) / 11));
+
+      // --- 第1方向: 主クロスハッチ ---
+      vctx.lineWidth = 1.6 + nw * 0.4;
+      vctx.setLineDash([5, 4]);
+      vctx.globalAlpha = 0.7;
+
+      const spacing1 = 7 + 5 * nw; // 2〜12px
+      const angle1 = (Math.PI / 5) + nh * (Math.PI / 10);
+      const dx1 = Math.cos(angle1);
+      const dy1 = Math.sin(angle1);
+
+      for (let t = -SCALE; t <= SCALE * 2; t += spacing1) {
+        const jitter = (detailRng() - 0.5) * 2;
+        vctx.beginPath();
+        vctx.moveTo(t + jitter, 0);
+        vctx.lineTo(t + dy1 * SCALE + jitter, dx1 * SCALE);
+        vctx.stroke();
+      }
+
+      // --- 第2方向: クロス斜線 ---
+      vctx.setLineDash([3, 6]);
+      vctx.globalAlpha = 0.5;
+      vctx.lineWidth = 1.3;
+      const angle2 = -(Math.PI / 5) + nh * (Math.PI / 8);
+      const dx2 = Math.cos(angle2);
+      const dy2 = Math.sin(angle2);
+
+      for (let t = -SCALE; t <= SCALE * 2; t += spacing1 * 1.5) {
+        const jitter = (detailRng() - 0.5) * 3;
+        vctx.beginPath();
+        vctx.moveTo(t + jitter, 0);
+        vctx.lineTo(t + dy2 * SCALE + jitter, dx2 * SCALE);
+        vctx.stroke();
+      }
+      vctx.restore();
     }
   } catch(e) { console.error('V-groove render error:', e); }
 
@@ -1572,64 +1997,120 @@ function updateStory(inp) {
       }
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
-    体重 ${inp.weight}g が模様の密度を、身長 ${inp.height}cm がプロポーションを決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
-    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整し、木目方向 ${inp.grainAngle}° が背景のテクスチャとして息づいています。
+    体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
+    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
+      const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
+      if (inp.bitConfig === 'single') {
+        return `V溝加工は ${inp.bitAngles.primary}° ビット（溝幅${gwMm(inp.bitAngles.primary)}mm）で彫り込みます。深さ${VGROOVE.depth}mm一定、角度が線の太さを決めます。`;
+      } else if (inp.bitConfig === 'dual') {
+        return `V溝加工は2本のビットを組み合わせ——主構造に ${inp.bitAngles.primary}°（溝幅${gwMm(inp.bitAngles.primary)}mm）、ディテールに ${inp.bitAngles.secondary}°（溝幅${gwMm(inp.bitAngles.secondary)}mm）。同じ深さ${VGROOVE.depth}mmでも角度の違いが線幅の対比を生みます。`;
+      } else {
+        return `V溝加工は3本のビットを駆使——主構造 60°（${gwMm(60)}mm）、中構造 45°（${gwMm(45)}mm）、微細 30°（${gwMm(30)}mm）。すべて深さ${VGROOVE.depth}mm、角度だけが変わることで三段階の線幅が木の表面に豊かな陰影を生みます。`;
+      }
+    })()}
   `;
   document.getElementById('story-text').innerHTML = html;
 }
 
 // --- Export functions ---
+// V溝NCのSVGレイヤー色 — NC/レーザー加工ソフトでの確実な識別のため純色を使用
+// 60°=赤（荒彫り・太溝）, 45°=緑（中仕上げ）, 30°=青（仕上げ・細溝）
+// 注: xTool P2S等はSVG opacityを正しく処理しないため、必ず純色で出力する
+const SVG_LAYER_COLORS = {
+  '60deg': '#FF0000',
+  '45deg': '#00FF00',
+  '30deg': '#0000FF',
+};
+
 function exportSVG(mode) {
   const paths = lastRecordedPaths[mode] || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
 
-  let elements = '';
+  // クリッピング定義
+  let defs = `  <defs>\n`;
+  defs += `    <clipPath id="pattern-clip">\n`;
+  defs += `      <rect x="${(MARGIN_PX * pxToMm).toFixed(1)}" y="${(MARGIN_PX * pxToMm).toFixed(1)}" `;
+  defs += `width="${(PATTERN_SIZE * pxToMm).toFixed(1)}" height="${(PATTERN_SIZE * pxToMm).toFixed(1)}"/>\n`;
+  defs += `    </clipPath>\n`;
+  defs += `  </defs>\n`;
 
-  // クリッピング定義（パターンは64mm角エリア内）
-  elements += `  <defs>\n`;
-  elements += `    <clipPath id="pattern-clip">\n`;
-  elements += `      <rect x="${MARGIN_PX * pxToMm}" y="${MARGIN_PX * pxToMm}" `;
-  elements += `width="${PATTERN_SIZE * pxToMm}" height="${PATTERN_SIZE * pxToMm}"/>\n`;
-  elements += `    </clipPath>\n`;
-  elements += `  </defs>\n`;
+  // desc情報（V溝時のみビット構成を記載）
+  let descExtra = '';
+  if (mode === 'vgroove') {
+    const inp = gatherInputs();
+    const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
+    if (inp.bitConfig === 'single') descExtra = ` | Single ${inp.bitAngles.primary}° (groove:${gwMm(inp.bitAngles.primary)}mm, depth:${VGROOVE.depth}mm)`;
+    else if (inp.bitConfig === 'dual') descExtra = ` | Dual ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}° (groove:${gwMm(inp.bitAngles.primary)}/${gwMm(inp.bitAngles.secondary)}mm, depth:${VGROOVE.depth}mm)`;
+    else descExtra = ` | Triple 60°/45°/30° (groove:${gwMm(60)}/${gwMm(45)}/${gwMm(30)}mm, depth:${VGROOVE.depth}mm)`;
+  }
 
-  // 木目グレインは余白にも描画（クリッピング外）
-  // パターンはクリッピング内
-  let grainElements = '';
-  let patternElements = '';
-  let inGrain = true;  // 最初のパスは木目（drawGrainOverlayが先に呼ばれる）
+  let bodyContent = '';
 
-  for (const p of paths) {
-    const svgEl = pathToSVG(p, pxToMm);
-    if (!svgEl) continue;
+  // レーザー加工機はSVG opacityを無視し、すべてのパスを同じ深さで彫る
+  // opacity が低い副アルゴリズムの線を除外（閾値: 0.3）
+  const MIN_OPACITY_FOR_EXPORT = 0.3;
 
-    // 木目グレインは直線のみで構成されているので、パターン開始を検出
-    // （beginPathでCIRCLEが来たら or fillRectが来たら パターン開始）
-    if (inGrain && (p.type === 'fillRect' ||
-        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
-      inGrain = false;
+  if (mode === 'vgroove') {
+    // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
+    // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
+    //
+    // V溝NC固有のフィルタ:
+    // - opacity属性を出力しない（物理的な切削にはopacity概念がない）
+    // - stroke-width が細すぎるパスを除外（副アルゴリズムの細線はNC加工に不適）
+    //   閾値: 0.3mm（pxToMm換算で lineWidth >= 1.5px 相当）
+    const MIN_STROKE_WIDTH_MM = 0.3;
+    const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
+
+    for (const p of paths) {
+      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
+      // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
+      const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
+      if (strokeWidthMm < MIN_STROKE_WIDTH_MM) continue;
+      const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer], true);  // suppressOpacity=true
+      if (!svgEl) continue;
+      const layerName = p.layer || 'default';
+      if (!layerMap[layerName]) layerMap[layerName] = [];
+      layerMap[layerName].push(svgEl);
     }
 
-    if (inGrain) {
-      grainElements += '    ' + svgEl + '\n';
-    } else {
+    // レイヤー順: 60° → 45° → 30°（太い溝から細い溝の順）
+    const layerOrder = ['60deg', '45deg', '30deg', 'default'];
+    for (const layerName of layerOrder) {
+      const elements = layerMap[layerName];
+      if (!elements || elements.length === 0) continue;
+      const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
+      const angle = layerName.replace('deg', '');
+      const gwMm = a => VGROOVE.bits[parseInt(a)] ? VGROOVE.bits[parseInt(a)].grooveWidthMm.toFixed(2) : '?';
+      const label = layerName === 'default' ? 'other' : `V-bit ${angle}° groove=${gwMm(angle)}mm`;
+      bodyContent += `\n  <!-- ${label} -->\n`;
+      bodyContent += `  <g id="${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      for (const el of elements) {
+        bodyContent += `    ${el}\n`;
+      }
+      bodyContent += `  </g>\n`;
+    }
+  } else {
+    // レーザーモード: 単一レイヤー（加工パスのみ）
+    let patternElements = '';
+    for (const p of paths) {
+      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
+      const svgEl = pathToSVG(p, pxToMm);
+      if (!svgEl) continue;
       patternElements += '    ' + svgEl + '\n';
     }
+    bodyContent = `\n  <!-- パターン（64mm角有効エリア内） -->\n`;
+    bodyContent += `  <g id="pattern" clip-path="url(#pattern-clip)">\n`;
+    bodyContent += patternElements;
+    bodyContent += `  </g>\n`;
   }
 
   const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
      width="70mm" height="70mm" viewBox="0 0 70 70">
-  <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove'}</title>
-  <desc>Generated: ${new Date().toISOString()} | Vector output from DrawingRecorder</desc>
-${elements}
-  <!-- 木目グレイン（余白含む全面） -->
-  <g id="grain" opacity="0.5">
-${grainElements}  </g>
-
-  <!-- パターン（64mm角有効エリア内） -->
-  <g id="pattern" clip-path="url(#pattern-clip)">
-${patternElements}  </g>
+  <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove NC'}</title>
+  <desc>Generated: ${new Date().toISOString()} | Vector output${descExtra}</desc>
+${defs}${bodyContent}
 </svg>`;
 
   const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -1642,12 +2123,17 @@ ${patternElements}  </g>
 }
 
 // パスデータをSVG要素文字列に変換
-function pathToSVG(p, scale) {
+// colorOverride: レイヤー色でstroke/fillを上書き（V溝NCのビット角度別色分け）
+// suppressOpacity: trueならopacity属性を出力しない（V溝NC用 — 物理切削にはopacity概念がない）
+function pathToSVG(p, scale, colorOverride, suppressOpacity) {
+  const fillColor = colorOverride || p.fillStyle;
+  const strokeColor = colorOverride || p.strokeStyle;
+  const opacityAttr = (!suppressOpacity && p.globalAlpha < 1) ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
+
   if (p.type === 'fillRect') {
-    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     return `<rect x="${(p.x * scale).toFixed(2)}" y="${(p.y * scale).toFixed(2)}" ` +
       `width="${(p.w * scale).toFixed(2)}" height="${(p.h * scale).toFixed(2)}" ` +
-      `fill="${p.fillStyle}"${opacity}/>`;
+      `fill="${fillColor}"${opacityAttr}/>`;
   }
 
   if (!p.segments || p.segments.length === 0) return null;
@@ -1656,14 +2142,13 @@ function pathToSVG(p, scale) {
   const circleSegs = p.segments.filter(s => s.cmd === 'CIRCLE');
   if (circleSegs.length === 1 && p.segments.length === 1) {
     const c = circleSegs[0];
-    const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
     if (p.type === 'fill') {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
-        `r="${(c.r * scale).toFixed(2)}" fill="${p.fillStyle}"${opacity}/>`;
+        `r="${(c.r * scale).toFixed(2)}" fill="${fillColor}"${opacityAttr}/>`;
     } else {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
-        `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${p.strokeStyle}" ` +
-        `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+        `r="${(c.r * scale).toFixed(2)}" fill="none" stroke="${strokeColor}" ` +
+        `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacityAttr}/>`;
     }
   }
 
@@ -1683,12 +2168,11 @@ function pathToSVG(p, scale) {
 
   if (!d.trim()) return null;
 
-  const opacity = p.globalAlpha < 1 ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
   if (p.type === 'fill') {
-    return `<path d="${d.trim()}" fill="${p.fillStyle}"${opacity}/>`;
+    return `<path d="${d.trim()}" fill="${fillColor}"${opacityAttr}/>`;
   } else {
-    return `<path d="${d.trim()}" fill="none" stroke="${p.strokeStyle}" ` +
-      `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacity}/>`;
+    return `<path d="${d.trim()}" fill="none" stroke="${strokeColor}" ` +
+      `stroke-width="${(p.lineWidth * scale).toFixed(3)}"${opacityAttr}/>`;
   }
 }
 
@@ -1703,18 +2187,30 @@ function exportPNG(mode) {
 function exportDXF() {
   const paths = lastRecordedPaths.vgroove || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
+  const inp = gatherInputs();
 
   let dxf = '';
-  // DXF Header
+  // DXF Header（ビット構成をコメントとして記録）
   dxf += '0\nSECTION\n2\nHEADER\n';
   dxf += '9\n$INSUNITS\n70\n4\n';  // mm単位
+  const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
+  dxf += '999\nV-Groove Depth: ' + VGROOVE.depth + 'mm (fixed)\n';
+  if (inp.bitConfig === 'single') {
+    dxf += '999\nV-Groove Single: ' + inp.bitAngles.primary + 'deg groove=' + gwMm(inp.bitAngles.primary) + 'mm\n';
+  } else if (inp.bitConfig === 'dual') {
+    dxf += '999\nV-Groove Dual: Primary=' + inp.bitAngles.primary + 'deg(' + gwMm(inp.bitAngles.primary) + 'mm) Secondary=' + inp.bitAngles.secondary + 'deg(' + gwMm(inp.bitAngles.secondary) + 'mm)\n';
+  } else {
+    dxf += '999\nV-Groove Triple: 60deg(' + gwMm(60) + 'mm) 45deg(' + gwMm(45) + 'mm) 30deg(' + gwMm(30) + 'mm)\n';
+  }
   dxf += '0\nENDSEC\n';
-  // Tables (最小限)
+  // Tables — ビット角度ごとにレイヤー定義
+  // DXF色番号: 1=赤(60°), 3=緑(45°), 5=青(30°), 7=白(BORDER)
   dxf += '0\nSECTION\n2\nTABLES\n';
-  dxf += '0\nTABLE\n2\nLAYER\n70\n3\n';
-  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';       // 白
-  dxf += '0\nLAYER\n2\nGRAIN\n70\n0\n62\n8\n';        // グレー
-  dxf += '0\nLAYER\n2\nPATTERN\n70\n0\n62\n1\n';      // 赤（加工パス）
+  dxf += '0\nTABLE\n2\nLAYER\n70\n4\n';
+  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';      // 白 — 外枠・有効エリア枠
+  dxf += '0\nLAYER\n2\nBIT_60DEG\n70\n0\n62\n1\n';   // 赤 — 60°ビット（荒彫り）
+  dxf += '0\nLAYER\n2\nBIT_45DEG\n70\n0\n62\n3\n';   // 緑 — 45°ビット（中仕上げ）
+  dxf += '0\nLAYER\n2\nBIT_30DEG\n70\n0\n62\n5\n';   // 青 — 30°ビット（仕上げ）
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   // Entities
   dxf += '0\nSECTION\n2\nENTITIES\n';
@@ -1726,23 +2222,22 @@ function exportDXF() {
   const e = m + PATTERN_SIZE * pxToMm;
   dxf += dxfPolyline([[m,m],[e,m],[e,e],[m,e]], true, 'BORDER');
 
-  // パスデータをDXFエンティティに変換
-  let isGrain = true;
+  // パスデータをDXFエンティティに変換（ビット角度→DXFレイヤー）
+  const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
+
+  const MIN_OPACITY_DXF = 0.3;  // SVG同様、低opacityパスを除外
+  const MIN_STROKE_WIDTH_DXF = 0.3;  // SVG同様、細すぎるパスを除外（mm単位）
   for (const p of paths) {
-    // 木目→パターンの境界検出（SVGと同じロジック）
-    if (isGrain && (p.type === 'fillRect' ||
-        (p.segments && p.segments.some(s => s.cmd === 'CIRCLE')))) {
-      isGrain = false;
-    }
-    const layer = isGrain ? 'GRAIN' : 'PATTERN';
+    if (p.globalAlpha < MIN_OPACITY_DXF) continue;
+    // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
+    const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
+    if (strokeWidthMm < MIN_STROKE_WIDTH_DXF) continue;
+    const layer = DXF_LAYER_MAP[p.layer] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
-      // fillRectは小さい矩形→DXFではPOINTまたはスキップ
-      // Reaction-Diffusionの微小矩形はDXFでは点として表現
       const cx = (p.x + p.w / 2) * pxToMm;
       const cy = 70 - (p.y + p.h / 2) * pxToMm; // DXFはY軸反転
       if (p.w * pxToMm > 0.3) {
-        // 大きめの矩形はそのまま
         const x1 = p.x * pxToMm, y1 = 70 - p.y * pxToMm;
         const x2 = (p.x + p.w) * pxToMm, y2 = 70 - (p.y + p.h) * pxToMm;
         dxf += dxfPolyline([[x1,y1],[x2,y1],[x2,y2],[x1,y2]], true, layer);
@@ -1802,6 +2297,59 @@ function setWeather(el) {
   debouncedRender();
 }
 
+// V溝ビット構成の切替（Single/Dual/Triple）
+function setBitConfig(el) {
+  document.querySelectorAll('.bit-config-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const config = el.dataset.config;
+  document.getElementById('bit-single-panel').style.display = config === 'single' ? '' : 'none';
+  document.getElementById('bit-dual-panel').style.display = config === 'dual' ? '' : 'none';
+  document.getElementById('bit-triple-panel').style.display = config === 'triple' ? '' : 'none';
+  updateBitCostBadge(config);
+  debouncedRender();
+}
+
+// Single: ビット角度の選択
+function setBitAngle(el) {
+  const panel = el.closest('.bit-layer') || el.closest('#bit-single-panel');
+  if (panel) {
+    panel.querySelectorAll('.bit-angle-btn').forEach(b => b.classList.remove('active'));
+  }
+  el.classList.add('active');
+  debouncedRender();
+}
+
+// Dual: 2本の組み合わせ選択
+function setBitCombo(el) {
+  document.querySelectorAll('#bit-dual-panel .bit-combo-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // 層情報を更新
+  const p = parseInt(el.dataset.primary);
+  const s = parseInt(el.dataset.secondary);
+  const pwEl = document.getElementById('dual-primary-width');
+  const swEl = document.getElementById('dual-secondary-width');
+  if (pwEl) pwEl.textContent = VGROOVE.bits[p].grooveWidthMm + 'mm';
+  if (swEl) swEl.textContent = VGROOVE.bits[s].grooveWidthMm + 'mm';
+  debouncedRender();
+}
+
+// コスト見積もりバッジの更新
+// NC加工費: ¥5,000-8,000/h = ¥83-133/min、工具交換1回≈1分
+function updateBitCostBadge(config) {
+  const badge = document.getElementById('bit-cost-badge');
+  const costVal = document.getElementById('bit-cost-val');
+  if (!badge || !costVal) return;
+  const ncRatePerMin = 108; // ¥6,500/h の中央値 → ¥108/min
+  let toolChanges = 0;
+  if (config === 'dual') toolChanges = 1;
+  else if (config === 'triple') toolChanges = 2;
+  const addMinutes = toolChanges * 1;
+  const addCost = addMinutes * ncRatePerMin;
+  badge.querySelector('span:first-child').textContent =
+    `工具交換: ${toolChanges}回 / 追加時間: ${addMinutes}分`;
+  costVal.textContent = addCost > 0 ? `+¥${addCost}` : '+¥0';
+}
+
 // Debounced render for smooth interaction
 let renderTimer = null;
 function debouncedRender() {
@@ -1813,7 +2361,6 @@ function debouncedRender() {
 function updateDisplayValues() {
   document.getElementById('weight-val').textContent = document.getElementById('weight').value;
   document.getElementById('height-val').textContent = parseFloat(document.getElementById('height').value).toFixed(1);
-  document.getElementById('grain-val').textContent = document.getElementById('grain-angle').value + '°';
 }
 
 // --- 名前入力バリデーション ---
