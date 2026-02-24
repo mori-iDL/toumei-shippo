@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>とうめいしっぽ — ご提案書</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@200;300;400;500;600;700&display=swap');
+
+  :root {
+    /* Apple/Notion inspired palette */
+    --black: #1d1d1f;
+    --gray-900: #2c2c2e;
+    --gray-700: #48484a;
+    --gray-500: #8e8e93;
+    --gray-300: #c7c7cc;
+    --gray-100: #f2f2f7;
+    --white: #ffffff;
+
+    /* Accent: warm wood */
+    --accent: #8b6914;
+    --accent-light: #b8941f;
+    --accent-subtle: rgba(139, 105, 20, 0.08);
+    --accent-medium: rgba(139, 105, 20, 0.15);
+
+    /* Semantic */
+    --green: #34c759;
+    --green-subtle: rgba(52, 199, 89, 0.1);
+    --blue: #007aff;
+    --blue-subtle: rgba(0, 122, 255, 0.08);
+    --orange: #ff9500;
+    --orange-subtle: rgba(255, 149, 0, 0.08);
+    --purple: #af52de;
+    --purple-subtle: rgba(175, 82, 222, 0.08);
+    --pink: #ff2d55;
+    --pink-subtle: rgba(255, 45, 85, 0.08);
+
+    --font: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    --slide-w: 1920px;
+    --slide-h: 1080px;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #e8e8ed;
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== SLIDE CONTAINER ===== */
+  .slide {
+    width: var(--slide-w);
+    height: var(--slide-h);
+    background: var(--white);
+    position: relative;
+    overflow: hidden;
+    margin: 40px auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+
+  .slide-inner {
+    width: 100%;
+    height: 100%;
+    padding: 80px 120px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  .slide-number {
+    position: absolute;
+    top: 40px;
+    right: 60px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    letter-spacing: 0.05em;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    padding: 4px 16px;
+    margin-bottom: 24px;
+  }
+
+  .headline-xl {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--black);
+  }
+
+  .headline-l {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--black);
+  }
+
+  .headline-m {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--black);
+  }
+
+  .headline-s {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--black);
+  }
+
+  .body-l {
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--gray-700);
+  }
+
+  .body-m {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--gray-700);
+  }
+
+  .body-s {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--gray-500);
+  }
+
+  .caption {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    letter-spacing: 0.02em;
+  }
+
+  /* ===== UTILITIES ===== */
+  .text-accent { color: var(--accent); }
+  .text-center { text-align: center; }
+  .flex-1 { flex: 1; }
+  .flex-row { display: flex; gap: 32px; }
+  .flex-col { display: flex; flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .gap-16 { gap: 16px; }
+  .gap-24 { gap: 24px; }
+  .gap-40 { gap: 40px; }
+  .gap-48 { gap: 48px; }
+  .gap-64 { gap: 64px; }
+  .mt-auto { margin-top: auto; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mb-32 { margin-bottom: 32px; }
+  .mb-40 { margin-bottom: 40px; }
+  .mb-48 { margin-bottom: 48px; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .card-elevated {
+    background: var(--white);
+    border: none;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.1);
+  }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .divider-full {
+    width: 100%;
+    height: 1px;
+    background: var(--gray-100);
+  }
+
+  /* ===== FOOTER ===== */
+  .slide-footer {
+    position: absolute;
+    bottom: 36px;
+    left: 120px;
+    right: 120px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slide-footer .caption {
+    color: var(--gray-300);
+  }
+
+  /* ===== PILL / BADGE ===== */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: var(--gray-100);
+    color: var(--gray-700);
+  }
+
+  .pill-accent {
+    background: var(--accent-subtle);
+    color: var(--accent);
+  }
+
+  /* ===== SPECIFIC SLIDES ===== */
+
+  /* Slide 1: Title */
+  .slide-title {
+    background: var(--black);
+    color: var(--white);
+  }
+  .slide-title .slide-inner {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .slide-title .headline-xl {
+    color: var(--white);
+    font-size: 72px;
+    margin-bottom: 32px;
+  }
+  .slide-title .body-l {
+    color: rgba(255,255,255,0.6);
+    max-width: 700px;
+  }
+  .slide-title .divider {
+    background: var(--accent-light);
+    margin: 0 auto 40px;
+  }
+  .slide-title .slide-number { color: rgba(255,255,255,0.3); }
+  .slide-title .tag {
+    color: var(--accent-light);
+    border-color: var(--accent-light);
+  }
+  .slide-title .slide-footer .caption { color: rgba(255,255,255,0.25); }
+
+  .panel-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 56px;
+  }
+  .panel-thumb {
+    width: 160px;
+    height: 160px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .panel-thumb span {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.7;
+  }
+
+  /* Slide 2: Architecture */
+  .layer-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .layer-label {
+    width: 200px;
+    flex-shrink: 0;
+  }
+  .layer-label .headline-s {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .layer-content {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .layer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    background: var(--gray-100);
+    color: var(--gray-700);
+  }
+  .layer-chip-warm {
+    background: var(--accent-subtle);
+    color: var(--accent);
+  }
+  .layer-chip-green {
+    background: var(--green-subtle);
+    color: #2d8a4e;
+  }
+  .layer-chip-blue {
+    background: var(--blue-subtle);
+    color: var(--blue);
+  }
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+    color: var(--gray-300);
+    font-size: 20px;
+  }
+
+  /* Slide 4: Products */
+  .product-card {
+    flex: 1;
+    border-radius: 20px;
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid var(--gray-100);
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card.featured {
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 20px rgba(139, 105, 20, 0.08);
+  }
+  .product-card .badge-popular {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+  }
+  .product-price {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--black);
+    letter-spacing: -0.02em;
+  }
+  .product-price .unit {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--gray-500);
+  }
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+  .feature-list li::before {
+    content: '✓';
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Slide 5: Numbers */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .cost-table th,
+  .cost-table td {
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 16px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .cost-table th {
+    font-weight: 500;
+    color: var(--gray-500);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .cost-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .cost-table .total-row td {
+    border-bottom: none;
+    padding-top: 20px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  /* Slide 6: Roadmap */
+  .timeline {
+    display: flex;
+    position: relative;
+    gap: 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 28px;
+    right: 28px;
+    height: 2px;
+    background: var(--gray-100);
+  }
+  .phase {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 16px;
+  }
+  .phase-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+    margin-left: 16px;
+  }
+  .phase-dot.future {
+    background: var(--white);
+    border: 2px solid var(--gray-300);
+  }
+  .phase-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .phase-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+  .phase-period {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 20px;
+  }
+  .phase-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .phase-items li {
+    font-size: 14px;
+    color: var(--gray-700);
+    line-height: 1.5;
+    padding-left: 16px;
+    position: relative;
+  }
+  .phase-items li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gray-300);
+  }
+
+  /* Slide 7: Team */
+  .member-card {
+    flex: 1;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid var(--gray-100);
+  }
+  .member-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 4px;
+  }
+  .member-role {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+  }
+  .member-desc {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  /* Slide 8: Decisions */
+  .decision-card {
+    flex: 1;
+    padding: 40px;
+    border-radius: 20px;
+    background: var(--gray-100);
+    display: flex;
+    flex-direction: column;
+  }
+  .decision-num {
+    font-size: 48px;
+    font-weight: 200;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .decision-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 12px;
+  }
+  .decision-question {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    flex: 1;
+  }
+  .decision-options {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .decision-options li {
+    font-size: 14px;
+    color: var(--gray-700);
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--white);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== SLIDE 1: 触れる ===================== -->
+<div class="slide slide-title">
+  <div class="slide-number">01 / 12</div>
+  <div class="slide-inner">
+    <div style="margin-bottom: 12px;">
+      <img src="screenshots/toumei_shippo_logo.png" alt="とうめいしっぽ" style="height: 80px; opacity: 0.7; filter: drop-shadow(0 0 30px rgba(120,180,160,0.15));">
+    </div>
+    <div class="tag">とうめいしっぽ</div>
+    <h1 class="headline-xl" style="text-align: center; max-width: 1100px; line-height: 1.3;">人と木の情感を自然計算が紡ぐ、<br>あたらしいおもちゃのかたち</h1>
+    <div class="divider" style="width: 64px;"></div>
+    <p class="body-l">
+      名前、誕生日、体重、身長、出生地、出生時刻、天気——<br>
+      赤ちゃんの7つの声を、自然計算アルゴリズムが<br>
+      岩手の森の木の模様に翻訳します。
+    </p>
+    <div class="panel-row">
+      <div class="panel-thumb" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+        <span style="color: rgba(255,255,255,0.5);">スギ</span>
+      </div>
+      <div class="panel-thumb" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
+        <span style="color: rgba(255,255,255,0.5);">クリ</span>
+      </div>
+      <div class="panel-thumb" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
+        <span style="color: rgba(255,255,255,0.5);">ケヤキ</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+
+<!-- ===================== SLIDE 2: 全体像 ===================== -->
+<div class="slide">
+  <div class="slide-number">02 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">全体像</div>
+    <h2 class="headline-l" style="margin-bottom: 8px;">5W2H — 事業の見取り図</h2>
+    <p class="body-l" style="margin-bottom: 24px;">中心に「なぜ」を置き、すべてをそこから導く。</p>
+
+    <div style="display: flex; gap: 32px; flex: 1;">
+
+      <!-- LEFT: WHY (hero section) -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; background: var(--accent-subtle); border: 2px solid rgba(139,105,20,0.2); border-radius: 20px; padding: 40px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <div style="width: 48px; height: 48px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 16px; font-weight: 700;">Why</span>
+          </div>
+          <div style="font-size: 24px; font-weight: 600; color: var(--accent);">なぜやるのか</div>
+        </div>
+        <div style="font-size: 20px; font-weight: 500; line-height: 1.8; color: var(--black); margin-bottom: 20px;">
+          触れることから、<br>
+          違いを楽しむ力を育てる。<br>
+          家族と一緒に育つ木のおもちゃ。
+        </div>
+        <div style="font-size: 14px; line-height: 1.8; color: var(--gray-700);">
+          「かわいいおもちゃ」ではなく、一生ものの道具。<br>
+          多様さは説明されるものではなく、体験されるもの。<br>
+          誰もが「つくる側」に回れる入口をつくる。
+        </div>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(139,105,20,0.15);">
+          <span style="font-size: 12px; color: var(--gray-500); font-style: italic;">— 新田紗希（2026.02.02 メールより）</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: 6 items in 2x3 grid -->
+      <div style="flex: 1.2; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 12px;">
+
+        <!-- What -->
+        <div style="background: var(--blue-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--blue);">What — 何を</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            赤ちゃんの誕生データを<br>自然計算で木の模様に翻訳する<strong>システム</strong>
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">おもちゃ1つではなく、生まれ続ける仕組み</div>
+        </div>
+
+        <!-- Who -->
+        <div style="background: var(--green-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: #2d8a4e;">Who — 誰が・誰に</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            新田（企画）× 松森（製作）× 阿部（デザイン）
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">対象: 小学生以下の子を持つ親</div>
+        </div>
+
+        <!-- When -->
+        <div style="background: var(--purple-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--purple);">When — いつ</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            R6〜R8（3年計画）
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">完成品 → テーラーメイド → サブスク</div>
+        </div>
+
+        <!-- Where -->
+        <div style="background: var(--orange-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--orange);">Where — どこで</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            盛岡市 × 岩手の森
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">県産広葉樹9樹種（市産材5 + 県産材4）</div>
+        </div>
+
+        <!-- How -->
+        <div style="background: var(--pink-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">H</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--pink);">How — どうやって</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            三層翻訳: 赤ちゃんの声 → 自然計算 → 木
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">Webアプリ + NC加工 + レーザー刻印</div>
+        </div>
+
+        <!-- How much -->
+        <div style="background: var(--accent-medium); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--gray-700); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">H</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--gray-700);">How much — いくらで</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            原価 ¥1,228〜1,878/枚
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">補助金 計498万円（R6〜R8）</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+
+<!-- ===================== SLIDE 3: 届け先の現実 ===================== -->
+<div class="slide">
+  <div class="slide-number">03 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">届け先</div>
+    <h2 class="headline-l" style="margin-bottom: 8px;">5W2H — お客さまから見た景色</h2>
+    <p class="body-l" style="margin-bottom: 24px;">作り手の意志を、届け先の現実に翻訳する。</p>
+
+    <div style="display: flex; gap: 32px; flex: 1;">
+
+      <!-- LEFT: WHY (customer hero) -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; background: var(--blue-subtle); border: 2px solid rgba(0,122,255,0.15); border-radius: 20px; padding: 40px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <div style="width: 48px; height: 48px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 16px; font-weight: 700;">Why</span>
+          </div>
+          <div style="font-size: 24px; font-weight: 600; color: var(--blue);">なぜ買うのか</div>
+        </div>
+        <div style="font-size: 20px; font-weight: 500; line-height: 1.8; color: var(--black); margin-bottom: 20px;">
+          「この子だけ」の特別なものを<br>
+          贈りたい、残したい。
+        </div>
+        <div style="font-size: 14px; line-height: 1.8; color: var(--gray-700);">
+          既製品にはない<strong>唯一性</strong>。<br>
+          名前・誕生日・体重が「模様」になる驚き。<br>
+          木の手触りが、日常の中でずっとそばにある安心。
+        </div>
+        <div style="margin-top: 20px; padding: 12px 16px; background: rgba(0,122,255,0.06); border-radius: 10px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--blue); margin-bottom: 4px;">購入の動機</div>
+          <div style="font-size: 12px; color: var(--gray-600); line-height: 1.6;">出産祝い ｜ 誕生記念 ｜ ハーフバースデー ｜ 木育への共感</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 6 items in 2x3 grid -->
+      <div style="flex: 1.2; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 12px;">
+
+        <!-- What (customer sees) -->
+        <div style="background: rgba(0,122,255,0.04); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--blue);">What — 何を手にするか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            赤ちゃんの誕生データが刻まれた<br>岩手の木のパネル（70mm角）
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">+ デザインストーリーカード</div>
+        </div>
+
+        <!-- Who (customer is) -->
+        <div style="background: var(--green-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: #2d8a4e;">Who — 誰が買うか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            出産祝いを探す友人・祖父母<br>
+            木育に関心のある子育て世帯
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">贈る人 と 使う人 が異なるギフト市場</div>
+        </div>
+
+        <!-- When (purchase timing) -->
+        <div style="background: var(--purple-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--purple);">When — いつ買うか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            出産直後〜1歳<br>
+            イベント・ワークショップ体験後
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">「体験→納得→購入」の導線</div>
+        </div>
+
+        <!-- Where (purchase channel) -->
+        <div style="background: var(--orange-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">W</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--orange);">Where — どこで買うか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            木育イベント・ワークショップ<br>
+            オンライン（Webアプリ経由）
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">Phase 1 はイベント中心 → Phase 2 でオンライン</div>
+        </div>
+
+        <!-- How (purchase experience) -->
+        <div style="background: var(--pink-subtle); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">H</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--pink);">How — どう届くか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            樹種を選ぶ → 手に取って触れる →<br>
+            気に入ったものを持ち帰る
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">Ph.2: アプリでデータ入力 → パターン生成 → 配送</div>
+        </div>
+
+        <!-- How much (customer price) -->
+        <div style="background: var(--accent-medium); border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--gray-700); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span style="color: white; font-size: 10px; font-weight: 700;">H</span>
+            </div>
+            <span style="font-size: 14px; font-weight: 600; color: var(--gray-700);">How much — いくらか</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
+            🏷 価格検討中（単品〜9枚コンプリート）
+          </div>
+          <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">出産祝い相場 ¥3,000〜10,000 を意識した価格設計</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 12px 20px; background: var(--gray-100); border-radius: 10px;">
+      <span class="body-s" style="color: var(--gray-600);">📌 Slide 2「作り手の意志」× Slide 3「届け先の現実」—— この2枚が事業の両輪</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 2: しくみ ===================== -->
+<div class="slide">
+  <div class="slide-number">04 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">しくみ</div>
+    <h2 class="headline-l" style="margin-bottom: 8px;">三層翻訳アーキテクチャ</h2>
+    <p class="body-l" style="margin-bottom: 16px;">赤ちゃんの声が、木の模様になるまで。</p>
+
+    <div style="display: flex; gap: 40px; flex: 1; align-items: stretch;">
+
+      <!-- 左カラム: はるかちゃんの変換ストーリー -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0;">
+
+        <!-- Layer 1: 入力データ -->
+        <div style="background: rgba(196,149,106,0.06); border: 1px solid rgba(196,149,106,0.15); border-radius: 10px; padding: 14px 18px;">
+          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
+            <span class="headline-s" style="color: var(--accent);">Layer 1</span>
+            <span class="body-s" style="color: var(--gray-500);">Biographical Voice — いのちの声</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; padding-left: 2px;">
+            <div class="body-s" style="color: var(--gray-700);">名前「<span style="color: var(--accent); font-weight: 500;">はるか</span>」→ 母音 <strong style="font-weight:500;">あ</strong>・う・あ</div>
+            <div class="body-s" style="color: var(--gray-700);">体重 3200g → やや力強い構造</div>
+            <div class="body-s" style="color: var(--gray-700);">誕生日 3月15日 → <strong style="font-weight:500;">春</strong></div>
+            <div class="body-s" style="color: var(--gray-700);">身長 50cm → 標準的な展開</div>
+            <div class="body-s" style="color: var(--gray-700);">出生時刻 7:30 → 朝の光</div>
+            <div class="body-s" style="color: var(--gray-700);">天気 ☀ 晴れ → 穏やかな揺らぎ</div>
+          </div>
+        </div>
+
+        <!-- 矢印 + 因果説明 1→2 -->
+        <div style="padding: 5px 0 5px 16px; display: flex; align-items: center; gap: 10px;">
+          <span style="color: var(--gray-400); font-size: 16px;">↓</span>
+          <span class="caption" style="color: var(--gray-500);">名前の母音と季節がアルゴリズムを選び、体格と天気が質感を決める</span>
+        </div>
+
+        <!-- Layer 2: 変換エンジン -->
+        <div style="background: rgba(45,138,78,0.05); border: 1px solid rgba(45,138,78,0.12); border-radius: 10px; padding: 14px 18px;">
+          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
+            <span class="headline-s" style="color: #2d8a4e;">Layer 2</span>
+            <span class="body-s" style="color: var(--gray-500);">Natural Computation — 自然計算</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; padding-left: 2px;">
+            <div class="body-s" style="color: var(--gray-700);"><span style="color:#2d8a4e; font-weight:500;">春</span>が選んだ主構造 → <strong style="font-weight:500;">フィボナッチ螺旋</strong>（成長のリズム）</div>
+            <div class="body-s" style="color: var(--gray-700);"><span style="color:var(--accent); font-weight:500;">あ</span>が選んだ副旋律 → <strong style="font-weight:500;">Flow</strong>（風の流れ）＋ うの和音 Perlin</div>
+            <div class="body-s" style="color: var(--gray-700);">朝 7:30 → 主と副がバランスよく<strong style="font-weight:500;">混ざり合う</strong></div>
+          </div>
+        </div>
+
+        <!-- 矢印 + 因果説明 2→3 -->
+        <div style="padding: 5px 0 5px 16px; display: flex; align-items: center; gap: 10px;">
+          <span style="color: var(--gray-400); font-size: 16px;">↓</span>
+          <span class="caption" style="color: var(--gray-500);">生成された模様が、選んだ木の特性を受けて最終形になる</span>
+        </div>
+
+        <!-- Layer 3: 出力メディア（木の色調） -->
+        <div style="background: rgba(139,100,50,0.06); border: 1px solid rgba(139,100,50,0.15); border-radius: 10px; padding: 14px 18px;">
+          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
+            <span class="headline-s" style="color: #7a5c2e;">Layer 3</span>
+            <span class="body-s" style="color: var(--gray-500);">Wood Character — 木の固有特性</span>
+          </div>
+          <div class="body-s" style="color: var(--gray-700); padding-left: 2px;">
+            <strong style="font-weight:500;">スギ</strong>（柔らかい木目）→ 広い線間隔・細い線幅・繊細な木目
+          </div>
+          <div style="padding-left: 2px; margin-top: 6px;">
+            <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 3px;">
+              <span class="caption" style="color: #7a5c2e; font-weight: 500; white-space: nowrap;">市産材</span>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">スギ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">カラマツ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">アカマツ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ナラ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">クリ</div>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 4px;">
+              <span class="caption" style="color: #7a5c2e; font-weight: 500; white-space: nowrap;">県産材</span>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ヤマザクラ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">オニグルミ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">イタヤカエデ</div>
+              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ケヤキ</div>
+            </div>
+            <span class="caption" style="color: var(--gray-500);">KD・無節・PL ｜ 15×70×70mm フロア材原板</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中央: 三層の粒子が有機的に交わり、ひとつの模様に収束する -->
+      <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 120px;">
+        <svg width="120" height="380" viewBox="0 0 120 380" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
+          <defs>
+            <radialGradient id="merge-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#c4956a" stop-opacity="0.15"/>
+              <stop offset="50%" stop-color="#2d8a4e" stop-opacity="0.06"/>
+              <stop offset="100%" stop-color="#7a5c2e" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- 合流点の柔らかな光 -->
+          <ellipse cx="105" cy="190" rx="28" ry="38" fill="url(#merge-glow)"/>
+          <!-- Layer 1: いのちの声 — 暖色の粒子が上から流れ込む -->
+          <path d="M2 50 C20 52, 40 58, 56 76 C72 94, 86 128, 96 158 C102 174, 106 184, 108 190"
+                stroke="#c4956a" stroke-width="6" fill="none" opacity="0.6"
+                stroke-linecap="round" stroke-dasharray="0 12"/>
+          <path d="M0 42 C16 44, 36 50, 52 68 C68 86, 84 120, 95 154 C100 168, 105 182, 107 188"
+                stroke="#c4956a" stroke-width="4" fill="none" opacity="0.35"
+                stroke-linecap="round" stroke-dasharray="0 16" stroke-dashoffset="-5"/>
+          <path d="M4 58 C22 58, 44 66, 62 86 C78 106, 90 140, 100 166 C104 176, 108 186, 109 191"
+                stroke="#c4956a" stroke-width="3" fill="none" opacity="0.25"
+                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-10"/>
+          <!-- Layer 2: 自然計算 — 緑の粒子が中央を流れる -->
+          <path d="M2 170 C22 170, 44 173, 62 177 C78 181, 90 185, 100 188 C104 189, 107 190, 108 190"
+                stroke="#2d8a4e" stroke-width="6" fill="none" opacity="0.55"
+                stroke-linecap="round" stroke-dasharray="0 12" stroke-dashoffset="-3"/>
+          <path d="M0 163 C18 164, 40 167, 58 172 C74 176, 88 181, 98 186 C103 188, 106 189, 107 189"
+                stroke="#2d8a4e" stroke-width="4" fill="none" opacity="0.35"
+                stroke-linecap="round" stroke-dasharray="0 16" stroke-dashoffset="-8"/>
+          <path d="M3 178 C24 177, 46 180, 66 184 C82 187, 94 190, 103 192 C106 192, 108 192, 109 192"
+                stroke="#2d8a4e" stroke-width="3" fill="none" opacity="0.25"
+                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-2"/>
+          <!-- Layer 3: 木の固有特性 — 木色の粒子が下から合流 -->
+          <path d="M2 320 C20 318, 40 312, 56 296 C72 280, 86 252, 96 222 C102 206, 106 196, 108 190"
+                stroke="#7a5c2e" stroke-width="5.5" fill="none" opacity="0.5"
+                stroke-linecap="round" stroke-dasharray="0 12" stroke-dashoffset="-7"/>
+          <path d="M0 328 C18 324, 40 316, 58 300 C76 284, 90 256, 100 228 C104 212, 108 198, 109 192"
+                stroke="#7a5c2e" stroke-width="3.5" fill="none" opacity="0.3"
+                stroke-linecap="round" stroke-dasharray="0 16"/>
+          <path d="M4 314 C18 312, 36 304, 52 290 C68 276, 86 246, 96 216 C102 202, 106 194, 107 189"
+                stroke="#7a5c2e" stroke-width="3" fill="none" opacity="0.2"
+                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-12"/>
+          <!-- 合流ゾーン: 三色の粒子が混ざり合う -->
+          <circle cx="92" cy="174" r="3" fill="#c4956a" opacity="0.4"/>
+          <circle cx="96" cy="200" r="3.5" fill="#2d8a4e" opacity="0.35"/>
+          <circle cx="89" cy="207" r="3" fill="#7a5c2e" opacity="0.3"/>
+          <circle cx="98" cy="181" r="3.5" fill="#c4956a" opacity="0.35"/>
+          <circle cx="101" cy="194" r="4" fill="#2d8a4e" opacity="0.4"/>
+          <circle cx="95" cy="188" r="3" fill="#7a5c2e" opacity="0.32"/>
+          <circle cx="104" cy="184" r="3.5" fill="#c4956a" opacity="0.3"/>
+          <circle cx="100" cy="198" r="3" fill="#2d8a4e" opacity="0.28"/>
+          <circle cx="105" cy="192" r="3.5" fill="#7a5c2e" opacity="0.35"/>
+          <circle cx="88" cy="185" r="2.5" fill="#c4956a" opacity="0.22"/>
+          <circle cx="93" cy="196" r="2.5" fill="#2d8a4e" opacity="0.2"/>
+          <circle cx="86" cy="194" r="2.5" fill="#7a5c2e" opacity="0.18"/>
+          <!-- 合流後: 混ざった粒子が右へ流れ出す -->
+          <circle cx="111" cy="190" r="3" fill="#c4956a" opacity="0.25"/>
+          <circle cx="113" cy="187" r="2.5" fill="#2d8a4e" opacity="0.28"/>
+          <circle cx="114" cy="193" r="2.5" fill="#7a5c2e" opacity="0.22"/>
+          <circle cx="117" cy="190" r="2.5" fill="#c4956a" opacity="0.18"/>
+          <circle cx="119" cy="188" r="2" fill="#2d8a4e" opacity="0.15"/>
+          <circle cx="120" cy="191" r="2" fill="#7a5c2e" opacity="0.12"/>
+        </svg>
+      </div>
+
+      <!-- 右カラム: 実際のアウトプット（主役） -->
+      <div style="width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="background: linear-gradient(145deg, #3e3028, #2c2018); border-radius: 16px; padding: 18px; box-shadow: 0 12px 48px rgba(44,32,24,0.25), inset 0 1px 0 rgba(255,255,255,0.04);">
+          <img src="screenshots/pattern_haruka_laser.png" alt="はるかちゃんのパターン" style="width: 310px; height: 310px; display: block; border-radius: 6px;">
+        </div>
+        <div style="margin-top: 18px; text-align: center;">
+          <div class="headline-s" style="margin-bottom: 4px;">「はるか」ちゃんの模様</div>
+          <div class="body-s" style="color: var(--gray-500); margin-bottom: 10px;">3月15日生まれ・3200g・50cm・晴れ</div>
+          <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
+            <div class="caption" style="color: var(--gray-600);"><span style="color: var(--accent);">螺旋</span>の成長リズム × <span style="color: #2d8a4e;">Flow</span>の風</div>
+            <div class="caption" style="color: var(--gray-600);"><span style="color: var(--gray-700);">スギ</span>の柔らかい木肌に宿る</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 3: 技術詳解 ===================== -->
+<div class="slide">
+  <div class="slide-number">05 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">しくみ（詳解）</div>
+    <h2 class="headline-l" style="margin-bottom: 8px;">三層翻訳アーキテクチャ — 全体像</h2>
+    <p class="body-l" style="margin-bottom: 20px;">7つの声が、自然計算と木の特性を通じて、唯一無二の模様になる。</p>
+
+    <div style="display: flex; gap: 20px; flex: 1; align-items: stretch;">
+
+      <!-- Layer 1: いのちの声 -->
+      <div style="flex: 1; background: rgba(196,149,106,0.04); border: 1px solid rgba(196,149,106,0.12); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
+          <span class="headline-s" style="color: var(--accent); font-size: 18px;">Layer 1</span>
+          <span class="caption" style="color: var(--gray-500);">7 Voices — いのちの声</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); flex-shrink: 0; font-weight: 500;">名</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">名前</strong> → 母音分析 → <span style="color:var(--accent)">副アルゴリズム</span></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(45,138,78,0.10); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #2d8a4e; flex-shrink: 0; font-weight: 500;">誕</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">誕生日</strong> → 季節判定 → <span style="color:#2d8a4e">主アルゴリズム</span></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); flex-shrink: 0; font-weight: 500;">刻</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">出生時刻</strong> → 主副の<span style="color:var(--accent)">ブレンド比率</span></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">重</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">体重</strong> → 力強さ / 繊細さ</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">長</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">身長</strong> → 伸びやかさ / 凝縮</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.08); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-500); flex-shrink: 0; font-weight: 500;">地</div>
+            <div style="font-size: 13px; color: var(--gray-500);"><strong style="font-weight:500;">出生地</strong> → 地域性（将来拡張）</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">空</div>
+            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">天気</strong> → 乱流度（揺らぎの質）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 1→2 -->
+      <div style="display: flex; align-items: center; width: 36px; flex-shrink: 0;">
+        <svg width="36" height="40" viewBox="0 0 36 40" fill="none">
+          <path d="M4 20 C14 20, 22 20, 32 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M27 15 L34 20 L27 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Layer 2: 自然計算エンジン -->
+      <div style="flex: 1.4; background: rgba(45,138,78,0.03); border: 1px solid rgba(45,138,78,0.10); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
+          <span class="headline-s" style="color: #2d8a4e; font-size: 18px;">Layer 2</span>
+          <span class="caption" style="color: var(--gray-500);">Engine — 自然計算エンジン</span>
+        </div>
+
+        <!-- 主アルゴリズム（季節） -->
+        <div style="margin-bottom: 12px;">
+          <div class="caption" style="color: #2d8a4e; margin-bottom: 6px; font-weight: 600;">主アルゴリズム（季節で選択）</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
+              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">春</div>
+              <div style="font-size: 11px; color: var(--gray-700);">フィボナッチ螺旋</div>
+              <div style="font-size: 10px; color: var(--gray-500);">成長のリズム・黄金比の展開</div>
+            </div>
+            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
+              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">夏</div>
+              <div style="font-size: 11px; color: var(--gray-700);">ボロノイ分割</div>
+              <div style="font-size: 10px; color: var(--gray-500);">細胞分裂・領域の主張</div>
+            </div>
+            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
+              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">秋</div>
+              <div style="font-size: 11px; color: var(--gray-700);">反応拡散</div>
+              <div style="font-size: 10px; color: var(--gray-500);">チューリングパターン・有機的斑模様</div>
+            </div>
+            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
+              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">冬</div>
+              <div style="font-size: 11px; color: var(--gray-700);">フラクタル分岐</div>
+              <div style="font-size: 10px; color: var(--gray-500);">枯木の枝・再帰的分岐構造</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 副アルゴリズム（母音） -->
+        <div style="margin-bottom: 12px;">
+          <div class="caption" style="color: var(--accent); margin-bottom: 6px; font-weight: 600;">副アルゴリズム（名前の母音で選択）</div>
+          <div style="display: flex; gap: 5px;">
+            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">あ</div>
+              <div style="font-size: 10px; color: var(--gray-600);">風の流れ</div>
+            </div>
+            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">い</div>
+              <div style="font-size: 10px; color: var(--gray-600);">波のリズム</div>
+            </div>
+            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">う</div>
+              <div style="font-size: 10px; color: var(--gray-600);">大地の揺らぎ</div>
+            </div>
+            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">え</div>
+              <div style="font-size: 10px; color: var(--gray-600);">交差する軌跡</div>
+            </div>
+            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">お</div>
+              <div style="font-size: 10px; color: var(--gray-600);">波紋の広がり</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ブレンド・修飾 -->
+        <div style="background: rgba(45,138,78,0.03); border: 1px dashed rgba(45,138,78,0.15); border-radius: 8px; padding: 10px 14px; margin-top: auto;">
+          <div class="caption" style="color: var(--gray-600); margin-bottom: 3px; font-weight: 500;">ブレンド・修飾</div>
+          <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
+            出生時刻が主副の混合比を決定（正午=純粋な主 / 夜明け=最大混合）<br>
+            体重・身長が構造の質を、天気が揺らぎの質を調律する
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 2→3 -->
+      <div style="display: flex; align-items: center; width: 36px; flex-shrink: 0;">
+        <svg width="36" height="40" viewBox="0 0 36 40" fill="none">
+          <path d="M4 20 C14 20, 22 20, 32 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M27 15 L34 20 L27 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Layer 3: 木の固有特性 -->
+      <div style="flex: 1; background: rgba(139,100,50,0.04); border: 1px solid rgba(139,100,50,0.12); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
+          <span class="headline-s" style="color: #7a5c2e; font-size: 18px;">Layer 3</span>
+          <span class="caption" style="color: var(--gray-500);">9 Woods — 木の固有特性</span>
+        </div>
+
+        <!-- 3軸パラメータ -->
+        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">線間隔</div>
+          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">線幅</div>
+          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">木目強度</div>
+        </div>
+
+        <!-- 市産材 -->
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 11px; color: #7a5c2e; font-weight: 600; margin-bottom: 4px;">市産材（盛岡市産）</div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 60px; font-weight: 500;">スギ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">柔らかい木目・温かい色調</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 60px; font-weight: 500;">カラマツ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">脂分・赤褐色・強靭</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 60px; font-weight: 500;">アカマツ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">脂分豊富・力強い木目</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 60px; font-weight: 500;">ナラ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">虎斑杢・堅牢</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 60px; font-weight: 500;">クリ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">力強い年輪・タンニン豊富</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 県産材 -->
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 11px; color: #7a5c2e; font-weight: 600; margin-bottom: 4px;">県産材（岩手県産）</div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 80px; font-weight: 500;">ヤマザクラ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">赤みの暖色・緻密</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 80px; font-weight: 500;">オニグルミ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">深い褐色・滑らか</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 80px; font-weight: 500;">イタヤカエデ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">絹の光沢・白い木肌</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
+              <span style="width: 80px; font-weight: 500;">ケヤキ</span>
+              <span style="font-size: 11px; color: var(--gray-500);">美しい杢目・堅牢</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 仕様 -->
+        <div style="font-size: 11px; color: var(--gray-500); padding: 6px 10px; background: rgba(139,100,50,0.04); border-radius: 6px;">
+          KD・無節・PL｜15×70×70mm フロア材原板
+        </div>
+
+        <!-- Phase 2 UXビジョン -->
+        <div style="margin-top: 6px; padding: 8px 10px; background: rgba(255,149,0,0.05); border: 1px dashed rgba(255,149,0,0.2); border-radius: 6px;">
+          <div style="font-size: 10px; font-weight: 600; color: var(--orange); margin-bottom: 3px;">🏷 Phase 2 UXビジョン（検討中）</div>
+          <div style="font-size: 10px; color: var(--gray-600); line-height: 1.4;">
+            iPhoneで実物の木肌を撮影 → アプリ上でパターンをプレビュー → 実際の木目との重なりを確認してから注文
+          </div>
+          <div style="font-size: 9px; color: var(--gray-500); margin-top: 2px;">
+            課題: 撮影条件の標準化・色再現性・通信環境
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom: 組み合わせのスケール -->
+    <div style="margin-top: 12px; padding: 12px 28px; background: linear-gradient(90deg, rgba(196,149,106,0.05), rgba(45,138,78,0.05), rgba(139,100,50,0.05)); border-radius: 10px; display: flex; justify-content: center; gap: 32px; align-items: center;">
+      <span style="color: var(--gray-600); font-size: 15px; font-weight: 500;">
+        <span style="color: #2d8a4e; font-size: 22px; font-weight: 700;">4</span><span style="font-size: 13px;"> 季節</span>
+        <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
+        <span style="color: var(--accent); font-size: 22px; font-weight: 700;">5</span><span style="font-size: 13px;"> 母音</span>
+        <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
+        <span style="color: var(--gray-700); font-size: 22px; font-weight: 700;">&infin;</span><span style="font-size: 13px;"> 質感</span>
+        <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
+        <span style="color: #7a5c2e; font-size: 22px; font-weight: 700;">9</span><span style="font-size: 13px;"> 樹種</span>
+      </span>
+      <span style="color: var(--gray-400); font-size: 18px;">=</span>
+      <span style="color: var(--gray-700); font-size: 15px; font-weight: 500;">同じ赤ちゃんは二人といない。だから、同じ模様も二つとない。</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 4: 体験 ===================== -->
+<div class="slide">
+  <div class="slide-number">06 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">体験</div>
+    <h2 class="headline-l mb-12">触ってみてください</h2>
+    <p class="body-l mb-48">あなたの赤ちゃんのパターンを、今ここで生成します。</p>
+
+    <div class="flex-row flex-1 gap-64">
+      <!-- Demo area -->
+      <div class="flex-1" style="display: flex; flex-direction: column;">
+        <div style="flex: 1; background: var(--gray-100); border-radius: 20px; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 40px;">
+          <div style="text-align: center;">
+            <div style="width: 220px; height: 220px; background: #f5ede0; border-radius: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+              <span class="caption">レーザーモード</span>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <div style="width: 220px; height: 220px; background: #e8dcc8; border-radius: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+              <span class="caption">V溝NCモード</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 16px 0;">
+          <span class="body-s">💡 同じデータからは、必ず同じパターンが再現されます（決定論的生成）</span>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div style="width: 340px; display: flex; flex-direction: column; gap: 24px; justify-content: center;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <img src="data:image/png;base64,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" alt="QRコード: とうめいしっぽデザイナー" style="width: 180px; height: 180px; border-radius: 20px;">
+          <div class="caption" style="margin-top: 8px; opacity: 0.6; font-size: 11px; word-break: break-all; max-width: 220px;">mori-idl.github.io/toumei-shippo</div>
+        </div>
+        <div class="flex-col gap-16">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 32px; height: 32px; background: var(--accent-subtle); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0;">1</div>
+            <span class="body-m">QRコードを読み取り</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 32px; height: 32px; background: var(--accent-subtle); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0;">2</div>
+            <span class="body-m">赤ちゃんの情報を入力</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: white; flex-shrink: 0;">3</div>
+            <span class="body-m" style="font-weight: 600;">パターンがリアルタイム生成</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 32px; height: 32px; background: var(--accent-subtle); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--accent); flex-shrink: 0;">4</div>
+            <span class="body-m">樹種を選んでプレビュー</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 4: 商品イメージ ===================== -->
+<div class="slide">
+  <div class="slide-number">07 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">商品構成</div>
+    <h2 class="headline-l mb-12">Phase別 商品ラインナップ</h2>
+    <p class="body-l" style="margin-bottom: 28px;">段階的に価値を高めていく3フェーズ構成。</p>
+
+    <div class="flex-row flex-1 gap-24">
+      <!-- Phase 1: 完成品 -->
+      <div class="product-card" style="flex: 1.2;">
+        <div class="pill mb-16" style="background: rgba(45,138,78,0.1); color: #2d8a4e;">Phase 1 — 完成品販売</div>
+        <div class="headline-s mb-8">既製パターン × 9樹種</div>
+        <p class="body-s mb-16">あらかじめ用意されたデザインパターンを<br>お好みの樹種で。NC加工＋オイル仕上げ。</p>
+        <div class="flex-1"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">単品（1枚）</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">3枚セット</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">9枚コンプリート</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li>選べる9樹種（市産材5 + 県産材4）</li>
+          <li>NC加工 + 研磨 + オイル仕上げ</li>
+          <li>デザインストーリーカード付き</li>
+          <li style="color: var(--orange);">🏷 9枚: 収納トレイ or 箱（木製/紙製？）</li>
+        </ul>
+      </div>
+
+      <!-- Phase 2: テーラーメイド -->
+      <div class="product-card featured" style="flex: 1.2;">
+        <div class="badge-popular">付加価値</div>
+        <div class="pill pill-accent mb-16">Phase 2 — テーラーメイド</div>
+        <div class="headline-s mb-8">赤ちゃん固有パターン × 9樹種</div>
+        <p class="body-s mb-16">赤ちゃんの誕生データから生成した<br>世界にひとつだけのパターンをレーザー刻印。</p>
+        <div class="flex-1"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">単品（1枚）</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">3枚セット</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">9枚コンプリート</span>
+            <span class="product-price" style="font-size: 22px; color: var(--orange);">🏷 要検討</span>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li>Phase 1の全内容 +</li>
+          <li>Webアプリで誕生データ入力</li>
+          <li>個別パターンのレーザー刻印</li>
+          <li style="color: var(--orange);">🏷 仮: ギフトパッケージ対応</li>
+          <li style="color: var(--orange);">🏷 9枚: 収納トレイ or 箱（木製/紙製？）</li>
+        </ul>
+      </div>
+
+      <!-- Phase 3: サブスク -->
+      <div class="product-card" style="flex: 0.8;">
+        <div class="pill mb-16" style="background: var(--purple-subtle); color: var(--purple);">Phase 3 — サブスク</div>
+        <div class="headline-s mb-8">月額定額</div>
+        <p class="body-s mb-16">成長に合わせて新しい<br>パネルが届く仕組み。</p>
+        <div class="flex-1"></div>
+        <div style="margin-bottom: 16px;">
+          <span class="product-price" style="font-size: 28px;">¥1,980</span>
+          <span class="body-s" style="color: var(--gray-500);"> /月</span>
+        </div>
+        <ul class="feature-list">
+          <li style="color: var(--orange);">🏷 仮: 月1枚新パターン配送</li>
+          <li style="color: var(--orange);">🏷 仮: Webアプリ全機能開放</li>
+          <li style="color: var(--orange);">🏷 仮: 最低契約期間の設定</li>
+        </ul>
+        <div style="margin-top: 12px; padding: 8px 12px; background: rgba(255,149,0,0.06); border-radius: 8px;">
+          <span style="font-size: 11px; color: var(--orange);">⚠ Phase 3の詳細設計は要検討</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 12px 20px; background: var(--gray-100); border-radius: 10px;">
+      <span class="body-s" style="color: var(--gray-600);">📌 全価格が検討中 ｜ 商品構成: 単品・3枚セット・9枚コンプリート ｜ 9枚にはオプションで収納トレイ/箱を検討 ｜ 🏷 = チーム検討が必要</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 5: 数字 ===================== -->
+<div class="slide">
+  <div class="slide-number">08 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">数字</div>
+    <h2 class="headline-l" style="margin-bottom: 6px;">コストと価格の設計</h2>
+    <p class="body-s" style="margin-bottom: 20px; color: var(--gray-500);">事業収支シミュレーション v1 ベース ｜ 単位: 1枚あたり（70×70×15mm）</p>
+
+    <div style="display: flex; gap: 32px; flex: 1;">
+      <!-- LEFT: 製造原価 Phase比較 -->
+      <div style="flex: 1.2;">
+        <div class="headline-s mb-16" style="color: var(--gray-700);">製造原価（松森工房）</div>
+
+        <table class="cost-table" style="margin-bottom: 12px;">
+          <thead>
+            <tr>
+              <th>工程</th>
+              <th style="text-align: right;">Phase 1<br><span style="font-weight: 400; text-transform: none;">完成品</span></th>
+              <th style="text-align: right;">Phase 2<br><span style="font-weight: 400; text-transform: none;">テーラーメイド</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>木材費（樹種により変動）</td>
+              <td style="text-align: right;">¥450〜600</td>
+              <td style="text-align: right;">¥600</td>
+            </tr>
+            <tr>
+              <td>NC加工費<br><span class="caption">5,500円/h × 12個35-45分（消耗品・設備費込み）</span></td>
+              <td style="text-align: right;">¥306</td>
+              <td style="text-align: right;">¥306</td>
+            </tr>
+            <tr>
+              <td>研磨・仕上げ</td>
+              <td style="text-align: right;">¥400</td>
+              <td style="text-align: right;">¥400</td>
+            </tr>
+            <tr>
+              <td>オイル塗装材料</td>
+              <td style="text-align: right;">¥100</td>
+              <td style="text-align: right;">¥100</td>
+            </tr>
+            <tr>
+              <td>レーザー刻印費<br><span class="caption">個別パターン刻印</span></td>
+              <td style="text-align: right; color: var(--gray-400);">—</td>
+              <td style="text-align: right;">¥500</td>
+            </tr>
+            <tr class="total-row">
+              <td>合計原価 / 枚</td>
+              <td style="text-align: right;">¥1,256</td>
+              <td style="text-align: right;">¥1,906</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="padding: 10px 14px; background: var(--gray-100); border-radius: 8px;">
+          <div class="caption" style="color: var(--gray-600);">※ NC加工費は消耗品（刃物・サンドペーパー等）・設備維持費を含む単価</div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="width: 1px; background: var(--gray-100);"></div>
+
+      <!-- RIGHT: 販売価格 -->
+      <div style="flex: 1;">
+        <div class="headline-s mb-16" style="color: var(--gray-700);">販売価格（消費者向け）</div>
+
+        <!-- Phase 1 -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 13px; font-weight: 600; color: #2d8a4e; margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 1 — 完成品販売</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 2 — テーラーメイド</div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
+              <span style="font-size: 16px; font-weight: 600; color: var(--orange);">🏷 要検討</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--purple); margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 3 — サブスクリプション</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--purple-subtle); border-radius: 8px;">
+            <span style="font-size: 14px; font-weight: 500;">月額</span>
+            <span style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,980<span style="font-size: 13px; font-weight: 400; color: var(--gray-500);"> /月</span></span>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 10px 14px; background: rgba(52,199,89,0.06); border: 1px solid rgba(52,199,89,0.15); border-radius: 8px;">
+          <div class="caption" style="color: var(--green); font-weight: 500;">投資回収期間: 約7.8ヶ月（シミュレーション値）</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 12px 20px; background: var(--gray-100); border-radius: 10px; display: flex; gap: 24px;">
+      <span class="body-s" style="color: var(--gray-600);">📌 全販売価格は要検討（原価ベースで設計中）</span>
+      <span class="body-s" style="color: var(--gray-600);">📌 Phase 1→2 の差額 = レーザー刻印の付加価値</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 9: ロードマップ 4Phase ===================== -->
+<div class="slide">
+  <div class="slide-number">09 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">ロードマップ</div>
+    <h2 class="headline-l mb-12">もらう → 選ぶ → つくる → 育てる</h2>
+    <p class="body-l" style="margin-bottom: 20px;">4つのPhaseで、受け手から作り手へ。70mmのキャンバスから世界へ。</p>
+
+    <div style="flex: 1; display: flex; gap: 16px; align-items: flex-end; padding-bottom: 12px;">
+
+      <!-- Phase 1: もらう -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="background: rgba(45,138,78,0.05); border: 2px solid rgba(45,138,78,0.2); border-radius: 16px; padding: 20px; height: 300px; display: flex; flex-direction: column; position: relative;">
+          <div style="position: absolute; top: -12px; left: 16px; background: #2d8a4e; color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px;">📍 今ここ</div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: #2d8a4e; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700;">1</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 600; color: #2d8a4e;">もらう</div>
+              <div style="font-size: 10px; color: var(--gray-500);">完成品販売 ｜ R7</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
+            既製パターン × 9樹種<br>
+            NC加工＋研磨＋オイル仕上げ
+          </div>
+          <ul class="phase-items" style="flex: 1; font-size: 12px;">
+            <li>単品・3枚・9枚コンプリート</li>
+            <li>出産祝い・木育ギフト</li>
+            <li>イベント・WS出展</li>
+          </ul>
+          <div style="padding: 6px 10px; background: rgba(45,138,78,0.08); border-radius: 8px; margin-top: 6px;">
+            <span style="font-size: 11px; color: #2d8a4e; font-weight: 600;">原価 ¥1,228/枚</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2: 選ぶ -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="background: rgba(196,149,106,0.05); border: 2px solid rgba(196,149,106,0.25); border-radius: 16px; padding: 20px; height: 350px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700;">2</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">選ぶ</div>
+              <div style="font-size: 10px; color: var(--gray-500);">テーラーメイド ｜ R7後半〜</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
+            赤ちゃん固有のパターンを<br>
+            Webアプリで生成 → レーザー刻印
+          </div>
+          <ul class="phase-items" style="flex: 1; font-size: 12px;">
+            <li>誕生データ → 固有パターン生成</li>
+            <li>「あなただけ」の木のパネル</li>
+            <li>デザインストーリーカード</li>
+            <li>オンライン注文フロー</li>
+          </ul>
+          <div style="padding: 6px 10px; background: var(--accent-subtle); border-radius: 8px; margin-top: 6px;">
+            <span style="font-size: 11px; color: var(--accent); font-weight: 600;">原価 ¥1,878/枚</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3: つくる -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="background: rgba(175,82,222,0.03); border: 2px dashed rgba(175,82,222,0.25); border-radius: 16px; padding: 20px; height: 400px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--purple); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700;">3</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 600; color: var(--purple);">つくる</div>
+              <div style="font-size: 10px; color: var(--gray-500);">クリエイティブPF ｜ R8〜</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
+            アルゴリズムを「絵の具」のように<br>
+            自分で組み合わせて模様を生む
+          </div>
+          <ul class="phase-items" style="flex: 1; font-size: 12px;">
+            <li>🎮 Playground — スライダーで遊ぶ</li>
+            <li>🎨 Studio — ノードで組み合わせる</li>
+            <li>⌨️ Code — コードで0→1を作る</li>
+            <li>キャンバス拡張: ペンプロッター・大型NC</li>
+          </ul>
+          <div style="padding: 6px 10px; background: rgba(175,82,222,0.06); border-radius: 8px; margin-top: 6px;">
+            <span style="font-size: 11px; color: var(--purple); font-weight: 600;">サブスク — つくる力への課金</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4: 育てる -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="background: rgba(0,122,255,0.03); border: 2px dashed rgba(0,122,255,0.2); border-radius: 16px; padding: 20px; height: 440px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: 700;">4</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 600; color: var(--blue);">育てる</div>
+              <div style="font-size: 10px; color: var(--gray-500);">コミュニティ ｜ R8〜</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
+            学び合い、作り合い、<br>
+            人と木とコードが出会う場
+          </div>
+          <ul class="phase-items" style="flex: 1; font-size: 12px;">
+            <li>ユーザーコミュニティ（Discord等）</li>
+            <li>ハッカソン・アイデアソン開催</li>
+            <li>ワークショップ（オン/オフ）</li>
+            <li>産学官連携: 県立大・IPUイノベ</li>
+            <li>開発メンバーがコミュニティから生まれる</li>
+          </ul>
+          <div style="padding: 6px 10px; background: rgba(0,122,255,0.06); border-radius: 8px; margin-top: 6px;">
+            <span style="font-size: 11px; color: var(--blue); font-weight: 600;">人と木とコードが三位一体で育つ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="flex: 1; padding: 8px 16px; background: rgba(45,138,78,0.06); border-radius: 8px; text-align: center;">
+        <span class="body-s" style="color: #2d8a4e;">← 実線 = 具体的計画 →</span>
+      </div>
+      <div style="flex: 1; padding: 8px 16px; background: rgba(175,82,222,0.04); border: 1px dashed rgba(175,82,222,0.2); border-radius: 8px; text-align: center;">
+        <span class="body-s" style="color: var(--purple);">← 破線 = ビジョン（方向性の共有） →</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 10: Phase 3-4 ビジョン詳細 ===================== -->
+<div class="slide">
+  <div class="slide-number">10 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">ビジョン</div>
+    <h2 class="headline-l mb-12">その先の世界 — 誰もが「つくる側」に回れる入口</h2>
+    <p class="body-l" style="margin-bottom: 24px;">夢物語ではない。技術の土台はPhase 1-2で築かれている。</p>
+
+    <div style="flex: 1; display: flex; gap: 28px;">
+
+      <!-- LEFT: Phase 3 つくる -->
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+        <div style="padding: 16px 20px; background: rgba(175,82,222,0.04); border: 2px solid rgba(175,82,222,0.15); border-radius: 16px;">
+          <div style="font-size: 18px; font-weight: 600; color: var(--purple); margin-bottom: 12px;">Phase 3: つくる — クリエイティブプラットフォーム</div>
+          <div style="font-size: 13px; color: var(--gray-700); line-height: 1.7; margin-bottom: 16px;">
+            赤ちゃんデータの入力だけでなく、<strong>アルゴリズムそのもの</strong>を触れるようにする。<br>
+            受け取る人から、生み出す人へ。
+          </div>
+
+          <!-- 3 tiers -->
+          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+            <div style="flex: 1; padding: 14px; background: rgba(45,138,78,0.05); border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; margin-bottom: 4px;">🎮</div>
+              <div style="font-size: 14px; font-weight: 600; color: #2d8a4e;">Playground</div>
+              <div style="font-size: 11px; color: var(--gray-600); margin-top: 4px; line-height: 1.5;">
+                スライダーを動かして<br>模様の変化を楽しむ<br>
+                <span style="color: var(--gray-400);">— 誰でも</span>
+              </div>
+            </div>
+            <div style="flex: 1; padding: 14px; background: rgba(196,149,106,0.06); border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; margin-bottom: 4px;">🎨</div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--accent);">Studio</div>
+              <div style="font-size: 11px; color: var(--gray-600); margin-top: 4px; line-height: 1.5;">
+                ノードエディタで<br>アルゴリズムを組み合わせる<br>
+                <span style="color: var(--gray-400);">— 好奇心がある人</span>
+              </div>
+            </div>
+            <div style="flex: 1; padding: 14px; background: rgba(175,82,222,0.05); border-radius: 12px; text-align: center;">
+              <div style="font-size: 24px; margin-bottom: 4px;">⌨️</div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--purple);">Code</div>
+              <div style="font-size: 11px; color: var(--gray-600); margin-top: 4px; line-height: 1.5;">
+                コードを書いて<br>0→1でアルゴリズムを創る<br>
+                <span style="color: var(--gray-400);">— ガチ勢</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- キャンバス拡張 -->
+          <div style="padding: 12px 16px; background: rgba(175,82,222,0.03); border-radius: 10px; border: 1px solid rgba(175,82,222,0.1);">
+            <div style="font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 6px;">🖼 キャンバスの拡張 — アルゴリズムは媒体を選ばない</div>
+            <div style="display: flex; gap: 16px; font-size: 11px; color: var(--gray-600);">
+              <span>🪵 NCルーター（木）</span>
+              <span>✏️ ペンプロッター（紙）</span>
+              <span>🔥 レーザー（革・アクリル）</span>
+              <span>🏠 家具サイズ</span>
+            </div>
+            <div style="font-size: 11px; color: var(--gray-500); margin-top: 6px;">
+              同じSVGデータから、異なる素材・スケールに作品が生まれる
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Phase 4 育てる -->
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+        <div style="padding: 16px 20px; background: rgba(0,122,255,0.03); border: 2px solid rgba(0,122,255,0.12); border-radius: 16px; flex: 1; display: flex; flex-direction: column;">
+          <div style="font-size: 18px; font-weight: 600; color: var(--blue); margin-bottom: 12px;">Phase 4: 育てる — コミュニティ＆産学官連携</div>
+          <div style="font-size: 13px; color: var(--gray-700); line-height: 1.7; margin-bottom: 16px;">
+            一人で作るのではなく、<strong>共に学び、共に育つ</strong>。<br>
+            開発メンバーがコミュニティから生まれる世界。
+          </div>
+
+          <!-- Community features -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1;">
+            <div style="padding: 12px; background: rgba(0,122,255,0.04); border-radius: 10px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px;">💬 オンラインコミュニティ</div>
+              <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
+                Discord等で意見交換・作品共有・<br>開発の仕方を学び合う
+              </div>
+            </div>
+            <div style="padding: 12px; background: rgba(0,122,255,0.04); border-radius: 10px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px;">🏆 ハッカソン・コンテスト</div>
+              <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
+                開発競争・アイデアソン<br>多様な年齢が参加
+              </div>
+            </div>
+            <div style="padding: 12px; background: rgba(0,122,255,0.04); border-radius: 10px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px;">🎓 産学官連携</div>
+              <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
+                岩手県立大学・IPUイノベーション<br>センターとの協働
+              </div>
+            </div>
+            <div style="padding: 12px; background: rgba(0,122,255,0.04); border-radius: 10px;">
+              <div style="font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px;">🌲 森×コード×子ども</div>
+              <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
+                三位一体で遊び続ける仕組み<br>リアルWSのオンライン版
+              </div>
+            </div>
+          </div>
+
+          <!-- 新田さんの言葉 -->
+          <div style="margin-top: 12px; padding: 12px 16px; background: rgba(0,122,255,0.04); border-left: 3px solid var(--blue); border-radius: 0 10px 10px 0;">
+            <div style="font-size: 12px; color: var(--blue); font-style: italic; line-height: 1.7;">
+              「木工や専門的な知識がなくても、誰もが『つくる側』に回れる入口をつくりたい」
+            </div>
+            <div style="font-size: 10px; color: var(--gray-500); margin-top: 4px;">— 新田紗希（2026.02.02 メールより）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 議論ポイント -->
+    <div style="padding: 12px 20px; background: rgba(255,149,0,0.04); border: 1px solid rgba(255,149,0,0.15); border-radius: 10px; margin-top: 12px;">
+      <div style="display: flex; align-items: center; gap: 24px;">
+        <span style="font-size: 12px; font-weight: 600; color: var(--orange);">💡 議論したいこと</span>
+        <span style="font-size: 11px; color: var(--gray-600);">この方向性はチームとして共有できるか？</span>
+        <span style="font-size: 11px; color: var(--gray-600);">Phase 3-4の開発は誰と？</span>
+        <span style="font-size: 11px; color: var(--gray-600);">サブスクの価格帯は？</span>
+        <span style="font-size: 11px; color: var(--gray-600);">最初の一歩は何か？</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 7: みんなの役割 ===================== -->
+<div class="slide">
+  <div class="slide-number">11 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">体制</div>
+    <h2 class="headline-l mb-12">プロジェクトチーム</h2>
+    <p class="body-l" style="margin-bottom: 28px;">それぞれの専門性で、一人では作れないものを形にする。</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; align-content: center;">
+      <div class="member-card" style="border-left: 3px solid var(--blue);">
+        <div class="member-name">新田紗希</div>
+        <div class="member-role">プロジェクトオーナー ｜ とうめいしっぽ代表</div>
+        <div class="member-desc">
+          臨床心理士 / おもちゃコンサルタント / 木育インストラクター<br>
+          事業企画・販路開拓・ユーザー体験設計
+        </div>
+        <div class="pill">事業主体（売上管理）</div>
+      </div>
+
+      <div class="member-card" style="border-left: 3px solid var(--accent);">
+        <div class="member-name">松森政仁</div>
+        <div class="member-role">木工クリエイター｜ima Design Lab / 松森木工所</div>
+        <div class="member-desc">
+          木育インストラクター<br>
+          コード / プロダクト / 事業デザイン・製作
+        </div>
+        <div class="pill pill-accent">製作パートナー</div>
+      </div>
+
+      <div class="member-card" style="border-left: 3px solid var(--pink);">
+        <div class="member-name">阿部拓也</div>
+        <div class="member-role">グラフィックデザイナー ｜ のはら 代表</div>
+        <div class="member-desc">
+          クリエイティブディレクター<br>
+          ブランドデザイン・ビジュアルコミュニケーション
+        </div>
+        <div class="pill" style="background: var(--pink-subtle); color: var(--pink);">クリエイティブパートナー</div>
+      </div>
+
+      <div class="member-card" style="border-left: 3px solid var(--green);">
+        <div class="member-name">内藤晶</div>
+        <div class="member-role">アドバイザー ｜ manordaいわて</div>
+        <div class="member-desc">
+          プロジェクトマネージャー<br>
+          事業計画助言・地域ネットワーク・連携支援
+        </div>
+        <div class="pill">アドバイザー</div>
+      </div>
+    </div>
+
+    <div style="margin-top: auto; padding: 14px 20px; background: var(--gray-100); border-radius: 10px; display: flex; gap: 32px;">
+      <span class="body-s" style="color: var(--gray-600);">📌 事業主体: 新田さん ｜ 製作・技術: 松森 ｜ デザイン: 阿部さん ｜ 助言: 内藤さん</span>
+      <span class="body-s" style="color: var(--orange);">🏷 報酬体系の設計は要検討（固定費 or ロイヤルティ or ハイブリッド）</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<!-- ===================== SLIDE 8: 今日決めたいこと ===================== -->
+<div class="slide">
+  <div class="slide-number">12 / 12</div>
+  <div class="slide-inner">
+    <div class="tag">今日決めたいこと</div>
+    <h2 class="headline-l" style="margin-bottom: 8px;">Golden Circle — 3つの問い</h2>
+    <p class="body-l" style="margin-bottom: 32px;">中心から外へ。なぜやるか → どうやるか → 何をするか。</p>
+
+    <div class="flex-row flex-1 gap-32">
+      <!-- WHY -->
+      <div class="decision-card" style="background: rgba(196,149,106,0.06); border: 2px solid rgba(196,149,106,0.2);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 18px; font-weight: 700;">Why</span>
+          </div>
+          <div class="decision-title" style="margin-bottom: 0; color: var(--accent);">なぜやるのか</div>
+        </div>
+        <div class="decision-question" style="font-size: 17px; line-height: 1.7;">
+          「おもちゃ」を1つ作るのではなく、<br>
+          「赤ちゃんと木の出会いが<strong style="color: var(--accent);">生まれ続けるシステム</strong>」を作る。<br><br>
+          この方向性でチーム全員の認識は揃っているか？
+        </div>
+        <ul class="decision-options">
+          <li>☐ この方向で進める</li>
+          <li>☐ 修正が必要</li>
+          <li>☐ そもそも再議論したい</li>
+        </ul>
+      </div>
+
+      <!-- HOW -->
+      <div class="decision-card" style="background: rgba(45,138,78,0.04); border: 2px solid rgba(45,138,78,0.15);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; background: #2d8a4e; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 18px; font-weight: 700;">How</span>
+          </div>
+          <div class="decision-title" style="margin-bottom: 0; color: #2d8a4e;">どうやるか</div>
+        </div>
+        <div class="decision-question" style="font-size: 17px; line-height: 1.7;">
+          <strong style="color: #2d8a4e;">Phase 1</strong> もらう → <strong style="color: var(--accent);">Phase 2</strong> 選ぶ →<br>
+          <strong style="color: var(--purple);">Phase 3</strong> つくる → <strong style="color: var(--blue);">Phase 4</strong> 育てる<br><br>
+          受け手から作り手へ、この4段階でよいか？
+        </div>
+        <ul class="decision-options">
+          <li>☐ 4段階の方向性に賛同</li>
+          <li>☐ Phase 3-4のビジョンを議論したい</li>
+          <li>☐ まずPhase 1-2に集中</li>
+        </ul>
+      </div>
+
+      <!-- WHAT -->
+      <div class="decision-card" style="background: rgba(0,122,255,0.04); border: 2px solid rgba(0,122,255,0.12);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 18px; font-weight: 700;">What</span>
+          </div>
+          <div class="decision-title" style="margin-bottom: 0; color: var(--blue);">何をするか</div>
+        </div>
+        <div class="decision-question" style="font-size: 17px; line-height: 1.7;">
+          Phase 1の具体的なアクション:<br>
+          • 商品構成（1枚/3枚/9枚）でよいか？<br>
+          • 価格帯は適切か？<br>
+          • 松森→新田の<strong style="color: var(--blue);">卸値の設計</strong><br>
+          • 各メンバーの報酬体系
+        </div>
+        <ul class="decision-options">
+          <li>☐ 今日すり合わせる</li>
+          <li>☐ 持ち帰って検討</li>
+          <li>☐ 追加情報が必要</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: auto; padding-top: 20px;">
+      <p class="body-l" style="color: var(--accent);">中心の「Why」が揃えば、HowとWhatは自ずと定まる。</p>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span class="caption">盛岡市森林づかいイノベーション事業</span>
+    <span class="caption">ima Design Lab｜松森木工所</span>
+  </div>
+</div>
+
+<script>
+  // Single slide mode: ?slide=1 to show only slide 1
+  const params = new URLSearchParams(window.location.search);
+  const slideNum = parseInt(params.get('slide'));
+  if (slideNum >= 1 && slideNum <= 12) {
+    const slides = document.querySelectorAll('.slide');
+    slides.forEach((s, i) => {
+      if (i + 1 !== slideNum) s.style.display = 'none';
+      else {
+        s.style.margin = '0';
+        s.style.transformOrigin = 'top left';
+        // Scale to fit viewport width
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        s.style.transform = `scale(${scale})`;
+      }
+    });
+    document.body.style.background = '#1d1d1f';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+  }
+</script>
+</body>
+</html>

@@ -133,32 +133,38 @@
 | DB | 用途 | ID | 種別 |
 |---|---|---|---|
 | プロジェクトHub | 全体像・意思決定ログ・ロードマップ・設計仕様 | `a60bc47c-3d35-43b0-9f22-a3e96353357a` | page ID（fetch用） |
-| タスクDB | タスク管理・進捗追跡 | `5ced62c5-5180-4039-86d1-d277397beb0e` | data source ID（query用） |
+| タスクDB | タスク管理・進捗追跡 | `5ced62c5-5180-4039-86d1-d277397beb0e` | data source ID（create-pages用） |
+| タスクDB（松森ビュー） | 松森担当の未完了タスク | `view://7bfa6943-2d5b-4581-a2a9-52aeede66192` | view URL（query-database-view用） |
+| タスクDB（ボードビュー） | ステータス別ボード | `view://06efc822-640c-4b33-83b2-4ea80ca38958` | view URL（query-database-view用） |
 | 年輪DB | 環境横断記憶（グローバル設定に準拠） | `30c452e5-ed6d-4fe2-a15f-c11d1d762c10` | data source ID（query用） |
+| Claude作業メモ | セッション間の作業状態・内部判断ログ・Notion AI申し送り | `311e880c-fe2e-818c-af7f-ec268da2a13a` | page ID（fetch用） |
 
 ### セッション開始時の行動（Phase A: 文脈取得）
 
 SessionStartフックの指示に従い、以下を**能動的に**取得する：
 
-1. **プロジェクトHub**をfetchし、最新の意思決定ログとロードマップを確認
-2. **タスクDB**で `担当=松森` × `ステータス=未着手 or 進行中` を検索し、作業候補を把握
-3. **年輪DB**は既存フロー通り（🪞理解 + 直近年輪）
-4. Zineに「プロジェクトの今」を**簡潔に報告**してから作業に入る
+1. **プロジェクトHub**を `notion-fetch` し、最新の意思決定ログとロードマップを確認
+2. **タスクDB**を `notion-query-database-view` + `view://7bfa6943-2d5b-4581-a2a9-52aeede66192`（松森ビュー）で検索し、作業候補を把握
+3. **Claude作業メモ**を `notion-fetch` し、「私たちのフォーカス」と前回の作業ログを確認
+4. **年輪DB**は既存フロー通り（🪞理解 + 直近年輪）
+5. Zineに「プロジェクトの今」を**簡潔に報告**してから作業に入る
 
 ※ Zineに「どこまで進んだ？」と聞かせない。Claudeが自分で掴みに行く。
 
 ### 作業完了時の行動（Phase C: 書き戻し）
 
-1. タスクのステータスを更新（未着手→進行中→完了）
+1. タスクのステータスを更新 → `notion-create-comment` で該当タスクページに記録（`notion-update-page` は上流バグで使用不可）
 2. タスクにコメント追加（作業内容の要約 + commitハッシュ）
 3. 年輪DB記録（既存フロー）
 4. Handoff更新（既存フロー）
 
 ### 注意事項
 
-- タスクDBへの書き込みはMCP（OAuth認証）経由のみ可能。curlでは不可
+- タスクDBへの書き込みは Enhanced MCP（OAuth認証）経由のみ可能。curlでは不可
+- **`notion-update-page` は上流バグで使用不可**（2026-02-24確認）。プロパティ更新・内容更新は `notion-create-comment` でNotion AIに委任、またはZineが手動更新
 - プロジェクトHubの意思決定ログは読み取り専用。追記はZineまたはMTGで行う
 - **Claudeが先走って数字や仮決定をNotionに書き込まない**。Zineの判断を待つ
+- 詳細な操作ガイドは `rules/notion-operations.md` の「Enhanced MCP ツール操作ガイド」を参照
 
 ---
 

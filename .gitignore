@@ -27,5 +27,8 @@ tmp/
 .claude/agent-memory/
 .claude/agent-memory-local/
 
+# Worktrees（セッション固有の一時状態）
+.claude/worktrees/
+
 # Test outputs
 *.tmp.html
