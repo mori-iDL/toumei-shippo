@@ -689,70 +689,70 @@ canvas.vgroove-canvas {
     </div>
 
     <div class="field">
-      <label>V溝ビット構成 <span style="font-size:9px;color:var(--text-dim)">(深さ2.5mm固定)</span></label>
+      <label>V溝面取り幅 <span style="font-size:9px;color:var(--text-dim)">(60°ビット固定)</span></label>
       <div class="bit-config-tabs">
         <div class="bit-config-tab active" data-config="single" onclick="setBitConfig(this)">
           <span class="config-name">Single</span>
-          <span class="config-desc">1本</span>
+          <span class="config-desc">1幅</span>
         </div>
         <div class="bit-config-tab" data-config="dual" onclick="setBitConfig(this)">
           <span class="config-name">Dual</span>
-          <span class="config-desc">2本組合せ</span>
+          <span class="config-desc">2幅組合せ</span>
         </div>
         <div class="bit-config-tab" data-config="triple" onclick="setBitConfig(this)">
           <span class="config-name">Triple</span>
-          <span class="config-desc">3本</span>
+          <span class="config-desc">3幅</span>
         </div>
       </div>
 
-      <!-- Single: 1本のビット角度を選択 -->
+      <!-- Single: 1つの面取り幅を選択 -->
       <div id="bit-single-panel">
         <div class="bit-layer">
           <div class="bit-angle-select">
-            <div class="bit-angle-btn" data-angle="30" onclick="setBitAngle(this)">
-              <span class="angle-deg">30°</span>
-              <span class="angle-desc">細 1.34mm</span>
+            <div class="bit-angle-btn" data-chamfer="fine" onclick="setChamferWidth(this)">
+              <span class="angle-deg">細</span>
+              <span class="angle-desc">0.3mm d0.26</span>
             </div>
-            <div class="bit-angle-btn active" data-angle="45" onclick="setBitAngle(this)">
-              <span class="angle-deg">45°</span>
-              <span class="angle-desc">中 2.07mm</span>
+            <div class="bit-angle-btn active" data-chamfer="medium" onclick="setChamferWidth(this)">
+              <span class="angle-deg">中</span>
+              <span class="angle-desc">0.5mm d0.43</span>
             </div>
-            <div class="bit-angle-btn" data-angle="60" onclick="setBitAngle(this)">
-              <span class="angle-deg">60°</span>
-              <span class="angle-desc">太 2.89mm</span>
+            <div class="bit-angle-btn" data-chamfer="bold" onclick="setChamferWidth(this)">
+              <span class="angle-deg">太</span>
+              <span class="angle-desc">0.8mm d0.69</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Dual: 2本の組み合わせを選択 -->
+      <!-- Dual: 2つの面取り幅の組み合わせを選択 -->
       <div id="bit-dual-panel" style="display:none">
         <div class="bit-combo-select">
-          <div class="bit-combo-btn active" data-primary="60" data-secondary="30" onclick="setBitCombo(this)">
-            <span class="combo-label">60° + 30°</span>
-            <span class="combo-desc">太2.89 + 細1.34mm</span>
+          <div class="bit-combo-btn active" data-primary="bold" data-secondary="fine" onclick="setChamferCombo(this)">
+            <span class="combo-label">太 + 細</span>
+            <span class="combo-desc">0.8 + 0.3mm</span>
           </div>
-          <div class="bit-combo-btn" data-primary="60" data-secondary="45" onclick="setBitCombo(this)">
-            <span class="combo-label">60° + 45°</span>
-            <span class="combo-desc">太2.89 + 中2.07mm</span>
+          <div class="bit-combo-btn" data-primary="bold" data-secondary="medium" onclick="setChamferCombo(this)">
+            <span class="combo-label">太 + 中</span>
+            <span class="combo-desc">0.8 + 0.5mm</span>
           </div>
-          <div class="bit-combo-btn" data-primary="45" data-secondary="30" onclick="setBitCombo(this)">
-            <span class="combo-label">45° + 30°</span>
-            <span class="combo-desc">中2.07 + 細1.34mm</span>
+          <div class="bit-combo-btn" data-primary="medium" data-secondary="fine" onclick="setChamferCombo(this)">
+            <span class="combo-label">中 + 細</span>
+            <span class="combo-desc">0.5 + 0.3mm</span>
           </div>
         </div>
         <div class="bit-layer-info">
-          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 <span class="groove-width" id="dual-primary-width">2.89mm</span></div>
-          <div class="bit-layer-label"><span class="layer-dot secondary"></span>ディテール <span class="groove-width" id="dual-secondary-width">1.34mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 <span class="groove-width" id="dual-primary-width">0.8mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>ディテール <span class="groove-width" id="dual-secondary-width">0.3mm</span></div>
         </div>
       </div>
 
-      <!-- Triple: 3本固定 -->
+      <!-- Triple: 3幅固定 -->
       <div id="bit-triple-panel" style="display:none">
         <div class="triple-fixed">
-          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 60° — <span class="groove-width">2.89mm</span></div>
-          <div class="bit-layer-label"><span class="layer-dot secondary"></span>中構造 45° — <span class="groove-width">2.07mm</span></div>
-          <div class="bit-layer-label"><span class="layer-dot detail"></span>微細 30° — <span class="groove-width">1.34mm</span></div>
+          <div class="bit-layer-label"><span class="layer-dot primary"></span>主構造 太 — <span class="groove-width">0.8mm (d0.69)</span></div>
+          <div class="bit-layer-label"><span class="layer-dot secondary"></span>中構造 中 — <span class="groove-width">0.5mm (d0.43)</span></div>
+          <div class="bit-layer-label"><span class="layer-dot detail"></span>微細 細 — <span class="groove-width">0.3mm (d0.26)</span></div>
         </div>
       </div>
 
@@ -827,7 +827,7 @@ canvas.vgroove-canvas {
 
       <div class="canvas-card">
         <div class="canvas-header">
-          <span class="type vgroove">● V-GROOVE NC <span id="vgroove-bit-label">45°</span></span>
+          <span class="type vgroove">● V-GROOVE NC <span id="vgroove-bit-label">60°</span></span>
           <span class="size">70×70mm（有効64×64）</span>
         </div>
         <div class="canvas-wrap">
@@ -973,27 +973,28 @@ const MARGIN_PX = 15;                          // 3mm × 5px/mm — 加工安全
 const PATTERN_SIZE = SCALE - MARGIN_PX * 2;    // 320px = 64mm — 有効描画エリア
 const PX_PER_MM = SCALE / 70;                  // 5 px/mm
 
-// V溝加工の物理定数 — 深さは固定、角度が溝幅を決める
-// 溝幅 w = 2 × depth × tan(angle/2)
+// V溝加工の物理定数 — 60°ビット固定、面取り幅(chamfer width)が設計変数
+// 深さ = 面幅 / (2 × tan(半角))  → 60°ビット: tan(30°) ≈ 0.5774
+// grooveWidthPx はCanvas表示用のスケール値（旧角度ベースの値を保持し、アルゴリズムの互換性を維持）
 const VGROOVE = {
-  depth: 2.5,  // mm（固定）
-  minLineWidthPx: 2.0,  // V溝最低線幅 = 0.4mm（NC加工可能な下限。SVGフィルタ0.3mmに余裕を持たせる）
-  bits: {},
+  bitAngle: 60,
+  halfAngleRad: Math.PI / 6,  // 30°
+  minLineWidthPx: 1.5,  // V溝最低線幅（細い面幅に対応して引き下げ）
+  chamfers: {
+    fine:   { label: '細', widthMm: 0.3, grooveWidthPx: 6.7 },    // 旧30°相当の視覚スケール
+    medium: { label: '中', widthMm: 0.5, grooveWidthPx: 10.35 },  // 旧45°相当
+    bold:   { label: '太', widthMm: 0.8, grooveWidthPx: 14.45 },  // 旧60°相当
+  },
   dualCombos: [
-    { primary: 60, secondary: 30, label: '60°＋30°', desc: '最大コントラスト' },
-    { primary: 60, secondary: 45, label: '60°＋45°', desc: '太め主体' },
-    { primary: 45, secondary: 30, label: '45°＋30°', desc: '繊細主体' },
+    { primary: 'bold', secondary: 'fine', label: '太 + 細', desc: '最大コントラスト' },
+    { primary: 'bold', secondary: 'medium', label: '太 + 中', desc: '太め主体' },
+    { primary: 'medium', secondary: 'fine', label: '中 + 細', desc: '繊細主体' },
   ],
 };
-// ビットごとの溝幅を事前計算
-[60, 45, 30].forEach(angle => {
-  const wMm = 2 * VGROOVE.depth * Math.tan((angle / 2) * Math.PI / 180);
-  VGROOVE.bits[angle] = {
-    angle,
-    grooveWidthMm: Math.round(wMm * 100) / 100,
-    grooveWidthPx: wMm * PX_PER_MM,
-  };
-});
+// depthMm を事前計算: depth = chamferWidth / (2 × tan(halfAngle))
+for (const c of Object.values(VGROOVE.chamfers)) {
+  c.depthMm = Math.round(c.widthMm / (2 * Math.tan(VGROOVE.halfAngleRad)) * 100) / 100;
+}
 
 // --- Seed generation from inputs ---
 function hashString(str) {
@@ -1659,24 +1660,23 @@ function gatherInputs() {
   const weather = weatherEl ? weatherEl.dataset.weather : 'sunny';
   const species = document.getElementById('species').value;
   const grainAngle = 0; // 木目オーバーレイは削除済み — 互換性のため残す
-  // V溝ビット構成の取得
+  // V溝面取り幅構成の取得（60°ビット固定、面幅がデザイン変数）
   const bitConfigEl = document.querySelector('.bit-config-tab.active');
   const bitConfig = bitConfigEl ? bitConfigEl.dataset.config : 'single';
 
-  let bitAngles = {};
+  let chamferWidths = {};
   if (bitConfig === 'single') {
     const el = document.querySelector('#bit-single-panel .bit-angle-btn.active');
-    const angle = el ? parseInt(el.dataset.angle) : 45;
-    bitAngles = { primary: angle, secondary: angle, detail: angle };
+    const chamfer = el ? el.dataset.chamfer : 'medium';
+    chamferWidths = { primary: chamfer, secondary: chamfer, detail: chamfer };
   } else if (bitConfig === 'dual') {
     const combo = document.querySelector('#bit-dual-panel .bit-combo-btn.active');
-    const p = combo ? parseInt(combo.dataset.primary) : 60;
-    const s = combo ? parseInt(combo.dataset.secondary) : 30;
-    bitAngles = { primary: p, secondary: s, detail: s };
-  } else { // triple — 固定
-    bitAngles = { primary: 60, secondary: 45, detail: 30 };
+    const p = combo ? (combo.dataset.primary || 'bold') : 'bold';
+    const s = combo ? (combo.dataset.secondary || 'fine') : 'fine';
+    chamferWidths = { primary: p, secondary: s, detail: s };
+  } else { // triple — 固定3段階
+    chamferWidths = { primary: 'bold', secondary: 'medium', detail: 'fine' };
   }
-  const bitAngle = bitAngles.primary; // 後方互換
   const prefecture = document.getElementById('prefecture').value;
   const city = document.getElementById('city').value;
   const algoPrimary = document.getElementById('algo-primary').value;
@@ -1723,7 +1723,7 @@ function gatherInputs() {
     weather: WEATHER_PARAMS[weather],
     weatherKey: weather,
     species, wood: WOOD_PARAMS[species],
-    grainAngle, bitAngle, bitAngles, bitConfig, prefecture, city, geo,
+    grainAngle, chamferWidths, bitConfig, prefecture, city, geo,
     year, month, day, hours, minutes,
     season, vowels, vowelWeights, nameFreq,
     primary, secondary, blend, seed,
@@ -1763,23 +1763,24 @@ function render() {
   // コスト見積もり更新
   updateBitCostBadge(inp.bitConfig);
 
-  // V溝ヘッダーラベル更新
+  // V溝ヘッダーラベル更新（60°固定 + 面幅表示）
   const vgLabel = document.getElementById('vgroove-bit-label');
   if (vgLabel) {
+    const cw = inp.chamferWidths;
     if (inp.bitConfig === 'single') {
-      vgLabel.textContent = inp.bitAngles.primary + '°';
+      vgLabel.textContent = '60° ' + VGROOVE.chamfers[cw.primary].label;
     } else if (inp.bitConfig === 'dual') {
-      vgLabel.textContent = inp.bitAngles.primary + '°/' + inp.bitAngles.secondary + '°';
+      vgLabel.textContent = '60° ' + VGROOVE.chamfers[cw.primary].label + '/' + VGROOVE.chamfers[cw.secondary].label;
     } else {
-      vgLabel.textContent = '60°/45°/30°';
+      vgLabel.textContent = '60° 太/中/細';
     }
   }
 
-  // V溝物理計算: 深さ2.5mm固定、角度から物理的な溝幅（px）を取得
+  // V溝物理計算: 60°ビット固定、面幅カテゴリから表示用grooveWidthPxを取得
   const gw = {
-    primary: VGROOVE.bits[inp.bitAngles.primary].grooveWidthPx,
-    secondary: VGROOVE.bits[inp.bitAngles.secondary].grooveWidthPx,
-    detail: VGROOVE.bits[inp.bitAngles.detail].grooveWidthPx,
+    primary: VGROOVE.chamfers[inp.chamferWidths.primary].grooveWidthPx,
+    secondary: VGROOVE.chamfers[inp.chamferWidths.secondary].grooveWidthPx,
+    detail: VGROOVE.chamfers[inp.chamferWidths.detail].grooveWidthPx,
   };
 
   // Common params（レーザー用 + V溝プライマリ用のデフォルト）
@@ -1790,13 +1791,12 @@ function render() {
     weather: inp.weather,
     wood: inp.wood,
     grainAngle: inp.grainAngle,
-    bitAngle: inp.bitAngles.primary,
+    bitAngle: 60,  // 60°ビット固定
     grooveWidthPx: gw.primary,
     bitWidthFactor: gw.primary / 10,  // 正規化（10px ≈ 1.0）
   };
   // V溝セカンダリ用パラメータ
   const paramsSecondary = { ...params,
-    bitAngle: inp.bitAngles.secondary,
     grooveWidthPx: gw.secondary,
     bitWidthFactor: gw.secondary / 10,
   };
@@ -1804,7 +1804,6 @@ function render() {
   // seed をオフセットして、プライマリとは異なる位置に描画（同じ位置だと大きい要素の後ろに隠れる）
   const paramsDetail = { ...params,
     seed: params.seed + 7777,
-    bitAngle: inp.bitAngles.detail,
     grooveWidthPx: gw.detail,
     bitWidthFactor: gw.detail / 10,
   };
@@ -1884,8 +1883,8 @@ function render() {
   vctx.clip();
 
   try {
-    // プライマリアルゴリズム — params（primaryビット角度）で描画
-    vctx.setLayer(inp.bitAngles.primary + 'deg');
+    // プライマリアルゴリズム — params（primary面幅）で描画
+    vctx.setLayer(inp.chamferWidths.primary);
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
       vctx.save();
@@ -1899,11 +1898,10 @@ function render() {
       vctx.restore();
     }
 
-    // セカンダリアルゴリズム — paramsSecondary（secondaryビット角度）で描画
-    // V溝NCではセカンダリは物理的に別ビットで彫る独立パス — レーザーより強い存在感
-    // Dual/Triple時: ビット角度の違いが構造的差異として現れるよう、α値の下限を確保
+    // セカンダリアルゴリズム — paramsSecondary（secondary面幅）で描画
+    // V溝NCでは面幅の違いが構造的差異として現れるよう、α値の下限を確保
     // 'sub:' プレフィックスで主パターンと分離 → SVG/DXF出力時にモード別フィルタ可能
-    vctx.setLayer('sub:' + inp.bitAngles.secondary + 'deg');
+    vctx.setLayer('sub:' + inp.chamferWidths.secondary);
     const secondaryAlphaV = Math.max(0.65, 1 - inp.blend);
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
@@ -1917,15 +1915,15 @@ function render() {
       }
     }
 
-    // Triple時: ディテールレイヤー（30°ビット = 最も繊細な溝）
-    // 副アルゴリズムを30°パラメータ＋破線スタイルで描画
-    // 破線 = NC加工で30°の細いビットが刻む繊細な点描的テクスチャを表現
-    // これにより Triple = 大構造(60°実線) + 中テクスチャ(45°実線) + 繊細なクロスハッチ(30°破線) の三層構成
+    // Triple時: ディテールレイヤー（fine面幅 = 最も繊細な溝）
+    // 副アルゴリズムをfineパラメータ＋破線スタイルで描画
+    // 破線 = NC加工で細い面幅が刻む繊細な点描的テクスチャを表現
+    // これにより Triple = 大構造(bold実線) + 中テクスチャ(medium実線) + 繊細なクロスハッチ(fine破線) の三層構成
     if (inp.bitConfig === 'triple') {
-      // ディテールレイヤー: 30°ビットによるクロスハッチング
-      // NC加工で30°の細いビットが斜めに走る仕上げ彫りを表現
+      // ディテールレイヤー: fine面幅によるクロスハッチング
+      // NC加工で細い面取り幅が斜めに走る仕上げ彫りを表現
       // キャンバス全体をカバーする破線の斜線群 — 点描では面積が足りず差異が出ない
-      vctx.setLayer('30deg');
+      vctx.setLayer(inp.chamferWidths.detail);
       vctx.save();
       // 30°ビットの仕上げ彫り = 細く浅い溝
       // 他のビットと同じ暗い色で描画（溝は木を彫るので暗く見える）
@@ -2003,13 +2001,14 @@ function updateStory(inp) {
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
     体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
     素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
-      const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
+      const cw = inp.chamferWidths;
+      const info = k => { const c = VGROOVE.chamfers[k]; return `${c.label}（${c.widthMm}mm, 深さ${c.depthMm}mm）`; };
       if (inp.bitConfig === 'single') {
-        return `V溝加工は ${inp.bitAngles.primary}° ビット（溝幅${gwMm(inp.bitAngles.primary)}mm）で彫り込みます。深さ${VGROOVE.depth}mm一定、角度が線の太さを決めます。`;
+        return `V溝加工は60°ビット1本で、面取り幅${info(cw.primary)}で彫り込みます。面幅が線の太さを決めます。`;
       } else if (inp.bitConfig === 'dual') {
-        return `V溝加工は2本のビットを組み合わせ——主構造に ${inp.bitAngles.primary}°（溝幅${gwMm(inp.bitAngles.primary)}mm）、ディテールに ${inp.bitAngles.secondary}°（溝幅${gwMm(inp.bitAngles.secondary)}mm）。同じ深さ${VGROOVE.depth}mmでも角度の違いが線幅の対比を生みます。`;
+        return `V溝加工は60°ビット1本で面取り幅を変えて——主構造に${info(cw.primary)}、ディテールに${info(cw.secondary)}。同じビットでも面幅の違いが線の太さの対比を生みます。`;
       } else {
-        return `V溝加工は3本のビットを駆使——主構造 60°（${gwMm(60)}mm）、中構造 45°（${gwMm(45)}mm）、微細 30°（${gwMm(30)}mm）。すべて深さ${VGROOVE.depth}mm、角度だけが変わることで三段階の線幅が木の表面に豊かな陰影を生みます。`;
+        return `V溝加工は60°ビット1本で三段階の面取り幅を駆使——主構造${info('bold')}、中構造${info('medium')}、微細${info('fine')}。面幅を変えるだけで三層の陰影が木の表面に現れます。`;
       }
     })()}
   `;
@@ -2017,21 +2016,20 @@ function updateStory(inp) {
 }
 
 // --- Export functions ---
-// V溝NCのSVGレイヤー色 — NC/レーザー加工ソフトでの確実な識別のため純色を使用
-// 60°=赤（荒彫り・太溝）, 45°=緑（中仕上げ）, 30°=青（仕上げ・細溝）
-// 注: xTool P2S等はSVG opacityを正しく処理しないため、必ず純色で出力する
+// V溝NCのSVGレイヤー色 — 面幅カテゴリ別、NC/CADソフトでの確実な識別のため純色を使用
+// bold=赤（太い面取り）, medium=緑（中面取り）, fine=青（細い面取り）
 const SVG_LAYER_COLORS = {
-  '60deg': '#FF0000',
-  '45deg': '#00FF00',
-  '30deg': '#0000FF',
+  'bold':   '#FF0000',
+  'medium': '#00FF00',
+  'fine':   '#0000FF',
 };
 
-// レーザー加工用SVGレイヤー色
-// xTool P2Sでは色ごとにパワー/スピード/パス数を個別設定できる
-// primary=赤（強い彫刻: 高パワー・低速度）, secondary=青（繊細な彫刻: 低パワー・高速度）
+// レーザー加工用SVGレイヤー色 — xTool P2Sの色別レイヤー設定に対応
+// accent=青（太線・3パス: 深い彫り）, pattern=赤（中線・2パス: 標準彫り）, background=緑（細線・1パス: 繊細な質感）
 const LASER_LAYER_COLORS = {
-  'primary': '#FF0000',
-  'secondary': '#0000FF',
+  'accent':     '#0000FF',
+  'pattern':    '#FF0000',
+  'background': '#00FF00',
 };
 
 // CADツール互換: 連続するパスを1本のポリラインに統合
@@ -2104,14 +2102,14 @@ function exportSVG(mode) {
   defs += `    </clipPath>\n`;
   defs += `  </defs>\n`;
 
-  // desc情報（V溝時のみビット構成を記載）
+  // desc情報（V溝時のみ面幅構成を記載）
   let descExtra = '';
   if (mode === 'vgroove') {
     const inp = gatherInputs();
-    const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
-    if (inp.bitConfig === 'single') descExtra = ` | Single ${inp.bitAngles.primary}° (groove:${gwMm(inp.bitAngles.primary)}mm, depth:${VGROOVE.depth}mm)`;
-    else if (inp.bitConfig === 'dual') descExtra = ` | Dual ${inp.bitAngles.primary}°/${inp.bitAngles.secondary}° (groove:${gwMm(inp.bitAngles.primary)}/${gwMm(inp.bitAngles.secondary)}mm, depth:${VGROOVE.depth}mm)`;
-    else descExtra = ` | Triple 60°/45°/30° (groove:${gwMm(60)}/${gwMm(45)}/${gwMm(30)}mm, depth:${VGROOVE.depth}mm)`;
+    const cInfo = k => { const c = VGROOVE.chamfers[k]; return `${k}(${c.widthMm}mm, d${c.depthMm}mm)`; };
+    if (inp.bitConfig === 'single') descExtra = ` | 60deg bit | Single chamfer: ${cInfo(inp.chamferWidths.primary)}`;
+    else if (inp.bitConfig === 'dual') descExtra = ` | 60deg bit | Dual chamfer: ${cInfo(inp.chamferWidths.primary)} + ${cInfo(inp.chamferWidths.secondary)}`;
+    else descExtra = ` | 60deg bit | Triple chamfer: ${cInfo('bold')} + ${cInfo('medium')} + ${cInfo('fine')}`;
   }
 
   let bodyContent = '';
@@ -2132,18 +2130,18 @@ function exportSVG(mode) {
 
   if (mode === 'vgroove') {
     const inp = gatherInputs();
-    // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
-    // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
+    // V溝NCモード: 面幅カテゴリごとにレイヤー分け＋色分け
+    // NC加工時に各レイヤー = 各面幅の加工パスとして扱える（60°ビット固定）
     //
     // V溝NC固有のフィルタ:
     // - opacity属性を出力しない（物理的な切削にはopacity概念がない）
     // - stroke-width が細すぎるパスを除外（NC加工に不適な細線）
     //   閾値: 0.3mm（pxToMm換算で lineWidth >= 1.5px 相当）
-    // - Single モード: sub:*パスもプライマリビットレイヤーに統合
-    //   → 1本のビットで主副両方のパターンを彫る
-    // - Dual/Triple: sub:*パスは対応するビットレイヤーにマッピング
+    // - Single モード: sub:*パスもプライマリ面幅レイヤーに統合
+    //   → 1つの面幅で主副両方のパターンを彫る
+    // - Dual/Triple: sub:*パスは対応する面幅レイヤーにマッピング
     const MIN_STROKE_WIDTH_MM = 0.3;
-    const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
+    const layerMap = {};  // { 'bold': [svgElements], 'medium': [...], 'fine': [...] }
 
     // 1. フィルタリング
     const filteredVPaths = [];
@@ -2163,7 +2161,7 @@ function exportSVG(mode) {
 
       let layerName;
       if (isSub && inp.bitConfig === 'single') {
-        layerName = inp.bitAngles.primary + 'deg';
+        layerName = inp.chamferWidths.primary;
       } else {
         layerName = isSub ? rawLayer.replace('sub:', '') : rawLayer;
       }
@@ -2174,17 +2172,16 @@ function exportSVG(mode) {
       layerMap[layerName].push(svgEl);
     }
 
-    // レイヤー順: 60° → 45° → 30°（太い溝から細い溝の順）
-    const layerOrder = ['60deg', '45deg', '30deg', 'default'];
+    // レイヤー順: bold → medium → fine（太い面幅から細い面幅の順）
+    const layerOrder = ['bold', 'medium', 'fine', 'default'];
     for (const layerName of layerOrder) {
       const elements = layerMap[layerName];
       if (!elements || elements.length === 0) continue;
       const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
-      const angle = layerName.replace('deg', '');
-      const gwMm = a => VGROOVE.bits[parseInt(a)] ? VGROOVE.bits[parseInt(a)].grooveWidthMm.toFixed(2) : '?';
-      const label = layerName === 'default' ? 'other' : `V-bit ${angle}° groove=${gwMm(angle)}mm`;
+      const ch = VGROOVE.chamfers[layerName];
+      const label = !ch ? 'other' : `chamfer-${layerName} (${ch.widthMm}mm, d${ch.depthMm}mm)`;
       bodyContent += `\n  <!-- ${label} -->\n`;
-      bodyContent += `  <g id="${layerName}" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      bodyContent += `  <g id="${layerName}" inkscape:label="${label}" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
       for (const el of elements) {
         bodyContent += `    ${el}\n`;
       }
@@ -2341,21 +2338,21 @@ function exportDXF() {
   const inp = gatherInputs();
 
   let dxf = '';
-  // DXF Header（ビット構成をコメントとして記録）
+  // DXF Header（60°ビット固定・面幅構成をコメントとして記録）
   dxf += '0\nSECTION\n2\nHEADER\n';
   dxf += '9\n$INSUNITS\n70\n4\n';  // mm単位
-  const gwMm = a => VGROOVE.bits[a] ? VGROOVE.bits[a].grooveWidthMm : '?';
-  dxf += '999\nV-Groove Depth: ' + VGROOVE.depth + 'mm (fixed)\n';
+  const cInfo = k => { const c = VGROOVE.chamfers[k]; return `${k}(${c.widthMm}mm, d${c.depthMm}mm)`; };
+  dxf += '999\n60deg bit | Chamfer widths: bold=' + VGROOVE.chamfers.bold.widthMm + 'mm, medium=' + VGROOVE.chamfers.medium.widthMm + 'mm, fine=' + VGROOVE.chamfers.fine.widthMm + 'mm\n';
   if (inp.bitConfig === 'single') {
-    dxf += '999\nV-Groove Single: ' + inp.bitAngles.primary + 'deg groove=' + gwMm(inp.bitAngles.primary) + 'mm\n';
+    dxf += '999\nV-Groove Single: ' + cInfo(inp.chamferWidths.primary) + '\n';
   } else if (inp.bitConfig === 'dual') {
-    dxf += '999\nV-Groove Dual: Primary=' + inp.bitAngles.primary + 'deg(' + gwMm(inp.bitAngles.primary) + 'mm) Secondary=' + inp.bitAngles.secondary + 'deg(' + gwMm(inp.bitAngles.secondary) + 'mm)\n';
+    dxf += '999\nV-Groove Dual: Primary=' + cInfo(inp.chamferWidths.primary) + ' Secondary=' + cInfo(inp.chamferWidths.secondary) + '\n';
   } else {
-    dxf += '999\nV-Groove Triple: 60deg(' + gwMm(60) + 'mm) 45deg(' + gwMm(45) + 'mm) 30deg(' + gwMm(30) + 'mm)\n';
+    dxf += '999\nV-Groove Triple: ' + cInfo('bold') + ' ' + cInfo('medium') + ' ' + cInfo('fine') + '\n';
   }
   dxf += '0\nENDSEC\n';
   // Tables — LTYPEテーブル（Fusion 360互換に必須）+ レイヤー定義
-  // DXF色番号: 1=赤(60°), 3=緑(45°), 5=青(30°), 7=白(BORDER)
+  // DXF色番号: 1=赤(bold), 3=緑(medium), 5=青(fine), 7=白(BORDER)
   dxf += '0\nSECTION\n2\nTABLES\n';
   // LTYPE テーブル（線種定義 — CONTINUOUSは必須）
   dxf += '0\nTABLE\n2\nLTYPE\n70\n1\n';
@@ -2363,10 +2360,10 @@ function exportDXF() {
   dxf += '0\nENDTAB\n';
   // LAYER テーブル（各レイヤーに線種CONTINUOUSを明示）
   dxf += '0\nTABLE\n2\nLAYER\n70\n4\n';
-  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n6\nCONTINUOUS\n';      // 白 — 外枠・有効エリア枠
-  dxf += '0\nLAYER\n2\nBIT_60DEG\n70\n0\n62\n1\n6\nCONTINUOUS\n';   // 赤 — 60°ビット
-  dxf += '0\nLAYER\n2\nBIT_45DEG\n70\n0\n62\n3\n6\nCONTINUOUS\n';   // 緑 — 45°ビット
-  dxf += '0\nLAYER\n2\nBIT_30DEG\n70\n0\n62\n5\n6\nCONTINUOUS\n';   // 青 — 30°ビット
+  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n6\nCONTINUOUS\n';          // 白 — 外枠・有効エリア枠
+  dxf += '0\nLAYER\n2\nCHAMFER_BOLD\n70\n0\n62\n1\n6\nCONTINUOUS\n';   // 赤 — 太面幅(0.8mm)
+  dxf += '0\nLAYER\n2\nCHAMFER_MEDIUM\n70\n0\n62\n3\n6\nCONTINUOUS\n'; // 緑 — 中面幅(0.5mm)
+  dxf += '0\nLAYER\n2\nCHAMFER_FINE\n70\n0\n62\n5\n6\nCONTINUOUS\n';   // 青 — 細面幅(0.3mm)
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   // Entities
   dxf += '0\nSECTION\n2\nENTITIES\n';
@@ -2378,8 +2375,8 @@ function exportDXF() {
   const e = m + PATTERN_SIZE * pxToMm;
   dxf += dxfPolyline([[m,m],[e,m],[e,e],[m,e]], true, 'BORDER');
 
-  // パスデータをDXFエンティティに変換（ビット角度→DXFレイヤー）
-  const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
+  // パスデータをDXFエンティティに変換（面幅カテゴリ→DXFレイヤー）
+  const DXF_LAYER_MAP = { 'bold': 'CHAMFER_BOLD', 'medium': 'CHAMFER_MEDIUM', 'fine': 'CHAMFER_FINE' };
 
   // CADツール互換: 座標をパターン領域にクランプ（SVGと同一範囲）
   const clipMin = MARGIN_PX * pxToMm;                     // 3.0mm
@@ -2406,11 +2403,11 @@ function exportDXF() {
     // F3: Single mode → sub:パスもプライマリレイヤーに統合
     let layerKey;
     if (isSub && inp.bitConfig === 'single') {
-      layerKey = inp.bitAngles.primary + 'deg';
+      layerKey = inp.chamferWidths.primary;
     } else {
       layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;
     }
-    const layer = DXF_LAYER_MAP[layerKey] || 'BIT_60DEG';
+    const layer = DXF_LAYER_MAP[layerKey] || 'CHAMFER_BOLD';
 
     if (p.type === 'fillRect') {
       const cxMm = (p.x + p.w / 2) * pxToMm;
@@ -2496,8 +2493,8 @@ function setBitConfig(el) {
   debouncedRender();
 }
 
-// Single: ビット角度の選択
-function setBitAngle(el) {
+// Single: 面幅の選択
+function setChamferWidth(el) {
   const panel = el.closest('.bit-layer') || el.closest('#bit-single-panel');
   if (panel) {
     panel.querySelectorAll('.bit-angle-btn').forEach(b => b.classList.remove('active'));
@@ -2506,17 +2503,17 @@ function setBitAngle(el) {
   debouncedRender();
 }
 
-// Dual: 2本の組み合わせ選択
-function setBitCombo(el) {
+// Dual: 面幅コンボの選択
+function setChamferCombo(el) {
   document.querySelectorAll('#bit-dual-panel .bit-combo-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   // 層情報を更新
-  const p = parseInt(el.dataset.primary);
-  const s = parseInt(el.dataset.secondary);
+  const p = el.dataset.primary || 'bold';
+  const s = el.dataset.secondary || 'fine';
   const pwEl = document.getElementById('dual-primary-width');
   const swEl = document.getElementById('dual-secondary-width');
-  if (pwEl) pwEl.textContent = VGROOVE.bits[p].grooveWidthMm + 'mm';
-  if (swEl) swEl.textContent = VGROOVE.bits[s].grooveWidthMm + 'mm';
+  if (pwEl) pwEl.textContent = VGROOVE.chamfers[p].widthMm + 'mm';
+  if (swEl) swEl.textContent = VGROOVE.chamfers[s].widthMm + 'mm';
   debouncedRender();
 }
 
