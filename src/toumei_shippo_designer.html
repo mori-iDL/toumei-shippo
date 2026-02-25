@@ -1001,6 +1001,23 @@ for (const c of Object.values(VGROOVE.chamfers)) {
   c.depthMm = Math.round(c.widthMm / (2 * Math.tan(VGROOVE.halfAngleRad)) * 100) / 100;
 }
 
+// --- V溝共通ユーティリティ（対策A: DRY原則 — gwScale計算を一箇所に集約）---
+// 根本原因: 9関数に分散コピーされた同一計算が、個別修正時に追従漏れを起こした
+function vgrooveScale(params, mode) {
+  if (mode !== 'vgroove') return { gwRaw: 1, gwScale: 1 };
+  const gwRaw = (params.grooveWidthPx || 10) / 10;
+  const gwScale = Math.pow(gwRaw, 1.5);
+  return { gwRaw, gwScale };
+}
+// lineWidth安全クランプ — 物理制約（70mmパネル上2mm = 10px）を強制
+function clampLW(value) {
+  return Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, value));
+}
+// 副アルゴリズムalpha — 累積防止（3母音×70%→塗りつぶし問題の再発防止）
+function vgrooveSecondaryAlpha(alpha) {
+  return Math.max(0.15, Math.min(0.8, alpha * 1.5));
+}
+
 // --- Seed generation from inputs ---
 function hashString(str) {
   let h = 0;
@@ -1206,9 +1223,7 @@ function drawFibonacci(ctx, params, mode) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const c = CENTER;
-  // V溝: 溝幅スケール — べき乗で差異を増幅（30°=0.45, 45°=1.08, 60°=2.07）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
   const goldenAngle = 137.508 * Math.PI / 180;
   // V溝: 太い溝→要素を減らし存在感を出す / 細い溝→要素を増やし繊細に
@@ -1250,8 +1265,7 @@ function drawFibonacci(ctx, params, mode) {
       // V-groove: 溝幅が要素サイズと線幅を決める
       // gwRawに線形比例（旧: scaledDot * gwScale で二重乗算→bold+クリで33px超になり破綻）
       const vRadius = dotSize * (0.6 + gwRaw * 0.25);
-      const vLineW = Math.min(VGROOVE.maxLineWidthPx,
-        Math.max(VGROOVE.minLineWidthPx, gwRaw * wood.lineWeight * 3.0));
+      const vLineW = clampLW(gwRaw * wood.lineWeight * 3.0);
       ctx.beginPath();
       ctx.arc(x, y, vRadius, 0, Math.PI * 2);
       ctx.lineWidth = vLineW;
@@ -1264,9 +1278,7 @@ function drawVoronoi(ctx, params, mode) {
   const { seed, weight, height, weather, wood, grainAngle } = params;
   const rng = mulberry32(seed);
   const s = SCALE;
-  // V溝: べき乗で差異を増幅
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
   const numCells = 8 + Math.floor(weight / 200);
   const points = [];
@@ -1304,8 +1316,7 @@ function drawVoronoi(ctx, params, mode) {
     const innerContours = marchingSquares(edgeGrid, gw, gh, threshold * 0.35, res, res);
 
     // 外側等高線: 中程度のlineWidth
-    const outerLW = Math.min(VGROOVE.maxLineWidthPx,
-      Math.max(VGROOVE.minLineWidthPx, 2.0 * wood.lineWeight * gwScale));
+    const outerLW = clampLW(2.0 * wood.lineWeight * gwScale);
     ctx.strokeStyle = 'rgba(60,50,35,0.7)';
     ctx.lineWidth = outerLW;
     for (const poly of contours) {
@@ -1316,8 +1327,7 @@ function drawVoronoi(ctx, params, mode) {
       ctx.stroke();
     }
     // 内側等高線: 太いlineWidth（セル境界の芯線）
-    const innerLW = Math.min(VGROOVE.maxLineWidthPx,
-      Math.max(VGROOVE.minLineWidthPx, 3.5 * wood.lineWeight * gwScale));
+    const innerLW = clampLW(3.5 * wood.lineWeight * gwScale);
     ctx.lineWidth = innerLW;
     ctx.strokeStyle = 'rgba(60,50,35,0.85)';
     for (const poly of innerContours) {
@@ -1409,15 +1419,13 @@ function drawReactionDiffusion(ctx, params, mode) {
   }
 
   // Render based on chemical B concentration
-  // V溝: べき乗で差異を増幅
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
   if (mode === 'vgroove') {
     // === V溝NCモード: marching squaresで濃度等高線をストロークパスに変換 ===
     // fillRectはV溝ビットで加工不可。bVal閾値の等高線を抽出しstrokeで描画する。
     // 3段階の閾値で太→中→細の等高線を描画（チューリングパターンの地形図的表現）
-    const capLW = (v) => Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, v));
+    const capLW = clampLW;
     const thresholds = [
       { val: 0.30, lw: capLW(4.0 * wood.lineWeight * gwScale), alpha: 0.9 },  // 高濃度: 太い溝
       { val: 0.18, lw: capLW(2.5 * wood.lineWeight * gwScale), alpha: 0.75 }, // 中濃度: 中程度の溝
@@ -1458,9 +1466,7 @@ function drawFractal(ctx, params, mode) {
   const rng = mulberry32(seed);
   const s = SCALE;
   const c = CENTER;
-  // V溝: べき乗で差異を増幅
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
   function branch(x, y, angle, length, depth, maxDepth) {
     if (depth > maxDepth || length < 3) return;
@@ -1485,8 +1491,7 @@ function drawFractal(ctx, params, mode) {
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
-      ctx.lineWidth = Math.min(VGROOVE.maxLineWidthPx,
-        Math.max(VGROOVE.minLineWidthPx, lw * (0.6 + gwScale * 0.8)));
+      ctx.lineWidth = clampLW(lw * (0.6 + gwScale * 0.8));
       ctx.stroke();
     }
 
@@ -1525,15 +1530,13 @@ function drawFlowField(ctx, params, mode, alpha) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const freq = 0.008 / wood.lineSpacing;
-  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は太い面幅+密な樹種で破綻）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
   const baseLines = Math.floor((25 + weight / 150) * alpha);
   // V溝: 細い溝→50+本の繊細な流線 / 太い溝→8本の大胆なストローク
   const lines = mode === 'vgroove' ? Math.max(5, Math.round(baseLines / gwScale)) : baseLines;
 
   // V溝: 物理的に別ビットで彫る独立パス — 母音weight分割でもαを保証
-  const effectiveAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.7;
+  const effectiveAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.7;
   ctx.globalAlpha = effectiveAlpha;
   for (let l = 0; l < lines; l++) {
     let x = rng() * s, y = rng() * s;
@@ -1552,7 +1555,7 @@ function drawFlowField(ctx, params, mode, alpha) {
     }
     // V溝: 溝幅を直接反映 — 最低線幅を保証してNC加工パス除外を防止
     ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
-      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
+      clampLW(2.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1563,13 +1566,11 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
   const rng = mulberry32(seed + 2000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
-  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
   // V溝: 細い溝→密な波紋テクスチャ / 太い溝→疎で大胆な波
   const spacing = mode === 'vgroove' ? 6 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 6 * wood.lineSpacing;
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
@@ -1580,7 +1581,7 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
       ctx.lineTo(x, y + n);
     }
     ctx.lineWidth = mode === 'laser' ? 0.3 * wood.lineWeight :
-      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
+      clampLW(2.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1592,11 +1593,9 @@ function drawSineInterference(ctx, params, mode, alpha) {
   const c = CENTER;
   const freq1 = 0.03 + (weight / 3000) * 0.03;
   const freq2 = 0.05 + (seed % 100) / 3000;
-  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
   // V溝: 細い溝→密な干渉縞 / 太い溝→疎で大きな波
   const spacing = mode === 'vgroove' ? 4 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 4 * wood.lineSpacing;
 
@@ -1611,7 +1610,7 @@ function drawSineInterference(ctx, params, mode, alpha) {
       else ctx.lineTo(x, ny);
     }
     ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
-      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
+      clampLW(2.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1622,11 +1621,9 @@ function drawLissajous(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
-  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
   // V溝: 細い溝→多数の小さな軌跡 / 太い溝→少数の大きく太い軌跡
   const baseCurves = 4 + Math.floor(rng() * 4);
   const curves = mode === 'vgroove' ? Math.max(2, Math.round(baseCurves / gwScale)) : baseCurves;
@@ -1647,7 +1644,7 @@ function drawLissajous(ctx, params, mode, alpha) {
       else ctx.lineTo(x, y);
     }
     ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
-      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
+      clampLW(2.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1658,11 +1655,9 @@ function drawWaveFunction(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
-  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
-  const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
+  const { gwRaw, gwScale } = vgrooveScale(params, mode);
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.55;
+  ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.55;
   // V溝: 細い溝→多数の密な波紋 / 太い溝→少数の疎で太い波紋
   const baseRings = 8 + Math.floor(rng() * 8);
   const rings = mode === 'vgroove' ? Math.max(3, Math.round(baseRings / gwScale)) : baseRings;
@@ -1683,7 +1678,7 @@ function drawWaveFunction(ctx, params, mode, alpha) {
     }
     ctx.closePath();
     ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
-      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
+      clampLW(2.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -2774,6 +2769,146 @@ document.querySelectorAll('select').forEach(el => {
 updateDisplayValues();
 validateName();
 setTimeout(() => { render(); }, 100);
+
+// === 対策B: 自動安全テスト（?debug=1 で起動）===
+// 根本原因: 極端なパラメータ組み合わせのテスト不在が破綻を見逃した
+// 108パターン(4季節×9樹種×3モード)のcanvas暗度を計測し、閾値超過を警告する
+(function initSafetyTest() {
+  if (!new URLSearchParams(window.location.search).has('debug')) return;
+
+  // Canvas暗度計測 — brightness < 100 のピクセル割合(%)
+  function measureDarkness(canvas) {
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let dark = 0, total = canvas.width * canvas.height;
+    for (let i = 0; i < data.length; i += 4) {
+      const brightness = data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114;
+      if (brightness < 100) dark++;
+    }
+    return (dark / total * 100);
+  }
+
+  // テスト定義
+  const SEASONS = [
+    { month: '03', label: '春' },
+    { month: '07', label: '夏' },
+    { month: '10', label: '秋' },
+    { month: '01', label: '冬' },
+  ];
+  const WOODS = Object.keys(WOOD_PARAMS);
+  const MODES = [
+    { config: 'single', chamfer: 'bold', label: 'S-bold' },
+    { config: 'dual', primary: 'bold', secondary: 'fine', label: 'D-太+細' },
+    { config: 'triple', label: 'Triple' },
+  ];
+  const DARKNESS_WARN = 55;  // 55%超で黄色警告
+  const DARKNESS_FAIL = 65;  // 65%超で赤色エラー
+  const TEST_NAME = 'ゆいか';  // 3母音（u,i,a）でalpha累積をストレステスト
+
+  // UIをプログラムで設定
+  function setMode(mode) {
+    const tab = document.querySelector(`.bit-config-tab[data-config="${mode.config}"]`);
+    if (tab) setBitConfig(tab);
+    if (mode.config === 'single') {
+      const btn = document.querySelector(`.bit-angle-btn[data-chamfer="${mode.chamfer}"]`);
+      if (btn) setChamferWidth(btn);
+    } else if (mode.config === 'dual') {
+      const btn = document.querySelector(`.bit-combo-btn[data-primary="${mode.primary}"][data-secondary="${mode.secondary}"]`);
+      if (btn) setChamferCombo(btn);
+    }
+  }
+
+  async function runSafetyTest() {
+    const panel = document.getElementById('safety-test-results');
+    panel.innerHTML = '<p style="color:var(--accent)">テスト実行中... 108パターン</p>';
+
+    // 現在の入力を保存
+    const savedName = document.getElementById('name').value;
+    const savedBirthday = document.getElementById('birthday').value;
+    const savedSpecies = document.getElementById('species').value;
+    const savedConfigTab = document.querySelector('.bit-config-tab.active');
+    const savedChamferBtn = document.querySelector('#bit-single-panel .bit-angle-btn.active');
+    const savedComboBtn = document.querySelector('#bit-dual-panel .bit-combo-btn.active');
+
+    // テスト名に設定
+    document.getElementById('name').value = TEST_NAME;
+
+    const results = [];
+    let maxDarkness = 0;
+    let failCount = 0;
+
+    for (const season of SEASONS) {
+      for (const wood of WOODS) {
+        for (const mode of MODES) {
+          // 入力設定
+          document.getElementById('birthday').value = `2020-${season.month}-15`;
+          document.getElementById('species').value = wood;
+          setMode(mode);
+          render();
+
+          // V溝キャンバス計測
+          const vc = document.getElementById('vgroove-canvas');
+          const darkness = measureDarkness(vc);
+          maxDarkness = Math.max(maxDarkness, darkness);
+          if (darkness > DARKNESS_FAIL) failCount++;
+
+          results.push({
+            season: season.label,
+            wood: WOOD_PARAMS[wood].name,
+            mode: mode.label,
+            darkness: darkness.toFixed(1),
+            status: darkness > DARKNESS_FAIL ? 'FAIL' : darkness > DARKNESS_WARN ? 'WARN' : 'OK',
+          });
+
+          // ブラウザ応答性のためyield
+          await new Promise(r => setTimeout(r, 0));
+        }
+      }
+    }
+
+    // 入力復元
+    document.getElementById('name').value = savedName;
+    document.getElementById('birthday').value = savedBirthday;
+    document.getElementById('species').value = savedSpecies;
+    if (savedConfigTab) setBitConfig(savedConfigTab);
+    if (savedChamferBtn) setChamferWidth(savedChamferBtn);
+    if (savedComboBtn) setChamferCombo(savedComboBtn);
+    render();
+
+    // 結果表示
+    const summary = failCount === 0
+      ? `<span style="color:#4a4">全${results.length}パターン安全 (max ${maxDarkness.toFixed(1)}%)</span>`
+      : `<span style="color:#c44">${failCount}件が${DARKNESS_FAIL}%超過 (max ${maxDarkness.toFixed(1)}%)</span>`;
+
+    let html = `<p>${summary}</p>`;
+    html += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">';
+    html += '<tr style="background:var(--bg-dark)"><th>季節</th><th>樹種</th><th>モード</th><th>暗度%</th><th></th></tr>';
+
+    for (const r of results) {
+      const bg = r.status === 'FAIL' ? '#4a2020' : r.status === 'WARN' ? '#4a4020' : '';
+      const style = bg ? ` style="background:${bg}"` : '';
+      html += `<tr${style}><td>${r.season}</td><td>${r.wood}</td><td>${r.mode}</td><td>${r.darkness}</td><td>${r.status}</td></tr>`;
+    }
+    html += '</table>';
+    panel.innerHTML = html;
+  }
+
+  // デバッグUIパネルを追加
+  const debugPanel = document.createElement('div');
+  debugPanel.id = 'safety-test-panel';
+  debugPanel.style.cssText = 'margin:24px auto;max-width:720px;padding:16px;background:var(--bg-dark);border:1px solid var(--accent);border-radius:8px';
+  debugPanel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <span style="font-weight:bold;color:var(--accent)">Safety Test</span>
+      <span style="font-size:11px;color:var(--text-dim)">108パターン (4季節×9樹種×3モード) のV溝canvas暗度を計測</span>
+      <button onclick="document.getElementById('safety-test-panel').querySelector('button').disabled=true; runSafetyTest()" style="margin-left:auto;padding:6px 16px;background:var(--accent);border:none;border-radius:4px;color:var(--bg-dark);cursor:pointer;font-weight:bold">Run</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">閾値: WARN >${DARKNESS_WARN}% / FAIL >${DARKNESS_FAIL}% — テスト名「${TEST_NAME}」(3母音)</div>
+    <div id="safety-test-results"></div>
+  `;
+  document.querySelector('.app').appendChild(debugPanel);
+  window.runSafetyTest = runSafetyTest;
+})();
 </script>
 </body>
 </html>
