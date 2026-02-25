@@ -1267,30 +1267,72 @@ function drawVoronoi(ctx, params, mode) {
 
   // V溝: 太い溝→走査解像度を粗く（大胆な表現）/ 細い溝→細かく（繊細な表現）
   const res = mode === 'vgroove' ? Math.max(2, Math.round(3 * gwScale)) : 3;
-  for (let px = 0; px < s; px += res) {
-    for (let py = 0; py < s; py += res) {
-      let minD = Infinity, minD2 = Infinity;
-      for (const p of points) {
-        const d = Math.hypot(px - p.x, py - p.y);
-        if (d < minD) { minD2 = minD; minD = d; }
-        else if (d < minD2) { minD2 = d; }
+  const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing * (mode === 'vgroove' ? gwScale : 1);
+
+  if (mode === 'vgroove') {
+    // === V溝NCモード: marching squaresでセル境界をストロークパスに変換 ===
+    // fillRectはV溝ビットで加工不可。セル境界の等高線を抽出しstrokeで描画する。
+    const gw = Math.ceil(s / res);
+    const gh = Math.ceil(s / res);
+    const edgeGrid = new Float32Array(gw * gh);
+    for (let gy = 0; gy < gh; gy++) {
+      for (let gx = 0; gx < gw; gx++) {
+        const px = gx * res, py = gy * res;
+        let minD = Infinity, minD2 = Infinity;
+        for (const p of points) {
+          const d = Math.hypot(px - p.x, py - p.y);
+          if (d < minD) { minD2 = minD; minD = d; }
+          else if (d < minD2) { minD2 = d; }
+        }
+        edgeGrid[gy * gw + gx] = minD2 - minD;
       }
+    }
 
-      const edge = minD2 - minD;
-      // V溝: 太い溝→エッジ検出閾値を広げ太い境界線に
-      const threshold = (3 + weather.turbulence * 5) * wood.lineSpacing * (mode === 'vgroove' ? gwScale : 1);
+    // セル境界の等高線を抽出（threshold = 境界の外縁）
+    const contours = marchingSquares(edgeGrid, gw, gh, threshold, res, res);
+    // 内側の等高線（強いエッジ）も追加して二重線構造に
+    const innerContours = marchingSquares(edgeGrid, gw, gh, threshold * 0.35, res, res);
 
-      if (edge < threshold) {
-        if (mode === 'laser') {
+    // 外側等高線: 中程度のlineWidth
+    const outerLW = 2.0 * wood.lineWeight * gwScale;
+    ctx.strokeStyle = 'rgba(60,50,35,0.7)';
+    ctx.lineWidth = outerLW;
+    for (const poly of contours) {
+      if (poly.length < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(poly[0].x, poly[0].y);
+      for (let i = 1; i < poly.length; i++) ctx.lineTo(poly[i].x, poly[i].y);
+      ctx.stroke();
+    }
+    // 内側等高線: 太いlineWidth（セル境界の芯線）
+    const innerLW = 3.5 * wood.lineWeight * gwScale;
+    ctx.lineWidth = innerLW;
+    ctx.strokeStyle = 'rgba(60,50,35,0.85)';
+    for (const poly of innerContours) {
+      if (poly.length < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(poly[0].x, poly[0].y);
+      for (let i = 1; i < poly.length; i++) ctx.lineTo(poly[i].x, poly[i].y);
+      ctx.stroke();
+    }
+  } else {
+    // === レーザーモード: 従来のfillRect描画（面彫刻に適合） ===
+    for (let px = 0; px < s; px += res) {
+      for (let py = 0; py < s; py += res) {
+        let minD = Infinity, minD2 = Infinity;
+        for (const p of points) {
+          const d = Math.hypot(px - p.x, py - p.y);
+          if (d < minD) { minD2 = minD; minD = d; }
+          else if (d < minD2) { minD2 = d; }
+        }
+
+        const edge = minD2 - minD;
+        if (edge < threshold) {
           // 強いエッジ（閾値の30%以内）= accent、それ以外 = pattern
           ctx.setLayer(edge < threshold * 0.3 ? 'accent' : 'pattern');
           const alpha = 1 - edge / threshold;
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
           ctx.fillRect(px, py, res, res);
-        } else {
-          const lineW = (threshold - edge) / threshold * 4 * wood.lineWeight * gwScale;
-          ctx.fillStyle = `rgba(60,50,35,${0.7})`;
-          ctx.fillRect(px, py, Math.max(1, lineW), Math.max(1, lineW));
         }
       }
     }
@@ -1358,10 +1400,33 @@ function drawReactionDiffusion(ctx, params, mode) {
   // V溝: べき乗で差異を増幅
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
   const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
-  for (let y = 0; y < gs; y++) {
-    for (let x = 0; x < gs; x++) {
-      const bVal = gridB[y*gs+x];
-      if (mode === 'laser') {
+
+  if (mode === 'vgroove') {
+    // === V溝NCモード: marching squaresで濃度等高線をストロークパスに変換 ===
+    // fillRectはV溝ビットで加工不可。bVal閾値の等高線を抽出しstrokeで描画する。
+    // 3段階の閾値で太→中→細の等高線を描画（チューリングパターンの地形図的表現）
+    const thresholds = [
+      { val: 0.30, lw: 4.0 * wood.lineWeight * gwScale, alpha: 0.9 },  // 高濃度: 太い溝
+      { val: 0.18, lw: 2.5 * wood.lineWeight * gwScale, alpha: 0.75 }, // 中濃度: 中程度の溝
+      { val: 0.10, lw: 1.5 * wood.lineWeight * gwScale, alpha: 0.6 },  // 低濃度: 細い溝
+    ];
+    for (const t of thresholds) {
+      const contours = marchingSquares(gridB, gs, gs, t.val, cellSize, cellSize);
+      ctx.strokeStyle = `rgba(60,50,35,${t.alpha})`;
+      ctx.lineWidth = t.lw;
+      for (const poly of contours) {
+        if (poly.length < 2) continue;
+        ctx.beginPath();
+        ctx.moveTo(poly[0].x, poly[0].y);
+        for (let i = 1; i < poly.length; i++) ctx.lineTo(poly[i].x, poly[i].y);
+        ctx.stroke();
+      }
+    }
+  } else {
+    // === レーザーモード: 従来のfillRect描画（面彫刻に適合） ===
+    for (let y = 0; y < gs; y++) {
+      for (let x = 0; x < gs; x++) {
+        const bVal = gridB[y*gs+x];
         if (bVal > 0.1) {
           // 化学物質B濃度で3層に振り分け（Gray-ScottモデルのbValは通常0〜0.4程度）
           ctx.setLayer(bVal > 0.35 ? 'accent' : bVal > 0.15 ? 'pattern' : 'background');
@@ -1369,13 +1434,6 @@ function drawReactionDiffusion(ctx, params, mode) {
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
           const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
           ctx.fillRect(x*cellSize, y*cellSize, sz, sz);
-        }
-      } else {
-        if (bVal > 0.08) {
-          const depth = Math.min(bVal * 2, 1);
-          ctx.fillStyle = `rgba(60,50,35,${depth * 0.8})`;
-          const w2 = cellSize * (0.3 + depth * wood.lineWeight * gwScale * 1.2);
-          ctx.fillRect(x*cellSize, y*cellSize, w2, w2);
         }
       }
     }
@@ -2042,6 +2100,112 @@ const LASER_LAYER_COLORS = {
   'pattern':    '#FF0000',
   'background': '#00FF00',
 };
+
+// ========== Marching Squares ==========
+// 2Dスカラー場から等高線（ストロークパス）を抽出するユーティリティ。
+// V溝NCモードでボロノイ（セル境界線）や反応拡散（濃度等高線）を
+// fillRect→stroke変換するために使用。
+// grid: Float32Array (y*gw+x), gw/gh: グリッドサイズ, threshold: 閾値
+// scaleX/Y: グリッドセル→キャンバスpxの変換係数
+// Returns: [[{x,y}, ...], ...] — 連結ポリラインの配列
+function marchingSquares(grid, gw, gh, threshold, scaleX, scaleY) {
+  const segs = []; // [[x1,y1,x2,y2], ...]
+  const lerp = (v0, v1) => {
+    const d = v1 - v0;
+    return Math.abs(d) < 1e-10 ? 0.5 : Math.max(0, Math.min(1, (threshold - v0) / d));
+  };
+
+  for (let j = 0; j < gh - 1; j++) {
+    for (let i = 0; i < gw - 1; i++) {
+      const v0 = grid[j * gw + i];         // TL
+      const v1 = grid[j * gw + i + 1];     // TR
+      const v2 = grid[(j+1) * gw + i + 1]; // BR
+      const v3 = grid[(j+1) * gw + i];     // BL
+
+      let c = 0;
+      if (v0 >= threshold) c |= 1;
+      if (v1 >= threshold) c |= 2;
+      if (v2 >= threshold) c |= 4;
+      if (v3 >= threshold) c |= 8;
+      if (c === 0 || c === 15) continue;
+
+      // 4辺上の等高線交差点（キャンバス座標）
+      const T = [(i + lerp(v0, v1)) * scaleX, j * scaleY];
+      const R = [(i + 1) * scaleX, (j + lerp(v1, v2)) * scaleY];
+      const B = [(i + 1 - lerp(v2, v3)) * scaleX, (j + 1) * scaleY];
+      const L = [i * scaleX, (j + 1 - lerp(v3, v0)) * scaleY];
+
+      // 16ケースの等高線セグメント（caseとその補数は同じ辺を横切る）
+      const add = (a, b) => segs.push([a[0], a[1], b[0], b[1]]);
+      switch (c) {
+        case 1: case 14: add(T, L); break;
+        case 2: case 13: add(T, R); break;
+        case 3: case 12: add(L, R); break;
+        case 4: case 11: add(R, B); break;
+        case 5: add(T, R); add(B, L); break;  // サドル点
+        case 6: case 9:  add(T, B); break;
+        case 7: case 8:  add(L, B); break;
+        case 10: add(T, L); add(R, B); break; // サドル点
+      }
+    }
+  }
+
+  // セグメントを連結ポリラインに結合（ハッシュマップで高速化）
+  const EPS = 0.5;
+  const inv = 1 / EPS;
+  const key = (x, y) => `${Math.round(x * inv)},${Math.round(y * inv)}`;
+  const adj = new Map();
+  for (let si = 0; si < segs.length; si++) {
+    const s = segs[si];
+    for (let e = 0; e < 2; e++) {
+      const k = key(s[e * 2], s[e * 2 + 1]);
+      if (!adj.has(k)) adj.set(k, []);
+      adj.get(k).push([si, e]);
+    }
+  }
+  const used = new Uint8Array(segs.length);
+  const polylines = [];
+  for (let si = 0; si < segs.length; si++) {
+    if (used[si]) continue;
+    used[si] = 1;
+    const s = segs[si];
+    const poly = [{x: s[0], y: s[1]}, {x: s[2], y: s[3]}];
+    // 前方伸長
+    for (let ext = true; ext; ) {
+      ext = false;
+      const tail = poly[poly.length - 1];
+      const k2 = key(tail.x, tail.y);
+      const nb = adj.get(k2);
+      if (nb) for (const [ni, ne] of nb) {
+        if (used[ni]) continue;
+        used[ni] = 1;
+        const ns = segs[ni];
+        const ox = 1 - ne;
+        poly.push({x: ns[ox * 2], y: ns[ox * 2 + 1]});
+        ext = true;
+        break;
+      }
+    }
+    // 後方伸長
+    for (let ext = true; ext; ) {
+      ext = false;
+      const head = poly[0];
+      const k2 = key(head.x, head.y);
+      const nb = adj.get(k2);
+      if (nb) for (const [ni, ne] of nb) {
+        if (used[ni]) continue;
+        used[ni] = 1;
+        const ns = segs[ni];
+        const ox = 1 - ne;
+        poly.unshift({x: ns[ox * 2], y: ns[ox * 2 + 1]});
+        ext = true;
+        break;
+      }
+    }
+    if (poly.length >= 2) polylines.push(poly);
+  }
+  return polylines;
+}
 
 // CADツール互換: 連続するパスを1本のポリラインに統合
 // Fibonacci螺旋やFractal分岐は各線分を個別のstrokeで描画するため、
