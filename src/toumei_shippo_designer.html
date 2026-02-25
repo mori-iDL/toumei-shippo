@@ -676,15 +676,19 @@ canvas.vgroove-canvas {
     <div class="field">
       <label>樹種</label>
       <select id="species">
-        <option value="sugi">スギ（岩手県産）</option>
-        <option value="kuri">クリ（岩手県産）</option>
-        <option value="keyaki">ケヤキ（岩手県産）</option>
-        <option value="akamatsu">アカマツ（岩手県産）</option>
-        <option value="karamatsu">カラマツ（岩手県産）</option>
-        <option value="nara">ナラ（岩手県産）</option>
-        <option value="yamazakura">ヤマザクラ（岩手県産）</option>
-        <option value="hinoki">ヒノキ（市産材）</option>
-        <option value="onigurumi">オニグルミ（岩手県産）</option>
+        <optgroup label="市産材（盛岡市産）">
+          <option value="sugi">スギ</option>
+          <option value="karamatsu">カラマツ</option>
+          <option value="akamatsu">アカマツ</option>
+          <option value="nara">ナラ</option>
+          <option value="kuri">クリ</option>
+        </optgroup>
+        <optgroup label="県産材（岩手県産）">
+          <option value="yamazakura">ヤマザクラ</option>
+          <option value="onigurumi">オニグルミ</option>
+          <option value="itayakaede">イタヤカエデ</option>
+          <option value="keyaki">ケヤキ</option>
+        </optgroup>
       </select>
     </div>
 
@@ -980,6 +984,7 @@ const VGROOVE = {
   bitAngle: 60,
   halfAngleRad: Math.PI / 6,  // 30°
   minLineWidthPx: 1.5,  // V溝最低線幅（細い面幅に対応して引き下げ）
+  maxLineWidthPx: 10,   // V溝最大線幅（70mmパネル上で2mm相当、キャンバス塗りつぶし防止）
   chamfers: {
     fine:   { label: '細', widthMm: 0.3, grooveWidthPx: 6.7 },    // 旧30°相当の視覚スケール
     medium: { label: '中', widthMm: 0.5, grooveWidthPx: 10.35 },  // 旧45°相当
@@ -1110,15 +1115,17 @@ const SEASON_JP = { spring:'春', summer:'夏', autumn:'秋', winter:'冬' };
 // lineWeight:  0.5〜1.6（線の太さに3.2倍差）
 // grainStrength: 0.15〜1.0（木目の主張度）
 const WOOD_PARAMS = {
-  sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直' },
-  kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密' },
-  keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢' },
-  akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温' },
-  karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環' },
-  nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻' },
-  yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅' },
-  hinoki:     { lineSpacing: 1.6,  lineWeight: 0.5,  grainStrength: 0.2,  name: 'ヒノキ', char: '清・香' },
-  onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗' },
+  // 市産材（盛岡市産）
+  sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直', origin: '盛岡市産' },
+  karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環', origin: '盛岡市産' },
+  akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温', origin: '盛岡市産' },
+  nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻', origin: '盛岡市産' },
+  kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密', origin: '盛岡市産' },
+  // 県産材（岩手県産）
+  yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅', origin: '岩手県産' },
+  onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗', origin: '岩手県産' },
+  itayakaede: { lineSpacing: 1.3,  lineWeight: 0.7,  grainStrength: 0.3,  name: 'イタヤカエデ', char: '硬・白', origin: '岩手県産' },
+  keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢', origin: '岩手県産' },
 };
 
 // --- Blend ratio from birth time ---
@@ -1241,10 +1248,13 @@ function drawFibonacci(ctx, params, mode) {
       }
     } else {
       // V-groove: 溝幅が要素サイズと線幅を決める
-      const scaledDot = dotSize * (0.6 + gwScale * 0.7);
+      // gwRawに線形比例（旧: scaledDot * gwScale で二重乗算→bold+クリで33px超になり破綻）
+      const vRadius = dotSize * (0.6 + gwRaw * 0.25);
+      const vLineW = Math.min(VGROOVE.maxLineWidthPx,
+        Math.max(VGROOVE.minLineWidthPx, gwRaw * wood.lineWeight * 3.0));
       ctx.beginPath();
-      ctx.arc(x, y, scaledDot * 1.2, 0, Math.PI * 2);
-      ctx.lineWidth = scaledDot * gwScale;
+      ctx.arc(x, y, vRadius, 0, Math.PI * 2);
+      ctx.lineWidth = vLineW;
       ctx.stroke();
     }
   }
@@ -1294,7 +1304,8 @@ function drawVoronoi(ctx, params, mode) {
     const innerContours = marchingSquares(edgeGrid, gw, gh, threshold * 0.35, res, res);
 
     // 外側等高線: 中程度のlineWidth
-    const outerLW = 2.0 * wood.lineWeight * gwScale;
+    const outerLW = Math.min(VGROOVE.maxLineWidthPx,
+      Math.max(VGROOVE.minLineWidthPx, 2.0 * wood.lineWeight * gwScale));
     ctx.strokeStyle = 'rgba(60,50,35,0.7)';
     ctx.lineWidth = outerLW;
     for (const poly of contours) {
@@ -1305,7 +1316,8 @@ function drawVoronoi(ctx, params, mode) {
       ctx.stroke();
     }
     // 内側等高線: 太いlineWidth（セル境界の芯線）
-    const innerLW = 3.5 * wood.lineWeight * gwScale;
+    const innerLW = Math.min(VGROOVE.maxLineWidthPx,
+      Math.max(VGROOVE.minLineWidthPx, 3.5 * wood.lineWeight * gwScale));
     ctx.lineWidth = innerLW;
     ctx.strokeStyle = 'rgba(60,50,35,0.85)';
     for (const poly of innerContours) {
@@ -1405,10 +1417,11 @@ function drawReactionDiffusion(ctx, params, mode) {
     // === V溝NCモード: marching squaresで濃度等高線をストロークパスに変換 ===
     // fillRectはV溝ビットで加工不可。bVal閾値の等高線を抽出しstrokeで描画する。
     // 3段階の閾値で太→中→細の等高線を描画（チューリングパターンの地形図的表現）
+    const capLW = (v) => Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, v));
     const thresholds = [
-      { val: 0.30, lw: 4.0 * wood.lineWeight * gwScale, alpha: 0.9 },  // 高濃度: 太い溝
-      { val: 0.18, lw: 2.5 * wood.lineWeight * gwScale, alpha: 0.75 }, // 中濃度: 中程度の溝
-      { val: 0.10, lw: 1.5 * wood.lineWeight * gwScale, alpha: 0.6 },  // 低濃度: 細い溝
+      { val: 0.30, lw: capLW(4.0 * wood.lineWeight * gwScale), alpha: 0.9 },  // 高濃度: 太い溝
+      { val: 0.18, lw: capLW(2.5 * wood.lineWeight * gwScale), alpha: 0.75 }, // 中濃度: 中程度の溝
+      { val: 0.10, lw: capLW(1.5 * wood.lineWeight * gwScale), alpha: 0.6 },  // 低濃度: 細い溝
     ];
     for (const t of thresholds) {
       const contours = marchingSquares(gridB, gs, gs, t.val, cellSize, cellSize);
@@ -1468,11 +1481,12 @@ function drawFractal(ctx, params, mode) {
       ctx.lineWidth = lw;
       ctx.stroke();
     } else {
-      // V溝: 溝幅で枝の太さを構造的に変える
+      // V溝: 溝幅で枝の太さを構造的に変える（maxでキャップして塗りつぶし防止）
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
-      ctx.lineWidth = lw * (0.6 + gwScale * 0.8);
+      ctx.lineWidth = Math.min(VGROOVE.maxLineWidthPx,
+        Math.max(VGROOVE.minLineWidthPx, lw * (0.6 + gwScale * 0.8)));
       ctx.stroke();
     }
 
@@ -1511,15 +1525,15 @@ function drawFlowField(ctx, params, mode, alpha) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const freq = 0.008 / wood.lineSpacing;
-  // V溝Secondary: べき乗2.5で劇的な差異（30°=0.37, 45°=1.10, 60°=2.49）
+  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は太い面幅+密な樹種で破綻）
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
   const baseLines = Math.floor((25 + weight / 150) * alpha);
   // V溝: 細い溝→50+本の繊細な流線 / 太い溝→8本の大胆なストローク
   const lines = mode === 'vgroove' ? Math.max(5, Math.round(baseLines / gwScale)) : baseLines;
 
   // V溝: 物理的に別ビットで彫る独立パス — 母音weight分割でもαを保証
-  const effectiveAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.7;
+  const effectiveAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.7;
   ctx.globalAlpha = effectiveAlpha;
   for (let l = 0; l < lines; l++) {
     let x = rng() * s, y = rng() * s;
@@ -1537,7 +1551,8 @@ function drawFlowField(ctx, params, mode, alpha) {
       ctx.lineTo(x, y);
     }
     // V溝: 溝幅を直接反映 — 最低線幅を保証してNC加工パス除外を防止
-    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
+    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
+      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1548,13 +1563,13 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
   const rng = mulberry32(seed + 2000);
   const noise = perlinNoise2D(rng);
   const s = SCALE;
-  // V溝Secondary: べき乗2.5で劇的な差異
+  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
   // V溝: 細い溝→密な波紋テクスチャ / 太い溝→疎で大胆な波
   const spacing = mode === 'vgroove' ? 6 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 6 * wood.lineSpacing;
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
   for (let y = 0; y < s; y += spacing) {
     ctx.beginPath();
     ctx.moveTo(0, y);
@@ -1564,7 +1579,8 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
       const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amp;
       ctx.lineTo(x, y + n);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.3 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
+    ctx.lineWidth = mode === 'laser' ? 0.3 * wood.lineWeight :
+      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1576,11 +1592,11 @@ function drawSineInterference(ctx, params, mode, alpha) {
   const c = CENTER;
   const freq1 = 0.03 + (weight / 3000) * 0.03;
   const freq2 = 0.05 + (seed % 100) / 3000;
-  // V溝Secondary: べき乗2.5で劇的な差異
+  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
   // V溝: 細い溝→密な干渉縞 / 太い溝→疎で大きな波
   const spacing = mode === 'vgroove' ? 4 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 4 * wood.lineSpacing;
 
@@ -1594,7 +1610,8 @@ function drawSineInterference(ctx, params, mode, alpha) {
       if (x === 0) ctx.moveTo(x, ny);
       else ctx.lineTo(x, ny);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
+    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
+      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1605,11 +1622,11 @@ function drawLissajous(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
-  // V溝Secondary: べき乗2.5で劇的な差異
+  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.6;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.6;
   // V溝: 細い溝→多数の小さな軌跡 / 太い溝→少数の大きく太い軌跡
   const baseCurves = 4 + Math.floor(rng() * 4);
   const curves = mode === 'vgroove' ? Math.max(2, Math.round(baseCurves / gwScale)) : baseCurves;
@@ -1629,7 +1646,8 @@ function drawLissajous(ctx, params, mode, alpha) {
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
+    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
+      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1640,11 +1658,11 @@ function drawWaveFunction(ctx, params, mode, alpha) {
   const s = SCALE;
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
-  // V溝Secondary: べき乗2.5で劇的な差異
+  // V溝Secondary: べき乗1.5で差異を増幅（旧2.5は破綻リスク）
   const gwRaw = mode === 'vgroove' ? (params.grooveWidthPx || 10) / 10 : 1;
-  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 2.5) : 1;
+  const gwScale = mode === 'vgroove' ? Math.pow(gwRaw, 1.5) : 1;
 
-  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.7, Math.min(1, alpha * 2.5)) : alpha * 0.55;
+  ctx.globalAlpha = mode === 'vgroove' ? Math.max(0.15, Math.min(0.8, alpha * 1.5)) : alpha * 0.55;
   // V溝: 細い溝→多数の密な波紋 / 太い溝→少数の疎で太い波紋
   const baseRings = 8 + Math.floor(rng() * 8);
   const rings = mode === 'vgroove' ? Math.max(3, Math.round(baseRings / gwScale)) : baseRings;
@@ -1664,7 +1682,8 @@ function drawWaveFunction(ctx, params, mode, alpha) {
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
+    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
+      Math.min(VGROOVE.maxLineWidthPx, Math.max(VGROOVE.minLineWidthPx, 2.0 * gwScale * wood.lineWeight));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -2069,7 +2088,7 @@ function updateStory(inp) {
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
     体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
-    素材は岩手県産 <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
+    素材は${inp.wood.origin} <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
       const cw = inp.chamferWidths;
       const info = k => { const c = VGROOVE.chamfers[k]; return `${c.label}（${c.widthMm}mm, 深さ${c.depthMm}mm）`; };
       if (inp.bitConfig === 'single') {
