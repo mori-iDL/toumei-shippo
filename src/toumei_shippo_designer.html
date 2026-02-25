@@ -977,6 +977,7 @@ const PX_PER_MM = SCALE / 70;                  // 5 px/mm
 // 溝幅 w = 2 × depth × tan(angle/2)
 const VGROOVE = {
   depth: 2.5,  // mm（固定）
+  minLineWidthPx: 2.0,  // V溝最低線幅 = 0.4mm（NC加工可能な下限。SVGフィルタ0.3mmに余裕を持たせる）
   bits: {},
   dualCombos: [
     { primary: 60, secondary: 30, label: '60°＋30°', desc: '最大コントラスト' },
@@ -1465,8 +1466,8 @@ function drawFlowField(ctx, params, mode, alpha) {
       if (x < 0 || x > s || y < 0 || y > s) break;
       ctx.lineTo(x, y);
     }
-    // V溝: 溝幅を直接反映 — 30°=1.1px, 45°=3.3px, 60°=7.5px
-    ctx.lineWidth = (mode === 'laser' ? 0.5 : 4.0 * gwScale) * wood.lineWeight;
+    // V溝: 溝幅を直接反映 — 最低線幅を保証してNC加工パス除外を防止
+    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1493,7 +1494,7 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
       const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amp;
       ctx.lineTo(x, y + n);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.3 : 4.0 * gwScale) * wood.lineWeight;
+    ctx.lineWidth = mode === 'laser' ? 0.3 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1523,7 +1524,7 @@ function drawSineInterference(ctx, params, mode, alpha) {
       if (x === 0) ctx.moveTo(x, ny);
       else ctx.lineTo(x, ny);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.4 : 4.0 * gwScale) * wood.lineWeight;
+    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1558,7 +1559,7 @@ function drawLissajous(ctx, params, mode, alpha) {
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.lineWidth = (mode === 'laser' ? 0.5 : 4.0 * gwScale) * wood.lineWeight;
+    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1593,7 +1594,7 @@ function drawWaveFunction(ctx, params, mode, alpha) {
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.lineWidth = (mode === 'laser' ? 0.4 : 4.0 * gwScale) * wood.lineWeight;
+    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight : Math.max(VGROOVE.minLineWidthPx, 4.0 * gwScale * wood.lineWeight);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1832,6 +1833,7 @@ function render() {
   try {
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
+      lctx.setLayer('primary');  // レーザーSVG: 主パターンレイヤー（強い彫刻）
       lctx.save();
       lctx.strokeStyle = '#2c261e';
       lctx.fillStyle = '#2c261e';
@@ -1844,6 +1846,7 @@ function render() {
     }
 
     // Draw secondary — 全母音がそれぞれのアルゴリズムで声を持つ
+    lctx.setLayer('secondary');  // レーザーSVG: 副パターンレイヤー（繊細な彫刻）
     const secondaryAlpha = 1 - inp.blend;
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue; // 5%未満はノイズ防止で省略
@@ -1899,7 +1902,8 @@ function render() {
     // セカンダリアルゴリズム — paramsSecondary（secondaryビット角度）で描画
     // V溝NCではセカンダリは物理的に別ビットで彫る独立パス — レーザーより強い存在感
     // Dual/Triple時: ビット角度の違いが構造的差異として現れるよう、α値の下限を確保
-    vctx.setLayer(inp.bitAngles.secondary + 'deg');
+    // 'sub:' プレフィックスで主パターンと分離 → SVG/DXF出力時にモード別フィルタ可能
+    vctx.setLayer('sub:' + inp.bitAngles.secondary + 'deg');
     const secondaryAlphaV = Math.max(0.65, 1 - inp.blend);
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
@@ -1933,7 +1937,7 @@ function render() {
       const nh = Math.max(-1, Math.min(1, (params.height - 49) / 11));
 
       // --- 第1方向: 主クロスハッチ ---
-      vctx.lineWidth = 1.6 + nw * 0.4;
+      vctx.lineWidth = Math.max(VGROOVE.minLineWidthPx, 1.6 + nw * 0.4);
       vctx.setLineDash([5, 4]);
       vctx.globalAlpha = 0.7;
 
@@ -1953,7 +1957,7 @@ function render() {
       // --- 第2方向: クロス斜線 ---
       vctx.setLineDash([3, 6]);
       vctx.globalAlpha = 0.5;
-      vctx.lineWidth = 1.3;
+      vctx.lineWidth = Math.max(VGROOVE.minLineWidthPx, 1.3);
       const angle2 = -(Math.PI / 5) + nh * (Math.PI / 8);
       const dx2 = Math.cos(angle2);
       const dy2 = Math.sin(angle2);
@@ -2022,6 +2026,14 @@ const SVG_LAYER_COLORS = {
   '30deg': '#0000FF',
 };
 
+// レーザー加工用SVGレイヤー色
+// xTool P2Sでは色ごとにパワー/スピード/パス数を個別設定できる
+// primary=赤（強い彫刻: 高パワー・低速度）, secondary=青（繊細な彫刻: 低パワー・高速度）
+const LASER_LAYER_COLORS = {
+  'primary': '#FF0000',
+  'secondary': '#0000FF',
+};
+
 function exportSVG(mode) {
   const paths = lastRecordedPaths[mode] || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
@@ -2050,25 +2062,51 @@ function exportSVG(mode) {
   // opacity が低い副アルゴリズムの線を除外（閾値: 0.3）
   const MIN_OPACITY_FOR_EXPORT = 0.3;
 
+  // CADツール互換: パスの座標をパターン領域にクランプ
+  // Fusion 360等はSVG clip-pathを解釈しないため、座標自体を境界内に収める
+  // パターン領域 = MARGIN_PX ~ (MARGIN_PX + PATTERN_SIZE) をmm変換
+  const clipBounds = {
+    minX: MARGIN_PX * pxToMm,     // 3.0mm
+    minY: MARGIN_PX * pxToMm,     // 3.0mm
+    maxX: (MARGIN_PX + PATTERN_SIZE) * pxToMm,  // 67.0mm
+    maxY: (MARGIN_PX + PATTERN_SIZE) * pxToMm   // 67.0mm
+  };
+
   if (mode === 'vgroove') {
+    const inp = gatherInputs();
     // V溝NCモード: ビット角度ごとにレイヤー分け＋色分け
     // NC加工時に各レイヤー = 各ビットの加工パスとして扱える
     //
     // V溝NC固有のフィルタ:
     // - opacity属性を出力しない（物理的な切削にはopacity概念がない）
-    // - stroke-width が細すぎるパスを除外（副アルゴリズムの細線はNC加工に不適）
+    // - stroke-width が細すぎるパスを除外（NC加工に不適な細線）
     //   閾値: 0.3mm（pxToMm換算で lineWidth >= 1.5px 相当）
+    // - Single モード: sub:*パスもプライマリビットレイヤーに統合
+    //   → 1本のビットで主副両方のパターンを彫る
+    // - Dual/Triple: sub:*パスは対応するビットレイヤーにマッピング
     const MIN_STROKE_WIDTH_MM = 0.3;
     const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
 
     for (const p of paths) {
-      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
-      // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
+      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;
       const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
       if (strokeWidthMm < MIN_STROKE_WIDTH_MM) continue;
-      const svgEl = pathToSVG(p, pxToMm, SVG_LAYER_COLORS[p.layer], true);  // suppressOpacity=true
+
+      const rawLayer = p.layer || 'default';
+      const isSub = rawLayer.startsWith('sub:');
+
+      // レイヤー名解決:
+      // - Single: sub:*パスもプライマリビットレイヤーに統合（1本のビットで全パターン）
+      // - Dual/Triple: sub:Xdeg → Xdeg（各ビットレイヤーにマッピング）
+      let layerName;
+      if (isSub && inp.bitConfig === 'single') {
+        layerName = inp.bitAngles.primary + 'deg';
+      } else {
+        layerName = isSub ? rawLayer.replace('sub:', '') : rawLayer;
+      }
+      const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
+      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);  // suppressOpacity=true, CADクリップ
       if (!svgEl) continue;
-      const layerName = p.layer || 'default';
       if (!layerMap[layerName]) layerMap[layerName] = [];
       layerMap[layerName].push(svgEl);
     }
@@ -2083,32 +2121,61 @@ function exportSVG(mode) {
       const gwMm = a => VGROOVE.bits[parseInt(a)] ? VGROOVE.bits[parseInt(a)].grooveWidthMm.toFixed(2) : '?';
       const label = layerName === 'default' ? 'other' : `V-bit ${angle}° groove=${gwMm(angle)}mm`;
       bodyContent += `\n  <!-- ${label} -->\n`;
-      bodyContent += `  <g id="${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      bodyContent += `  <g id="${layerName}" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
       for (const el of elements) {
         bodyContent += `    ${el}\n`;
       }
       bodyContent += `  </g>\n`;
     }
   } else {
-    // レーザーモード: 単一レイヤー（加工パスのみ）
-    let patternElements = '';
+    // レーザーモード: primary/secondaryレイヤー分け
+    // xTool P2S等で色ごとにパワー/スピード/パス数を設定できる
+    const laserLayerMap = {};  // { 'primary': [svgElements], 'secondary': [...] }
+
     for (const p of paths) {
-      if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;  // 低opacity除外
-      const svgEl = pathToSVG(p, pxToMm);
+      // レーザーモード: alphaが極小（ほぼ透明）のパスのみ除外
+      // 副アルゴリズムのalphaは0.11〜0.16が典型値（母音3文字の場合）
+      // MIN_OPACITY_FOR_EXPORT(0.3)を適用すると副レイヤーが全滅するため、
+      // レーザーでは0.01をしきい値とする
+      if (p.globalAlpha < 0.01) continue;
+      const layerName = p.layer || 'primary';
+      const color = LASER_LAYER_COLORS[layerName] || '#000000';
+      // xTool P2Sはopacity属性を解釈しない — 色でレイヤー識別するため抑制, CADクリップ
+      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);
       if (!svgEl) continue;
-      patternElements += '    ' + svgEl + '\n';
+      if (!laserLayerMap[layerName]) laserLayerMap[layerName] = [];
+      laserLayerMap[layerName].push(svgEl);
     }
-    bodyContent = `\n  <!-- パターン（64mm角有効エリア内） -->\n`;
-    bodyContent += `  <g id="pattern" clip-path="url(#pattern-clip)">\n`;
-    bodyContent += patternElements;
-    bodyContent += `  </g>\n`;
+
+    // レイヤー順: primary → secondary（強い彫刻を先に）
+    const laserLayerOrder = ['primary', 'secondary'];
+    const laserLayerLabels = {
+      'primary': 'Primary pattern (strong engraving)',
+      'secondary': 'Secondary pattern (fine engraving)',
+    };
+    for (const layerName of laserLayerOrder) {
+      const elements = laserLayerMap[layerName];
+      if (!elements || elements.length === 0) continue;
+      const color = LASER_LAYER_COLORS[layerName] || '#000000';
+      const label = laserLayerLabels[layerName] || layerName;
+      bodyContent += `\n  <!-- ${label} -->\n`;
+      bodyContent += `  <g id="${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      for (const el of elements) {
+        bodyContent += `    ${el}\n`;
+      }
+      bodyContent += `  </g>\n`;
+    }
   }
 
+  // モード別SVGヘッダー最適化:
+  // レーザー → Inkscape/xTool向け: mm単位 + inkscape名前空間
+  // V溝NC → Fusion 360/Rhinoceros向け: 単位なし + CADインポートガイド
+  const isLaser = mode === 'laser';
   const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-     width="70mm" height="70mm" viewBox="0 0 70 70">
-  <title>とうめいしっぽ パラメトリックパネル — ${mode === 'laser' ? 'Laser' : 'V-Groove NC'}</title>
+<!-- Physical size: 70mm x 70mm | Pattern area: 64mm x 64mm${!isLaser ? ' | Import at 1:1 scale (mm) in CAD tools' : ''} -->
+<svg xmlns="http://www.w3.org/2000/svg"${isLaser ? '\n     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"' : ''}
+     ${isLaser ? 'width="70mm" height="70mm"' : 'width="70" height="70"'} viewBox="0 0 70 70">
+  <title>とうめいしっぽ パラメトリックパネル — ${isLaser ? 'Laser' : 'V-Groove NC'}</title>
   <desc>Generated: ${new Date().toISOString()} | Vector output${descExtra}</desc>
 ${defs}${bodyContent}
 </svg>`;
@@ -2125,7 +2192,9 @@ ${defs}${bodyContent}
 // パスデータをSVG要素文字列に変換
 // colorOverride: レイヤー色でstroke/fillを上書き（V溝NCのビット角度別色分け）
 // suppressOpacity: trueならopacity属性を出力しない（V溝NC用 — 物理切削にはopacity概念がない）
-function pathToSVG(p, scale, colorOverride, suppressOpacity) {
+// clipBounds: {minX, minY, maxX, maxY} mm座標 — パターン領域外の座標をクランプ
+//   Fusion 360等のCADツールはSVG clip-pathを解釈しないため、座標自体を境界内に収める
+function pathToSVG(p, scale, colorOverride, suppressOpacity, clipBounds) {
   const fillColor = colorOverride || p.fillStyle;
   const strokeColor = colorOverride || p.strokeStyle;
   const opacityAttr = (!suppressOpacity && p.globalAlpha < 1) ? ` opacity="${p.globalAlpha.toFixed(3)}"` : '';
@@ -2142,6 +2211,12 @@ function pathToSVG(p, scale, colorOverride, suppressOpacity) {
   const circleSegs = p.segments.filter(s => s.cmd === 'CIRCLE');
   if (circleSegs.length === 1 && p.segments.length === 1) {
     const c = circleSegs[0];
+    // CADクリップ: 中心がパターン領域外の円はスキップ
+    if (clipBounds) {
+      const cx = c.cx * scale, cy = c.cy * scale;
+      if (cx < clipBounds.minX || cx > clipBounds.maxX ||
+          cy < clipBounds.minY || cy > clipBounds.maxY) return null;
+    }
     if (p.type === 'fill') {
       return `<circle cx="${(c.cx * scale).toFixed(2)}" cy="${(c.cy * scale).toFixed(2)}" ` +
         `r="${(c.r * scale).toFixed(2)}" fill="${fillColor}"${opacityAttr}/>`;
@@ -2153,11 +2228,24 @@ function pathToSVG(p, scale, colorOverride, suppressOpacity) {
   }
 
   // パスデータ構築（M/Lコマンド）
+  // clipBoundsがある場合、各座標をパターン領域にクランプ
+  // 副アルゴリズムの流線はパネル外に延びるため、CADツール用に境界で打ち切る
   let d = '';
+  const clamp = clipBounds
+    ? (x, y) => [
+        Math.max(clipBounds.minX, Math.min(clipBounds.maxX, x)),
+        Math.max(clipBounds.minY, Math.min(clipBounds.maxY, y))
+      ]
+    : (x, y) => [x, y];
+
   for (const seg of p.segments) {
-    if (seg.cmd === 'M') d += `M${(seg.x * scale).toFixed(2)},${(seg.y * scale).toFixed(2)} `;
-    else if (seg.cmd === 'L') d += `L${(seg.x * scale).toFixed(2)},${(seg.y * scale).toFixed(2)} `;
-    else if (seg.cmd === 'CIRCLE') {
+    if (seg.cmd === 'M') {
+      const [x, y] = clamp(seg.x * scale, seg.y * scale);
+      d += `M${x.toFixed(2)},${y.toFixed(2)} `;
+    } else if (seg.cmd === 'L') {
+      const [x, y] = clamp(seg.x * scale, seg.y * scale);
+      d += `L${x.toFixed(2)},${y.toFixed(2)} `;
+    } else if (seg.cmd === 'CIRCLE') {
       // 複合パス内のcircle → 円をパスで近似
       const c = seg;
       d += `M${((c.cx + c.r) * scale).toFixed(2)},${(c.cy * scale).toFixed(2)} `;
@@ -2229,10 +2317,15 @@ function exportDXF() {
   const MIN_STROKE_WIDTH_DXF = 0.3;  // SVG同様、細すぎるパスを除外（mm単位）
   for (const p of paths) {
     if (p.globalAlpha < MIN_OPACITY_DXF) continue;
-    // V溝NC: 細すぎるパスを除外（副アルゴリズムのフローフィールド等）
     const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
     if (strokeWidthMm < MIN_STROKE_WIDTH_DXF) continue;
-    const layer = DXF_LAYER_MAP[p.layer] || 'BIT_60DEG';
+
+    // sub: プレフィックス処理（SVGと同一ロジック）
+    const rawLayer = p.layer || 'default';
+    const isSub = rawLayer.startsWith('sub:');
+    if (isSub && inp.bitConfig === 'single') continue;  // Single: 副アルゴリズム除外
+    const layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;  // Dual/Triple: 実レイヤーに統合
+    const layer = DXF_LAYER_MAP[layerKey] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
       const cx = (p.x + p.w / 2) * pxToMm;
