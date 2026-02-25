@@ -1221,10 +1221,14 @@ function drawFibonacci(ctx, params, mode) {
     const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;
 
     if (mode === 'laser') {
+      // 螺旋点の円 = accent（強調要素：太線/3パス）
+      ctx.setLayer('accent');
       ctx.beginPath();
       ctx.arc(x, y, dotSize, 0, Math.PI * 2);
       ctx.fill();
       if (i > 1) {
+        // 接続線 = pattern（主パターン構造：中線/2パス）
+        ctx.setLayer('pattern');
         const prevAngle = (i-1) * goldenAngle + (weather.flowCurvature * 0.5);
         const prevR = maxR * Math.sqrt((i-1) / numPoints) * (0.8 + 0.4 * heightRatio);
         const px = c + prevR * Math.cos(prevAngle);
@@ -1278,6 +1282,8 @@ function drawVoronoi(ctx, params, mode) {
 
       if (edge < threshold) {
         if (mode === 'laser') {
+          // 強いエッジ（閾値の30%以内）= accent、それ以外 = pattern
+          ctx.setLayer(edge < threshold * 0.3 ? 'accent' : 'pattern');
           const alpha = 1 - edge / threshold;
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
           ctx.fillRect(px, py, res, res);
@@ -1357,6 +1363,8 @@ function drawReactionDiffusion(ctx, params, mode) {
       const bVal = gridB[y*gs+x];
       if (mode === 'laser') {
         if (bVal > 0.1) {
+          // 化学物質B濃度で3層に振り分け（Gray-ScottモデルのbValは通常0〜0.4程度）
+          ctx.setLayer(bVal > 0.35 ? 'accent' : bVal > 0.15 ? 'pattern' : 'background');
           const alpha = Math.min(bVal * 2.5, 1.0);
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
           const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
@@ -1393,6 +1401,9 @@ function drawFractal(ctx, params, mode) {
     const lw = (maxDepth - depth + 1) * wood.lineWeight * 0.8;
 
     if (mode === 'laser') {
+      // 幹〜太枝(depth<=2)=accent、中枝=pattern、先端=background
+      // 枝は深さごとに指数増加するため、accentの閾値を少し広げて視覚的バランスを取る
+      ctx.setLayer(depth <= 2 ? 'accent' : depth <= Math.ceil(maxDepth * 0.6) ? 'pattern' : 'background');
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
@@ -1832,7 +1843,7 @@ function render() {
   try {
     const primaryFn = PRIMARY_FNS[inp.primary.key];
     if (primaryFn) {
-      lctx.setLayer('primary');  // レーザーSVG: 主パターンレイヤー（強い彫刻）
+      lctx.setLayer('pattern');  // レーザーSVG: 主パターンレイヤー（中線/2パス）— アルゴリズム内で要素別にaccent/patternに振り分け
       lctx.save();
       lctx.strokeStyle = '#2c261e';
       lctx.fillStyle = '#2c261e';
@@ -1845,7 +1856,7 @@ function render() {
     }
 
     // Draw secondary — 全母音がそれぞれのアルゴリズムで声を持つ
-    lctx.setLayer('secondary');  // レーザーSVG: 副パターンレイヤー（繊細な彫刻）
+    lctx.setLayer('background');  // レーザーSVG: 副アルゴリズム → backgroundレイヤー（薄い線/1パス）
     const secondaryAlpha = 1 - inp.blend;
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue; // 5%未満はノイズ防止で省略
@@ -2188,9 +2199,9 @@ function exportSVG(mode) {
       bodyContent += `  </g>\n`;
     }
   } else {
-    // レーザーモード: primary/secondaryレイヤー分け
+    // レーザーモード: 3層（accent/pattern/background）色分けレイヤー
     // xTool P2S等で色ごとにパワー/スピード/パス数を設定できる
-    const laserLayerMap = {};  // { 'primary': [svgElements], 'secondary': [...] }
+    const laserLayerMap = {};  // { 'accent': [...], 'pattern': [...], 'background': [...] }
 
     // 1. フィルタリング（alpha 0.01未満を除外）
     const filteredLPaths = paths.filter(p => p.globalAlpha >= 0.01);
@@ -2199,24 +2210,25 @@ function exportSVG(mode) {
 
     // 3. レイヤー割当て・SVG変換
     for (const p of mergedLPaths) {
-      const layerName = p.layer || 'primary';
-      const color = LASER_LAYER_COLORS[layerName] || '#000000';
-      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);
+      const layerName = p.layer || 'pattern';
+      const color = LASER_LAYER_COLORS[layerName] || '#FF0000';
+      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);  // opacity抑制: xToolは色でレイヤー識別
       if (!svgEl) continue;
       if (!laserLayerMap[layerName]) laserLayerMap[layerName] = [];
       laserLayerMap[layerName].push(svgEl);
     }
 
-    // レイヤー順: primary → secondary（強い彫刻を先に）
-    const laserLayerOrder = ['primary', 'secondary'];
+    // レイヤー順: accent → pattern → background（強い彫刻から順に）
+    const laserLayerOrder = ['accent', 'pattern', 'background'];
     const laserLayerLabels = {
-      'primary': 'Primary pattern (strong engraving)',
-      'secondary': 'Secondary pattern (fine engraving)',
+      'accent':     'Accent — 3pass, deep',
+      'pattern':    'Pattern — 2pass, standard',
+      'background': 'Background — 1pass, subtle',
     };
     for (const layerName of laserLayerOrder) {
       const elements = laserLayerMap[layerName];
       if (!elements || elements.length === 0) continue;
-      const color = LASER_LAYER_COLORS[layerName] || '#000000';
+      const color = LASER_LAYER_COLORS[layerName] || '#FF0000';
       const label = laserLayerLabels[layerName] || layerName;
       bodyContent += `\n  <!-- ${label} -->\n`;
       bodyContent += `  <g id="${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
