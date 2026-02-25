@@ -2034,6 +2034,64 @@ const LASER_LAYER_COLORS = {
   'secondary': '#0000FF',
 };
 
+// CADツール互換: 連続するパスを1本のポリラインに統合
+// Fibonacci螺旋やFractal分岐は各線分を個別のstrokeで描画するため、
+// SVG/DXFでは何百もの微小な2点パスに分裂する。
+// 録画順で隣接するパスの終点と始点が一致する場合、1本のポリラインに結合する。
+function mergeConnectedPaths(paths, tolerance) {
+  if (!tolerance) tolerance = 1.0; // 1px = 0.2mm
+  const result = [];
+  let current = null;
+
+  for (const p of paths) {
+    // 結合対象: stroke型でM/Lセグメントのみ（circle/fillRectは対象外）
+    const isMLPath = p.type === 'stroke' && p.segments && p.segments.length >= 2
+      && p.segments.every(s => s.cmd === 'M' || s.cmd === 'L');
+
+    if (!isMLPath) {
+      if (current) { result.push(current); current = null; }
+      result.push(p);
+      continue;
+    }
+
+    if (!current) {
+      current = { ...p, segments: [...p.segments] };
+      continue;
+    }
+
+    // 同一レイヤーかチェック（異なるレイヤーのパスは結合しない）
+    if ((p.layer || '') !== (current.layer || '')) {
+      result.push(current);
+      current = { ...p, segments: [...p.segments] };
+      continue;
+    }
+
+    // 終点と始点が一致するかチェック
+    const lastSeg = current.segments[current.segments.length - 1];
+    const firstM = p.segments[0];
+    if (!firstM || firstM.cmd !== 'M') {
+      result.push(current);
+      current = { ...p, segments: [...p.segments] };
+      continue;
+    }
+
+    const dx = lastSeg.x - firstM.x;
+    const dy = lastSeg.y - firstM.y;
+    if (dx * dx + dy * dy <= tolerance * tolerance) {
+      // 結合: 次のパスのMをスキップし、Lセグメント以降を追加
+      for (let i = 1; i < p.segments.length; i++) {
+        current.segments.push(p.segments[i]);
+      }
+    } else {
+      result.push(current);
+      current = { ...p, segments: [...p.segments] };
+    }
+  }
+
+  if (current) result.push(current);
+  return result;
+}
+
 function exportSVG(mode) {
   const paths = lastRecordedPaths[mode] || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
@@ -2087,17 +2145,22 @@ function exportSVG(mode) {
     const MIN_STROKE_WIDTH_MM = 0.3;
     const layerMap = {};  // { '60deg': [svgElements], '45deg': [...], '30deg': [...] }
 
+    // 1. フィルタリング
+    const filteredVPaths = [];
     for (const p of paths) {
       if (p.globalAlpha < MIN_OPACITY_FOR_EXPORT) continue;
       const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
       if (strokeWidthMm < MIN_STROKE_WIDTH_MM) continue;
+      filteredVPaths.push(p);
+    }
+    // 2. 連続パス結合（Fibonacci螺旋・Fractal分岐の細切れ→ポリライン化）
+    const mergedVPaths = mergeConnectedPaths(filteredVPaths);
 
+    // 3. レイヤー割当て・SVG変換
+    for (const p of mergedVPaths) {
       const rawLayer = p.layer || 'default';
       const isSub = rawLayer.startsWith('sub:');
 
-      // レイヤー名解決:
-      // - Single: sub:*パスもプライマリビットレイヤーに統合（1本のビットで全パターン）
-      // - Dual/Triple: sub:Xdeg → Xdeg（各ビットレイヤーにマッピング）
       let layerName;
       if (isSub && inp.bitConfig === 'single') {
         layerName = inp.bitAngles.primary + 'deg';
@@ -2105,7 +2168,7 @@ function exportSVG(mode) {
         layerName = isSub ? rawLayer.replace('sub:', '') : rawLayer;
       }
       const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
-      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);  // suppressOpacity=true, CADクリップ
+      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);
       if (!svgEl) continue;
       if (!layerMap[layerName]) layerMap[layerName] = [];
       layerMap[layerName].push(svgEl);
@@ -2132,15 +2195,15 @@ function exportSVG(mode) {
     // xTool P2S等で色ごとにパワー/スピード/パス数を設定できる
     const laserLayerMap = {};  // { 'primary': [svgElements], 'secondary': [...] }
 
-    for (const p of paths) {
-      // レーザーモード: alphaが極小（ほぼ透明）のパスのみ除外
-      // 副アルゴリズムのalphaは0.11〜0.16が典型値（母音3文字の場合）
-      // MIN_OPACITY_FOR_EXPORT(0.3)を適用すると副レイヤーが全滅するため、
-      // レーザーでは0.01をしきい値とする
-      if (p.globalAlpha < 0.01) continue;
+    // 1. フィルタリング（alpha 0.01未満を除外）
+    const filteredLPaths = paths.filter(p => p.globalAlpha >= 0.01);
+    // 2. 連続パス結合
+    const mergedLPaths = mergeConnectedPaths(filteredLPaths);
+
+    // 3. レイヤー割当て・SVG変換
+    for (const p of mergedLPaths) {
       const layerName = p.layer || 'primary';
       const color = LASER_LAYER_COLORS[layerName] || '#000000';
-      // xTool P2Sはopacity属性を解釈しない — 色でレイヤー識別するため抑制, CADクリップ
       const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);
       if (!svgEl) continue;
       if (!laserLayerMap[layerName]) laserLayerMap[layerName] = [];
@@ -2291,14 +2354,19 @@ function exportDXF() {
     dxf += '999\nV-Groove Triple: 60deg(' + gwMm(60) + 'mm) 45deg(' + gwMm(45) + 'mm) 30deg(' + gwMm(30) + 'mm)\n';
   }
   dxf += '0\nENDSEC\n';
-  // Tables — ビット角度ごとにレイヤー定義
+  // Tables — LTYPEテーブル（Fusion 360互換に必須）+ レイヤー定義
   // DXF色番号: 1=赤(60°), 3=緑(45°), 5=青(30°), 7=白(BORDER)
   dxf += '0\nSECTION\n2\nTABLES\n';
+  // LTYPE テーブル（線種定義 — CONTINUOUSは必須）
+  dxf += '0\nTABLE\n2\nLTYPE\n70\n1\n';
+  dxf += '0\nLTYPE\n2\nCONTINUOUS\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0.0\n';
+  dxf += '0\nENDTAB\n';
+  // LAYER テーブル（各レイヤーに線種CONTINUOUSを明示）
   dxf += '0\nTABLE\n2\nLAYER\n70\n4\n';
-  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n';      // 白 — 外枠・有効エリア枠
-  dxf += '0\nLAYER\n2\nBIT_60DEG\n70\n0\n62\n1\n';   // 赤 — 60°ビット（荒彫り）
-  dxf += '0\nLAYER\n2\nBIT_45DEG\n70\n0\n62\n3\n';   // 緑 — 45°ビット（中仕上げ）
-  dxf += '0\nLAYER\n2\nBIT_30DEG\n70\n0\n62\n5\n';   // 青 — 30°ビット（仕上げ）
+  dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n6\nCONTINUOUS\n';      // 白 — 外枠・有効エリア枠
+  dxf += '0\nLAYER\n2\nBIT_60DEG\n70\n0\n62\n1\n6\nCONTINUOUS\n';   // 赤 — 60°ビット
+  dxf += '0\nLAYER\n2\nBIT_45DEG\n70\n0\n62\n3\n6\nCONTINUOUS\n';   // 緑 — 45°ビット
+  dxf += '0\nLAYER\n2\nBIT_30DEG\n70\n0\n62\n5\n6\nCONTINUOUS\n';   // 青 — 30°ビット
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   // Entities
   dxf += '0\nSECTION\n2\nENTITIES\n';
@@ -2313,50 +2381,73 @@ function exportDXF() {
   // パスデータをDXFエンティティに変換（ビット角度→DXFレイヤー）
   const DXF_LAYER_MAP = { '60deg': 'BIT_60DEG', '45deg': 'BIT_45DEG', '30deg': 'BIT_30DEG' };
 
-  const MIN_OPACITY_DXF = 0.3;  // SVG同様、低opacityパスを除外
-  const MIN_STROKE_WIDTH_DXF = 0.3;  // SVG同様、細すぎるパスを除外（mm単位）
+  // CADツール互換: 座標をパターン領域にクランプ（SVGと同一範囲）
+  const clipMin = MARGIN_PX * pxToMm;                     // 3.0mm
+  const clipMax = (MARGIN_PX + PATTERN_SIZE) * pxToMm;    // 67.0mm
+  const clampCoord = v => Math.max(clipMin, Math.min(clipMax, v));
+
+  // 1. フィルタリング
+  const MIN_OPACITY_DXF = 0.3;
+  const MIN_STROKE_WIDTH_DXF = 0.3;
+  const filteredDPaths = [];
   for (const p of paths) {
     if (p.globalAlpha < MIN_OPACITY_DXF) continue;
     const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
     if (strokeWidthMm < MIN_STROKE_WIDTH_DXF) continue;
+    filteredDPaths.push(p);
+  }
+  // 2. 連続パス結合（SVGと同一ロジック）
+  const mergedDPaths = mergeConnectedPaths(filteredDPaths);
 
-    // sub: プレフィックス処理（SVGと同一ロジック）
+  // 3. レイヤー割当て・DXFエンティティ生成
+  for (const p of mergedDPaths) {
     const rawLayer = p.layer || 'default';
     const isSub = rawLayer.startsWith('sub:');
-    if (isSub && inp.bitConfig === 'single') continue;  // Single: 副アルゴリズム除外
-    const layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;  // Dual/Triple: 実レイヤーに統合
+    // F3: Single mode → sub:パスもプライマリレイヤーに統合
+    let layerKey;
+    if (isSub && inp.bitConfig === 'single') {
+      layerKey = inp.bitAngles.primary + 'deg';
+    } else {
+      layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;
+    }
     const layer = DXF_LAYER_MAP[layerKey] || 'BIT_60DEG';
 
     if (p.type === 'fillRect') {
-      const cx = (p.x + p.w / 2) * pxToMm;
-      const cy = 70 - (p.y + p.h / 2) * pxToMm; // DXFはY軸反転
+      const cxMm = (p.x + p.w / 2) * pxToMm;
+      const cyMm = (p.y + p.h / 2) * pxToMm;
+      // パターン領域外のfillRectはスキップ
+      if (cxMm < clipMin || cxMm > clipMax || cyMm < clipMin || cyMm > clipMax) continue;
       if (p.w * pxToMm > 0.3) {
-        const x1 = p.x * pxToMm, y1 = 70 - p.y * pxToMm;
-        const x2 = (p.x + p.w) * pxToMm, y2 = 70 - (p.y + p.h) * pxToMm;
+        const x1 = clampCoord(p.x * pxToMm), y1 = clampCoord(70 - p.y * pxToMm);
+        const x2 = clampCoord((p.x + p.w) * pxToMm), y2 = clampCoord(70 - (p.y + p.h) * pxToMm);
         dxf += dxfPolyline([[x1,y1],[x2,y1],[x2,y2],[x1,y2]], true, layer);
       } else {
-        dxf += `0\nPOINT\n8\n${layer}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n`;
+        dxf += `0\nPOINT\n100\nAcDbEntity\n8\n${layer}\n100\nAcDbPoint\n10\n${clampCoord(cxMm).toFixed(3)}\n20\n${clampCoord(70 - cyMm).toFixed(3)}\n30\n0\n`;
       }
       continue;
     }
 
     if (!p.segments || p.segments.length === 0) continue;
 
-    // CIRCLEをチェック
+    // CIRCLEをチェック（中心がパターン領域外ならスキップ）
     const circles = p.segments.filter(s => s.cmd === 'CIRCLE');
     if (circles.length > 0) {
       for (const c of circles) {
         const cx = c.cx * pxToMm;
-        const cy = 70 - c.cy * pxToMm; // Y反転
+        const cy = 70 - c.cy * pxToMm;
+        if (cx < clipMin || cx > clipMax || cy < clipMin || cy > clipMax) continue;
         const r = c.r * pxToMm;
-        dxf += `0\nCIRCLE\n8\n${layer}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n`;
+        dxf += `0\nCIRCLE\n100\nAcDbEntity\n8\n${layer}\n100\nAcDbCircle\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n`;
       }
     }
 
-    // LINEセグメントをポリラインに変換
+    // LINEセグメントをポリラインに変換（座標クランプ付き）
     const lineSegs = p.segments.filter(s => s.cmd === 'M' || s.cmd === 'L');
     if (lineSegs.length >= 2) {
-      const points = lineSegs.map(s => [s.x * pxToMm, 70 - s.y * pxToMm]);
+      const points = lineSegs.map(s => [
+        clampCoord(s.x * pxToMm),
+        clampCoord(70 - s.y * pxToMm)
+      ]);
       dxf += dxfPolyline(points, false, layer);
     }
   }
@@ -2372,11 +2463,14 @@ function exportDXF() {
   URL.revokeObjectURL(url);
 }
 
-// DXFポリライン生成ヘルパー
+// DXFポリライン生成ヘルパー（AutoCAD R2000+サブクラスマーカー付き — Fusion 360互換）
 function dxfPolyline(points, closed, layer) {
-  let dxf = `0\nLWPOLYLINE\n8\n${layer}\n`;
-  dxf += `90\n${points.length}\n`;  // 頂点数
-  dxf += `70\n${closed ? 1 : 0}\n`; // 閉じるフラグ
+  let dxf = '0\nLWPOLYLINE\n';
+  dxf += '100\nAcDbEntity\n';          // エンティティサブクラスマーカー（必須）
+  dxf += `8\n${layer}\n`;
+  dxf += '100\nAcDbPolyline\n';        // ポリラインサブクラスマーカー（必須）
+  dxf += `90\n${points.length}\n`;     // 頂点数
+  dxf += `70\n${closed ? 1 : 0}\n`;   // 閉じるフラグ
   for (const [x, y] of points) {
     dxf += `10\n${x.toFixed(3)}\n20\n${y.toFixed(3)}\n`;
   }
