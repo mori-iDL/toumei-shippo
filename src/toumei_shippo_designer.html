@@ -908,6 +908,8 @@ class DrawingRecorder {
     if (this._currentPath) this._currentPath.segments.push({ cmd: 'M', x, y }); }
   lineTo(x, y) { this._ctx.lineTo(x, y);
     if (this._currentPath) this._currentPath.segments.push({ cmd: 'L', x, y }); }
+  closePath() { this._ctx.closePath();
+    if (this._currentPath) this._currentPath.segments.push({ cmd: 'Z' }); }
 
   // --- 描画実行＋記録 ---
   stroke() { this._syncState(); this._ctx.stroke();
@@ -1243,10 +1245,13 @@ function drawFibonacci(ctx, params, mode) {
     const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;
 
     if (mode === 'laser') {
+      // レーザーは均一線幅ベクトル → 大きな塗潰し円は加工時間・品質に悪影響
+      // kuri(1.5)×4500g → 15px(3mm径)で真っ黒化するため6px(1.2mm径)でクランプ
+      const laserDot = Math.min(dotSize, 6);
       // 螺旋点の円 = accent（強調要素：太線/3パス）
       ctx.setLayer('accent');
       ctx.beginPath();
-      ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+      ctx.arc(x, y, laserDot, 0, Math.PI * 2);
       ctx.fill();
       if (i > 1) {
         // 接続線 = pattern（主パターン構造：中線/2パス）
@@ -2495,6 +2500,8 @@ function pathToSVG(p, scale, colorOverride, suppressOpacity, clipBounds) {
     } else if (seg.cmd === 'L') {
       const [x, y] = clamp(seg.x * scale, seg.y * scale);
       d += `L${x.toFixed(2)},${y.toFixed(2)} `;
+    } else if (seg.cmd === 'Z') {
+      d += 'Z ';
     } else if (seg.cmd === 'CIRCLE') {
       // 複合パス内のcircle → 円をパスで近似
       const c = seg;
@@ -2630,12 +2637,13 @@ function exportDXF() {
 
     // LINEセグメントをポリラインに変換（座標クランプ付き）
     const lineSegs = p.segments.filter(s => s.cmd === 'M' || s.cmd === 'L');
+    const isClosed = p.segments.some(s => s.cmd === 'Z');
     if (lineSegs.length >= 2) {
       const points = lineSegs.map(s => [
         clampCoord(s.x * pxToMm),
         clampCoord(70 - s.y * pxToMm)
       ]);
-      dxf += dxfPolyline(points, false, layer);
+      dxf += dxfPolyline(points, isClosed, layer);
     }
   }
 
@@ -2820,7 +2828,7 @@ setTimeout(() => { render(); }, 100);
 
   async function runSafetyTest() {
     const panel = document.getElementById('safety-test-results');
-    panel.innerHTML = '<p style="color:var(--accent)">テスト実行中... 108パターン</p>';
+    panel.innerHTML = '<p style="color:var(--accent)">テスト実行中... V溝108 + レーザー36パターン</p>';
 
     // 現在の入力を保存
     const savedName = document.getElementById('name').value;
@@ -2839,6 +2847,25 @@ setTimeout(() => { render(); }, 100);
 
     for (const season of SEASONS) {
       for (const wood of WOODS) {
+        // レーザーキャンバス計測（ビットモード非依存なので1回のみ）
+        document.getElementById('birthday').value = `2020-${season.month}-15`;
+        document.getElementById('species').value = wood;
+        setMode(MODES[0]); // any mode — laser canvas is mode-independent
+        render();
+
+        const lc = document.getElementById('laser-canvas');
+        const laserDark = measureDarkness(lc);
+        maxDarkness = Math.max(maxDarkness, laserDark);
+        if (laserDark > DARKNESS_FAIL) failCount++;
+
+        results.push({
+          season: season.label,
+          wood: WOOD_PARAMS[wood].name,
+          mode: 'Laser',
+          darkness: laserDark.toFixed(1),
+          status: laserDark > DARKNESS_FAIL ? 'FAIL' : laserDark > DARKNESS_WARN ? 'WARN' : 'OK',
+        });
+
         for (const mode of MODES) {
           // 入力設定
           document.getElementById('birthday').value = `2020-${season.month}-15`;
@@ -2855,7 +2882,7 @@ setTimeout(() => { render(); }, 100);
           results.push({
             season: season.label,
             wood: WOOD_PARAMS[wood].name,
-            mode: mode.label,
+            mode: 'V溝' + mode.label,
             darkness: darkness.toFixed(1),
             status: darkness > DARKNESS_FAIL ? 'FAIL' : darkness > DARKNESS_WARN ? 'WARN' : 'OK',
           });
@@ -2875,7 +2902,7 @@ setTimeout(() => { render(); }, 100);
     if (savedComboBtn) setChamferCombo(savedComboBtn);
     render();
 
-    // 結果表示
+    // 結果表示（V溝108 + レーザー36 = 144パターン）
     const summary = failCount === 0
       ? `<span style="color:#4a4">全${results.length}パターン安全 (max ${maxDarkness.toFixed(1)}%)</span>`
       : `<span style="color:#c44">${failCount}件が${DARKNESS_FAIL}%超過 (max ${maxDarkness.toFixed(1)}%)</span>`;
