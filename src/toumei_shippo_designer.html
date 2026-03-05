@@ -335,6 +335,10 @@ canvas.vgroove-canvas {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
 }
+.story-text .note {
+  color: var(--text-sub);
+  font-size: 11px;
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -1129,22 +1133,40 @@ const VOWEL_ALGO = {
 const SEASON_JP = { spring:'春', summer:'夏', autumn:'秋', winter:'冬' };
 
 // --- Wood species parameters ---
-// 木材パラメータ — 範囲拡張版（P2: 視覚差異の強化）
-// lineSpacing: 0.5〜2.0（パターン密度に4倍差）
-// lineWeight:  0.5〜1.6（線の太さに3.2倍差）
-// grainStrength: 0.15〜1.0（木目の主張度）
+// 木材パラメータ — 加工知識統合版
+// 描画: lineSpacing(0.5-2.0) / lineWeight(0.5-1.6) / grainStrength(0.15-1.0)
+// 加工: fabrication(レーザー/V溝適性) / laserHint(△時の注意) / hardness(0-1)
+// 経年: aging(経年変化の一言) / texture(soft/medium/hard)
 const WOOD_PARAMS = {
   // 市産材（盛岡市産）
-  sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直', origin: '盛岡市産' },
-  karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環', origin: '盛岡市産' },
-  akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温', origin: '盛岡市産' },
-  nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻', origin: '盛岡市産' },
-  kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密', origin: '盛岡市産' },
+  sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直', origin: '盛岡市産',
+                fabrication: { laser: '◎', vgroove: '◎' }, laserHint: null,
+                aging: '飴色に深まり、柔らかな艶が生まれます', texture: 'soft', hardness: 0.2 },
+  karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環', origin: '盛岡市産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: '脂分あり。煙・ヤニに注意',
+                aging: '濃い赤褐色に変わり、年輪がより力強く', texture: 'medium', hardness: 0.55 },
+  akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温', origin: '盛岡市産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: '脂分あり。カラマツと同様',
+                aging: '黄褐色に落ち着き、温かみが増します', texture: 'medium', hardness: 0.45 },
+  nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻', origin: '盛岡市産',
+                fabrication: { laser: '△', vgroove: '◎' }, laserHint: '硬い材。高出力が必要で、細線は焼け残りリスクあり',
+                aging: '深い飴色に変わり、虎斑杢がより際立ちます', texture: 'hard', hardness: 0.85 },
+  kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密', origin: '盛岡市産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
+                aging: '濃い褐色に深まり、タンニンが風格を育みます', texture: 'hard', hardness: 0.75 },
   // 県産材（岩手県産）
-  yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅', origin: '岩手県産' },
-  onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗', origin: '岩手県産' },
-  itayakaede: { lineSpacing: 1.3,  lineWeight: 0.7,  grainStrength: 0.3,  name: 'イタヤカエデ', char: '硬・白', origin: '岩手県産' },
-  keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢', origin: '岩手県産' },
+  yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅', origin: '岩手県産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
+                aging: '深い赤褐色に変わり、緻密な木肌に艶が宿ります', texture: 'medium', hardness: 0.6 },
+  onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗', origin: '岩手県産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
+                aging: 'やや明るく変化し、滑らかな手触りが深まります', texture: 'medium', hardness: 0.4 },
+  itayakaede: { lineSpacing: 1.3,  lineWeight: 0.7,  grainStrength: 0.3,  name: 'イタヤカエデ', char: '硬・白', origin: '岩手県産',
+                fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
+                aging: '白い木肌が飴色に変わり、時間を纏います', texture: 'hard', hardness: 0.8 },
+  keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢', origin: '岩手県産',
+                fabrication: { laser: '△', vgroove: '◎' }, laserHint: '硬い材。高出力が必要',
+                aging: '深い飴色に変わり、美しい杢目がより鮮やかに', texture: 'hard', hardness: 0.9 },
 };
 
 // --- Blend ratio from birth time ---
@@ -2098,12 +2120,17 @@ function updateStory(inp) {
       } else {
         return `V溝加工は60°ビット1本で三段階の面取り幅を駆使——主構造${info('bold')}、中構造${info('medium')}、微細${info('fine')}。面幅を変えるだけで三層の陰影が木の表面に現れます。`;
       }
-    })()}
+    })()}<br><br>
+    時を重ねるごとに、${inp.wood.name}は${inp.wood.aging}。世界にひとつだけの模様が、木とともに育っていきます。${inp.wood.fabrication.laser === '△' ? `<br><span class="note">※ ${inp.wood.name}のレーザー加工: ${inp.wood.laserHint}</span>` : ''}
   `;
   document.getElementById('story-text').innerHTML = html;
 }
 
 // --- Export functions ---
+// レーザー加工の物理制約 — CO2レーザーで再現可能な最小線幅
+const LASER_MIN_STROKE_MM = 0.1;  // 0.1mm未満は焼き残り・不安定
+const LASER_MIN_STROKE_PX = LASER_MIN_STROKE_MM * (SCALE / 70);  // px換算（SCALE=350, 70mm → 0.5px）
+
 // V溝NCのSVGレイヤー色 — 面幅カテゴリ別、NC/CADソフトでの確実な識別のため純色を使用
 // bold=赤（太い面取り）, medium=緑（中面取り）, fine=青（細い面取り）
 const SVG_LAYER_COLORS = {
@@ -2388,6 +2415,12 @@ function exportSVG(mode) {
 
     // 1. フィルタリング（alpha 0.01未満を除外）
     const filteredLPaths = paths.filter(p => p.globalAlpha >= 0.01);
+    // 1.5. レーザー物理制約: stroke-width < 0.1mm はレーザーで再現不能 → クランプ
+    for (const p of filteredLPaths) {
+      if (p.type === 'stroke' && p.lineWidth < LASER_MIN_STROKE_PX) {
+        p.lineWidth = LASER_MIN_STROKE_PX;
+      }
+    }
     // 2. 連続パス結合
     const mergedLPaths = mergeConnectedPaths(filteredLPaths);
 
@@ -2539,7 +2572,13 @@ function exportDXF() {
   dxf += '0\nSECTION\n2\nHEADER\n';
   dxf += '9\n$INSUNITS\n70\n4\n';  // mm単位
   const cInfo = k => { const c = VGROOVE.chamfers[k]; return `${k}(${c.widthMm}mm, d${c.depthMm}mm)`; };
-  dxf += '999\n60deg bit | Chamfer widths: bold=' + VGROOVE.chamfers.bold.widthMm + 'mm, medium=' + VGROOVE.chamfers.medium.widthMm + 'mm, fine=' + VGROOVE.chamfers.fine.widthMm + 'mm\n';
+  // --- とうめいしっぽ CAM Guide ---
+  const hardnessLabel = inp.wood.hardness >= 0.7 ? '高' : inp.wood.hardness >= 0.4 ? '中' : '低';
+  dxf += '999\n--- toumei-shippo CAM Guide ---\n';
+  dxf += `999\n樹種: ${inp.wood.name}（硬度: ${hardnessLabel}）\n`;
+  dxf += `999\n推奨: V溝${inp.wood.fabrication.vgroove} / レーザー${inp.wood.fabrication.laser}${inp.wood.laserHint ? '（' + inp.wood.laserHint + '）' : ''}\n`;
+  dxf += '999\nビット: 60deg V-groove\n';
+  dxf += '999\n面幅: bold=' + VGROOVE.chamfers.bold.widthMm + 'mm, medium=' + VGROOVE.chamfers.medium.widthMm + 'mm, fine=' + VGROOVE.chamfers.fine.widthMm + 'mm\n';
   if (inp.bitConfig === 'single') {
     dxf += '999\nV-Groove Single: ' + cInfo(inp.chamferWidths.primary) + '\n';
   } else if (inp.bitConfig === 'dual') {
@@ -2594,6 +2633,7 @@ function exportDXF() {
   const mergedDPaths = mergeConnectedPaths(filteredDPaths);
 
   // 3. レイヤー割当て・DXFエンティティ生成
+  let dxfPolylineCount = 0, dxfSegmentCount = 0, dxfCircleCount = 0;
   for (const p of mergedDPaths) {
     const rawLayer = p.layer || 'default';
     const isSub = rawLayer.startsWith('sub:');
@@ -2632,6 +2672,7 @@ function exportDXF() {
         if (cx < clipMin || cx > clipMax || cy < clipMin || cy > clipMax) continue;
         const r = c.r * pxToMm;
         dxf += `0\nCIRCLE\n100\nAcDbEntity\n8\n${layer}\n100\nAcDbCircle\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n`;
+        dxfCircleCount++;
       }
     }
 
@@ -2644,9 +2685,13 @@ function exportDXF() {
         clampCoord(70 - s.y * pxToMm)
       ]);
       dxf += dxfPolyline(points, isClosed, layer);
+      dxfPolylineCount++;
+      dxfSegmentCount += points.length;
     }
   }
 
+  // パス統計コメント（group code 999 — ENTITIESセクション末尾）
+  dxf += `999\n--- Path Stats: polylines=${dxfPolylineCount}, circles=${dxfCircleCount}, segments=${dxfSegmentCount} ---\n`;
   dxf += '0\nENDSEC\n0\nEOF\n';
 
   const blob = new Blob([dxf], { type: 'application/dxf' });
@@ -2844,6 +2889,7 @@ setTimeout(() => { render(); }, 100);
     const results = [];
     let maxDarkness = 0;
     let failCount = 0;
+    let laserThinLineIssues = 0;  // Phase5: レーザー細線チェック
 
     for (const season of SEASONS) {
       for (const wood of WOODS) {
@@ -2857,6 +2903,19 @@ setTimeout(() => { render(); }, 100);
         const laserDark = measureDarkness(lc);
         maxDarkness = Math.max(maxDarkness, laserDark);
         if (laserDark > DARKNESS_FAIL) failCount++;
+
+        // Phase5: レーザー記録パスの細線チェック（exportSVGのクランプ前段階）
+        const laserPaths = lastRecordedPaths.laser || [];
+        const thinLines = laserPaths.filter(p => p.type === 'stroke' && p.lineWidth < LASER_MIN_STROKE_PX);
+        if (thinLines.length > 0) {
+          laserThinLineIssues++;
+          console.warn(`[Safety] ${season.label}/${WOOD_PARAMS[wood].name}: レーザー細線 ${thinLines.length}本（< ${LASER_MIN_STROKE_MM}mm）→ exportSVGでクランプ適用`);
+        }
+
+        // Phase5: レーザー△樹種のヒント表示
+        if (WOOD_PARAMS[wood].fabrication.laser === '△') {
+          console.info(`[Safety] ${WOOD_PARAMS[wood].name}: レーザー適性△ — ${WOOD_PARAMS[wood].laserHint}`);
+        }
 
         results.push({
           season: season.label,
@@ -2906,8 +2965,11 @@ setTimeout(() => { render(); }, 100);
     const summary = failCount === 0
       ? `<span style="color:#4a4">全${results.length}パターン安全 (max ${maxDarkness.toFixed(1)}%)</span>`
       : `<span style="color:#c44">${failCount}件が${DARKNESS_FAIL}%超過 (max ${maxDarkness.toFixed(1)}%)</span>`;
+    const laserThinInfo = laserThinLineIssues > 0
+      ? `<br><span style="color:#aa8">レーザー細線クランプ: ${laserThinLineIssues}/${SEASONS.length * WOODS.length}パターンで ${LASER_MIN_STROKE_MM}mm未満→クランプ適用</span>`
+      : `<br><span style="color:#4a4">レーザー細線: 全パターンで ${LASER_MIN_STROKE_MM}mm以上（クランプ不要）</span>`;
 
-    let html = `<p>${summary}</p>`;
+    let html = `<p>${summary}${laserThinInfo}</p>`;
     html += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">';
     html += '<tr style="background:var(--bg-dark)"><th>季節</th><th>樹種</th><th>モード</th><th>暗度%</th><th></th></tr>';
 
@@ -2927,7 +2989,7 @@ setTimeout(() => { render(); }, 100);
   debugPanel.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
       <span style="font-weight:bold;color:var(--accent)">Safety Test</span>
-      <span style="font-size:11px;color:var(--text-dim)">108パターン (4季節×9樹種×3モード) のV溝canvas暗度を計測</span>
+      <span style="font-size:11px;color:var(--text-dim)">144パターン (4季節×9樹種×[V溝3モード+レーザー]) の暗度＋レーザー細線チェック</span>
       <button onclick="document.getElementById('safety-test-panel').querySelector('button').disabled=true; runSafetyTest()" style="margin-left:auto;padding:6px 16px;background:var(--accent);border:none;border-radius:4px;color:var(--bg-dark);cursor:pointer;font-weight:bold">Run</button>
     </div>
     <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">閾値: WARN >${DARKNESS_WARN}% / FAIL >${DARKNESS_FAIL}% — テスト名「${TEST_NAME}」(3母音)</div>
