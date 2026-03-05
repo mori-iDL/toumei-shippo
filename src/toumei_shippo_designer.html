@@ -2087,7 +2087,7 @@ function updateStory(inp) {
       }
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
-    体重 ${inp.weight}g が模様の${inp.weight < 3000 ? '繊細さ' : inp.weight > 3500 ? '力強さ' : 'しなやかさ'}を、身長 ${inp.height}cm が${inp.height < 48 ? '凝縮された' : inp.height > 51 ? '伸びやかな' : 'バランスの取れた'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
+    体重 ${inp.weight}g が模様の${inp.weight < 2500 ? '繊細な' : inp.weight < 2800 ? 'しなやかな' : inp.weight < 3200 ? 'バランスのとれた' : inp.weight < 3800 ? '力強い' : '堂々とした'}表情を、身長 ${inp.height}cm が${inp.height < 44 ? '凝縮された' : inp.height < 47 ? '引き締まった' : inp.height < 51 ? 'バランスのとれた' : inp.height < 54 ? '伸びやかな' : '大らかな'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
     素材は${inp.wood.origin} <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
       const cw = inp.chamferWidths;
       const info = k => { const c = VGROOVE.chamfers[k]; return `${c.label}（${c.widthMm}mm, 深さ${c.depthMm}mm）`; };
