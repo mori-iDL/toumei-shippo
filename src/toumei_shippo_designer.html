@@ -1033,6 +1033,53 @@ function vgrooveSecondaryAlpha(alpha) {
   return Math.max(0.15, Math.min(0.8, alpha * 1.5));
 }
 
+// --- 樹種特性ユーティリティ（スキル知識をデザインに反映）---
+// grainStrength → アルゴリズムの異方性・密度に影響
+function grainInfluence(params) {
+  const gs = params.wood.grainStrength;
+  const angle = params.grainAngle * Math.PI / 180;
+  return {
+    anisotropy: gs * 0.4,      // 0〜0.4: 木目方向への引き伸ばし度
+    densityMod: 1 - gs * 0.15, // 0.85〜1.0: 木目が強い→やや疎に
+    dirBias: gs * 0.3,         // 0〜0.3: 木目方向への偏り度
+    angle: angle,
+    cos: Math.cos(angle),
+    sin: Math.sin(angle)
+  };
+}
+// レーザー加工: 硬い材→太く少なく確実に、柔らかい材→細く繊細に
+function laserSpeciesModifier(wood) {
+  const h = wood.hardness;
+  return {
+    lineScale: 1 + h * 0.3,     // 1.0〜1.27: 硬→太
+    countScale: 1 - h * 0.2,    // 0.8〜1.0: 硬→少
+    minLineWidth: 0.3 + h * 0.4 // 0.3〜0.66: 硬い材の最低線幅を確保
+  };
+}
+// NC加工: 硬い材→大胆な構成、柔らかい材→繊細な構成
+function ncSpeciesModifier(wood) {
+  const h = wood.hardness;
+  return {
+    depthEmphasis: 0.8 + h * 0.4,  // 0.8〜1.16: 硬→深い溝が映える
+    structureScale: 1 + h * 0.2,    // 1.0〜1.18: 硬→大きな構造
+    detailReduction: 1 - h * 0.15   // 0.85〜1.0: 硬→細部を減らす
+  };
+}
+// 木目方向に座標を偏らせる（異方性変換）
+function applyGrainBias(x, y, cx, cy, gi) {
+  if (gi.anisotropy < 0.01) return { x, y };
+  const dx = x - cx, dy = y - cy;
+  // 木目方向に引き伸ばし
+  const rx = dx * gi.cos + dy * gi.sin;
+  const ry = -dx * gi.sin + dy * gi.cos;
+  const sx = rx * (1 + gi.anisotropy);
+  // 逆回転で戻す
+  return {
+    x: cx + sx * gi.cos - ry * gi.sin,
+    y: cy + sx * gi.sin + ry * gi.cos
+  };
+}
+
 // --- Seed generation from inputs ---
 function hashString(str) {
   let h = 0;
@@ -1257,11 +1304,17 @@ function drawFibonacci(ctx, params, mode) {
   const s = SCALE;
   const c = CENTER;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
 
   const goldenAngle = 137.508 * Math.PI / 180;
   // V溝: 太い溝→要素を減らし存在感を出す / 細い溝→要素を増やし繊細に
+  // 樹種: grainStrength高い→やや疎に（木目がパターンの一部になる前提）
+  // レーザー: 硬い材→少なく確実に / NC: 硬い材→細部を減らし大胆に
   const basePoints = 40 + Math.floor(weight / 25);
-  const numPoints = mode === 'vgroove' ? Math.round(basePoints / gwScale) : basePoints;
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
+  const numPoints = Math.round((mode === 'vgroove' ? basePoints / gwScale : basePoints) * gi.densityMod * modeDensity);
   const maxR = s * 0.42;
   const heightRatio = height / 50;
 
@@ -1270,19 +1323,20 @@ function drawFibonacci(ctx, params, mode) {
     const r = maxR * Math.sqrt(i / numPoints) * (0.8 + 0.4 * heightRatio);
     const nx = noise(i * 0.1, seed * 0.01) * weather.turbulence * 15;
     const ny = noise(seed * 0.01, i * 0.1) * weather.turbulence * 15;
-    const x = c + r * Math.cos(angle) + nx;
-    const y = c + r * Math.sin(angle) + ny;
+    // 木目方向への異方性変換（ケヤキ→顕著、イタヤカエデ→微細）
+    const biased = applyGrainBias(c + r * Math.cos(angle) + nx, c + r * Math.sin(angle) + ny, c, c, gi);
+    const x = biased.x, y = biased.y;
 
     const dotSize = (1.0 + (weight / 2000) * 4) * wood.lineWeight;
 
     if (mode === 'laser') {
-      // レーザーは均一線幅ベクトル → 大きな塗潰し円は加工時間・品質に悪影響
+      // レーザー: 硬い材→太く確実に焼ける点、柔らかい材→繊細な小さな点
       // kuri(1.5)×4500g → 15px(3mm径)で真っ黒化するため6px(1.2mm径)でクランプ
-      const laserDot = Math.min(dotSize, 6);
+      const laserDot = Math.min(dotSize * lsm.lineScale, 6);
       // 螺旋点の円 = accent（強調要素：太線/3パス）
       ctx.setLayer('accent');
       ctx.beginPath();
-      ctx.arc(x, y, laserDot, 0, Math.PI * 2);
+      ctx.arc(x, y, Math.max(laserDot, lsm.minLineWidth), 0, Math.PI * 2);
       ctx.fill();
       if (i > 1) {
         // 接続線 = pattern（主パターン構造：中線/2パス）
@@ -1294,14 +1348,13 @@ function drawFibonacci(ctx, params, mode) {
         ctx.beginPath();
         ctx.moveTo(px, py);
         ctx.lineTo(x, y);
-        ctx.lineWidth = 0.5 * wood.lineWeight;
+        ctx.lineWidth = Math.max(0.5 * wood.lineWeight * lsm.lineScale, lsm.minLineWidth);
         ctx.stroke();
       }
     } else {
-      // V-groove: 溝幅が要素サイズと線幅を決める
-      // gwRawに線形比例（旧: scaledDot * gwScale で二重乗算→bold+クリで33px超になり破綻）
-      const vRadius = dotSize * (0.6 + gwRaw * 0.25);
-      const vLineW = clampLW(gwRaw * wood.lineWeight * 3.0);
+      // V溝: 硬い材→大きな構造で深い溝が映える、柔らかい材→繊細な構成
+      const vRadius = dotSize * (0.6 + gwRaw * 0.25) * nsm.structureScale;
+      const vLineW = clampLW(gwRaw * wood.lineWeight * 3.0 * nsm.depthEmphasis);
       ctx.beginPath();
       ctx.arc(x, y, vRadius, 0, Math.PI * 2);
       ctx.lineWidth = vLineW;
@@ -1314,13 +1367,21 @@ function drawVoronoi(ctx, params, mode) {
   const { seed, weight, height, weather, wood, grainAngle } = params;
   const rng = mulberry32(seed);
   const s = SCALE;
+  const c = CENTER;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
 
-  const numCells = 8 + Math.floor(weight / 200);
+  // 樹種: grainStrength高い→セル数やや減（木目が区画の一部に）
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
+  const numCells = Math.round((8 + Math.floor(weight / 200)) * gi.densityMod * modeDensity);
   const points = [];
 
   for (let i = 0; i < numCells; i++) {
-    points.push({ x: rng() * s, y: rng() * s });
+    // 木目方向への異方性変換（セル中心を木目方向に偏らせる）
+    const biased = applyGrainBias(rng() * s, rng() * s, c, c, gi);
+    points.push({ x: biased.x, y: biased.y });
   }
 
   // V溝: 太い溝→走査解像度を粗く（大胆な表現）/ 細い溝→細かく（繊細な表現）
@@ -1351,8 +1412,8 @@ function drawVoronoi(ctx, params, mode) {
     // 内側の等高線（強いエッジ）も追加して二重線構造に
     const innerContours = marchingSquares(edgeGrid, gw, gh, threshold * 0.35, res, res);
 
-    // 外側等高線: 中程度のlineWidth
-    const outerLW = clampLW(2.0 * wood.lineWeight * gwScale);
+    // 外側等高線: 中程度のlineWidth（硬い材→深い溝が映える太さ）
+    const outerLW = clampLW(2.0 * wood.lineWeight * gwScale * nsm.depthEmphasis);
     ctx.strokeStyle = 'rgba(60,50,35,0.7)';
     ctx.lineWidth = outerLW;
     for (const poly of contours) {
@@ -1362,8 +1423,8 @@ function drawVoronoi(ctx, params, mode) {
       for (let i = 1; i < poly.length; i++) ctx.lineTo(poly[i].x, poly[i].y);
       ctx.stroke();
     }
-    // 内側等高線: 太いlineWidth（セル境界の芯線）
-    const innerLW = clampLW(3.5 * wood.lineWeight * gwScale);
+    // 内側等高線: 太いlineWidth（セル境界の芯線、硬い材→より太く力強い）
+    const innerLW = clampLW(3.5 * wood.lineWeight * gwScale * nsm.depthEmphasis);
     ctx.lineWidth = innerLW;
     ctx.strokeStyle = 'rgba(60,50,35,0.85)';
     for (const poly of innerContours) {
@@ -1375,8 +1436,10 @@ function drawVoronoi(ctx, params, mode) {
     }
   } else {
     // === レーザーモード: 従来のfillRect描画（面彫刻に適合） ===
-    for (let px = 0; px < s; px += res) {
-      for (let py = 0; py < s; py += res) {
+    // 硬い材→ピクセルサイズを大きく確実に焼く、柔らかい材→繊細な粒
+    const laserRes = Math.max(res, Math.round(res * lsm.lineScale));
+    for (let px = 0; px < s; px += laserRes) {
+      for (let py = 0; py < s; py += laserRes) {
         let minD = Infinity, minD2 = Infinity;
         for (const p of points) {
           const d = Math.hypot(px - p.x, py - p.y);
@@ -1390,7 +1453,7 @@ function drawVoronoi(ctx, params, mode) {
           ctx.setLayer(edge < threshold * 0.3 ? 'accent' : 'pattern');
           const alpha = 1 - edge / threshold;
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
-          ctx.fillRect(px, py, res, res);
+          ctx.fillRect(px, py, laserRes, laserRes);
         }
       }
     }
@@ -1401,6 +1464,9 @@ function drawVoronoi(ctx, params, mode) {
 function drawReactionDiffusion(ctx, params, mode) {
   const { seed, weight, height, weather, wood } = params;
   const rng = mulberry32(seed);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
 
   // Use 1D Float32Arrays for performance (2D indexing via y*w+x)
   const gridSize = 100;
@@ -1410,7 +1476,9 @@ function drawReactionDiffusion(ctx, params, mode) {
   let gridB = new Float32Array(n).fill(0);
 
   // Seed spots based on weight — more spots = denser pattern
-  const spots = 5 + Math.floor(weight / 500);
+  // 樹種感応: grainStrength高→やや疎に、硬材レーザー→少なく、硬材NC→細部減
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
+  const spots = Math.round((5 + Math.floor(weight / 500)) * gi.densityMod * modeDensity);
   for (let s = 0; s < spots; s++) {
     const cx = Math.floor(rng() * (gridSize - 10) + 5);
     const cy = Math.floor(rng() * (gridSize - 10) + 5);
@@ -1436,6 +1504,11 @@ function drawReactionDiffusion(ctx, params, mode) {
   const k = baseK + (height / 50 - 1) * 0.002;
   const iterations = 3000;
 
+  // 木目異方性: grainStrength高→拡散が木目方向に偏る（パターンが木目に沿って伸びる）
+  // Gray-Scottは拡散係数に極めて敏感。0.4の異方性が3000反復で暴走するため、係数を0.15に抑制
+  const aniScale = gi.anisotropy * 0.35; // max 0.4 * 0.35 = 0.14
+  const aniX = 1 + aniScale * Math.abs(gi.cos);
+  const aniY = 1 + aniScale * Math.abs(gi.sin);
   const gs = gridSize;
   for (let iter = 0; iter < iterations; iter++) {
     const newA = new Float32Array(n);
@@ -1444,8 +1517,9 @@ function drawReactionDiffusion(ctx, params, mode) {
       for (let x = 1; x < gs-1; x++) {
         const idx = y*gs+x;
         const a = gridA[idx], b = gridB[idx];
-        const lapA = gridA[idx-1]+gridA[idx+1]+gridA[idx-gs]+gridA[idx+gs]-4*a;
-        const lapB = gridB[idx-1]+gridB[idx+1]+gridB[idx-gs]+gridB[idx+gs]-4*b;
+        // 異方性ラプラシアン: 木目方向の拡散を強化
+        const lapA = (gridA[idx-1]+gridA[idx+1]-2*a)*aniX + (gridA[idx-gs]+gridA[idx+gs]-2*a)*aniY;
+        const lapB = (gridB[idx-1]+gridB[idx+1]-2*b)*aniX + (gridB[idx-gs]+gridB[idx+gs]-2*b)*aniY;
         const abb = a * b * b;
         newA[idx] = Math.max(0, Math.min(1, a + dA * lapA - abb + f * (1-a)));
         newB[idx] = Math.max(0, Math.min(1, b + dB * lapB + abb - (k+f) * b));
@@ -1462,9 +1536,11 @@ function drawReactionDiffusion(ctx, params, mode) {
     // fillRectはV溝ビットで加工不可。bVal閾値の等高線を抽出しstrokeで描画する。
     // 3段階の閾値で太→中→細の等高線を描画（チューリングパターンの地形図的表現）
     const capLW = clampLW;
+    // NC樹種感応: ReactionDiffusionは等高線描画のためdepthEmphasis控えめ
+    // 等高線は面的に広がるため、lineWidth増は暗度への影響が大きい
     const thresholds = [
       { val: 0.30, lw: capLW(4.0 * wood.lineWeight * gwScale), alpha: 0.9 },  // 高濃度: 太い溝
-      { val: 0.18, lw: capLW(2.5 * wood.lineWeight * gwScale), alpha: 0.75 }, // 中濃度: 中程度の溝
+      { val: 0.18, lw: capLW(2.5 * wood.lineWeight * gwScale), alpha: 0.75 }, // 中濃度
       { val: 0.10, lw: capLW(1.5 * wood.lineWeight * gwScale), alpha: 0.6 },  // 低濃度: 細い溝
     ];
     for (const t of thresholds) {
@@ -1481,6 +1557,7 @@ function drawReactionDiffusion(ctx, params, mode) {
     }
   } else {
     // === レーザーモード: 従来のfillRect描画（面彫刻に適合） ===
+    // レーザー樹種感応: 硬材→大きめのピクセル・少ない要素、柔材→細かく繊細に
     for (let y = 0; y < gs; y++) {
       for (let x = 0; x < gs; x++) {
         const bVal = gridB[y*gs+x];
@@ -1489,7 +1566,7 @@ function drawReactionDiffusion(ctx, params, mode) {
           ctx.setLayer(bVal > 0.35 ? 'accent' : bVal > 0.15 ? 'pattern' : 'background');
           const alpha = Math.min(bVal * 2.5, 1.0);
           ctx.fillStyle = `rgba(44,38,30,${alpha})`;
-          const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight;
+          const sz = cellSize * (0.6 + bVal * 0.8) * wood.lineWeight * lsm.lineScale;
           ctx.fillRect(x*cellSize, y*cellSize, sz, sz);
         }
       }
@@ -1503,31 +1580,35 @@ function drawFractal(ctx, params, mode) {
   const s = SCALE;
   const c = CENTER;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
 
   function branch(x, y, angle, length, depth, maxDepth) {
     if (depth > maxDepth || length < 3) return;
 
+    // 木目方向バイアス: grainStrength高→枝が木目方向に偏る
     const wobble = (rng() - 0.5) * weather.turbulence * 0.4;
-    const endX = x + length * Math.cos(angle + wobble);
-    const endY = y + length * Math.sin(angle + wobble);
+    const grainBias = gi.dirBias * Math.sin(angle - gi.angle) * 0.5;
+    const endX = x + length * Math.cos(angle + wobble + grainBias);
+    const endY = y + length * Math.sin(angle + wobble + grainBias);
 
     const lw = (maxDepth - depth + 1) * wood.lineWeight * 0.8;
 
     if (mode === 'laser') {
-      // 幹〜太枝(depth<=2)=accent、中枝=pattern、先端=background
-      // 枝は深さごとに指数増加するため、accentの閾値を少し広げて視覚的バランスを取る
+      // レーザー樹種感応: 硬材→太い線で確実に、柔材→繊細
       ctx.setLayer(depth <= 2 ? 'accent' : depth <= Math.ceil(maxDepth * 0.6) ? 'pattern' : 'background');
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
-      ctx.lineWidth = lw;
+      ctx.lineWidth = Math.max(lw * lsm.lineScale, lsm.minLineWidth);
       ctx.stroke();
     } else {
-      // V溝: 溝幅で枝の太さを構造的に変える（maxでキャップして塗りつぶし防止）
+      // V溝樹種感応: 硬材→深い溝が映える力強い構成
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(endX, endY);
-      ctx.lineWidth = clampLW(lw * (0.6 + gwScale * 0.8));
+      ctx.lineWidth = clampLW(lw * (0.6 + gwScale * 0.8) * (nsm ? nsm.depthEmphasis : 1));
       ctx.stroke();
     }
 
@@ -1567,7 +1648,11 @@ function drawFlowField(ctx, params, mode, alpha) {
   const s = SCALE;
   const freq = 0.008 / wood.lineSpacing;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
-  const baseLines = Math.floor((25 + weight / 150) * alpha);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
+  const baseLines = Math.floor((25 + weight / 150) * alpha * gi.densityMod * modeDensity);
   // V溝: 細い溝→50+本の繊細な流線 / 太い溝→8本の大胆なストローク
   const lines = mode === 'vgroove' ? Math.max(5, Math.round(baseLines / gwScale)) : baseLines;
 
@@ -1583,15 +1668,17 @@ function drawFlowField(ctx, params, mode, alpha) {
     const steps = mode === 'vgroove' ? Math.round(baseSteps * (0.3 + gwScale * 0.7)) : baseSteps;
     const stepSize = mode === 'vgroove' ? 1.0 + gwScale * 2.5 : 3;
     for (let st = 0; st < steps; st++) {
-      const angle = noise(x * freq, y * freq) * Math.PI * 2 * (1 + weather.turbulence);
+      // 木目方向バイアス: フロー方向を木目に引き寄せる
+      const baseAngle = noise(x * freq, y * freq) * Math.PI * 2 * (1 + weather.turbulence);
+      const angle = baseAngle + gi.dirBias * Math.sin(baseAngle - gi.angle);
       x += Math.cos(angle) * stepSize;
       y += Math.sin(angle) * stepSize;
       if (x < 0 || x > s || y < 0 || y > s) break;
       ctx.lineTo(x, y);
     }
-    // V溝: 溝幅を直接反映 — 最低線幅を保証してNC加工パス除外を防止
-    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
-      clampLW(2.0 * gwScale * wood.lineWeight);
+    // 樹種感応: 硬材レーザー→太め、硬材NC→深い溝
+    ctx.lineWidth = mode === 'laser' ? Math.max(0.5 * wood.lineWeight * (lsm ? lsm.lineScale : 1), lsm ? lsm.minLineWidth : 0.3) :
+      clampLW(2.0 * gwScale * wood.lineWeight * (nsm ? nsm.depthEmphasis : 1));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1603,7 +1690,11 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
   const noise = perlinNoise2D(rng);
   const s = SCALE;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
   // V溝: 細い溝→密な波紋テクスチャ / 太い溝→疎で大胆な波
+  // 木目異方性: ノイズスケールに方向差をつける
   const spacing = mode === 'vgroove' ? 6 * wood.lineSpacing * (0.3 + gwScale * 0.7) : 6 * wood.lineSpacing;
 
   ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
@@ -1613,11 +1704,15 @@ function drawPerlinTexture(ctx, params, mode, alpha) {
     for (let x = 0; x < s; x += 2) {
       // V溝: 太い溝→大きなうねり / 細い溝→繊細な揺らぎ
       const amp = mode === 'vgroove' ? 2 + gwScale * 10 : 8;
-      const n = noise(x * 0.02, y * 0.02 + seed * 0.1) * amp;
+      // 木目異方性: ノイズ周波数にx/y方向差（木目方向=高周波、直交=低周波）
+      const freqX = 0.02 * (1 + gi.anisotropy * Math.abs(gi.cos));
+      const freqY = 0.02 * (1 + gi.anisotropy * Math.abs(gi.sin));
+      const n = noise(x * freqX, y * freqY + seed * 0.1) * amp;
       ctx.lineTo(x, y + n);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.3 * wood.lineWeight :
-      clampLW(2.0 * gwScale * wood.lineWeight);
+    // 樹種感応: 硬材レーザー→太め、硬材NC→深い溝
+    ctx.lineWidth = mode === 'laser' ? Math.max(0.3 * wood.lineWeight * (lsm ? lsm.lineScale : 1), lsm ? lsm.minLineWidth : 0.3) :
+      clampLW(2.0 * gwScale * wood.lineWeight * (nsm ? nsm.depthEmphasis : 1));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1630,6 +1725,9 @@ function drawSineInterference(ctx, params, mode, alpha) {
   const freq1 = 0.03 + (weight / 3000) * 0.03;
   const freq2 = 0.05 + (seed % 100) / 3000;
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
 
   ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
   // V溝: 細い溝→密な干渉縞 / 太い溝→疎で大きな波
@@ -1639,14 +1737,17 @@ function drawSineInterference(ctx, params, mode, alpha) {
     ctx.beginPath();
     for (let x = 0; x < s; x += 1) {
       const d = Math.hypot(x - c, y - c);
-      const v = Math.sin(d * freq1) + Math.sin(x * freq2) * 0.5;
+      // 木目方向バイアス: 波の方向に木目の偏りを加える
+      const grainMod = 1 + gi.dirBias * Math.cos(Math.atan2(y - c, x - c) - gi.angle);
+      const v = Math.sin(d * freq1 * grainMod) + Math.sin(x * freq2) * 0.5;
       const amp = mode === 'vgroove' ? 1 + gwScale * 12 : 6;
       const ny = y + v * amp;
       if (x === 0) ctx.moveTo(x, ny);
       else ctx.lineTo(x, ny);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
-      clampLW(2.0 * gwScale * wood.lineWeight);
+    // 樹種感応
+    ctx.lineWidth = mode === 'laser' ? Math.max(0.4 * wood.lineWeight * (lsm ? lsm.lineScale : 1), lsm ? lsm.minLineWidth : 0.3) :
+      clampLW(2.0 * gwScale * wood.lineWeight * (nsm ? nsm.depthEmphasis : 1));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1658,10 +1759,15 @@ function drawLissajous(ctx, params, mode, alpha) {
   const c = CENTER;
   const rng = mulberry32(seed + 3000);
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
 
   ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.6;
   // V溝: 細い溝→多数の小さな軌跡 / 太い溝→少数の大きく太い軌跡
-  const baseCurves = 4 + Math.floor(rng() * 4);
+  // 樹種感応: densityMod・modeDensityで要素数を調整
+  const baseCurves = Math.round((4 + Math.floor(rng() * 4)) * gi.densityMod * modeDensity);
   const curves = mode === 'vgroove' ? Math.max(2, Math.round(baseCurves / gwScale)) : baseCurves;
 
   for (let curve = 0; curve < curves; curve++) {
@@ -1672,15 +1778,19 @@ function drawLissajous(ctx, params, mode, alpha) {
     const baseRadius = s * (0.15 + rng() * 0.25);
     const radius = mode === 'vgroove' ? baseRadius * (0.3 + gwScale * 0.5) : baseRadius;
 
+    // 木目異方性: 振幅比を木目方向に引き伸ばす
+    const rxScale = 1 + gi.anisotropy * Math.abs(gi.cos);
+    const ryScale = 1 + gi.anisotropy * Math.abs(gi.sin);
     ctx.beginPath();
     for (let t = 0; t <= Math.PI * 2; t += 0.02) {
-      const x = c + radius * Math.sin(a * t + delta);
-      const y = c + radius * Math.sin(b * t);
+      const x = c + radius * rxScale * Math.sin(a * t + delta);
+      const y = c + radius * ryScale * Math.sin(b * t);
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.lineWidth = mode === 'laser' ? 0.5 * wood.lineWeight :
-      clampLW(2.0 * gwScale * wood.lineWeight);
+    // 樹種感応
+    ctx.lineWidth = mode === 'laser' ? Math.max(0.5 * wood.lineWeight * (lsm ? lsm.lineScale : 1), lsm ? lsm.minLineWidth : 0.3) :
+      clampLW(2.0 * gwScale * wood.lineWeight * (nsm ? nsm.depthEmphasis : 1));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1692,10 +1802,15 @@ function drawWaveFunction(ctx, params, mode, alpha) {
   const c = CENTER;
   const rng = mulberry32(seed + 4000);
   const { gwRaw, gwScale } = vgrooveScale(params, mode);
+  const gi = grainInfluence(params);
+  const lsm = mode === 'laser' ? laserSpeciesModifier(wood) : null;
+  const nsm = mode === 'vgroove' ? ncSpeciesModifier(wood) : null;
+  const modeDensity = lsm ? lsm.countScale : nsm ? nsm.detailReduction : 1;
 
   ctx.globalAlpha = mode === 'vgroove' ? vgrooveSecondaryAlpha(alpha) : alpha * 0.55;
   // V溝: 細い溝→多数の密な波紋 / 太い溝→少数の疎で太い波紋
-  const baseRings = 8 + Math.floor(rng() * 8);
+  // 樹種感応: densityMod・modeDensityで波紋数を調整
+  const baseRings = Math.round((8 + Math.floor(rng() * 8)) * gi.densityMod * modeDensity);
   const rings = mode === 'vgroove' ? Math.max(3, Math.round(baseRings / gwScale)) : baseRings;
 
   for (let r = 1; r <= rings; r++) {
@@ -1704,17 +1819,21 @@ function drawWaveFunction(ctx, params, mode, alpha) {
     const baseAmp = 3 + rng() * 6;
     const amp = mode === 'vgroove' ? baseAmp * (0.2 + gwScale * 0.8) : baseAmp;
 
+    // 木目異方性: 波紋を楕円化（木目方向に引き伸ばし）
+    const rxScale = 1 + gi.anisotropy * Math.abs(gi.cos);
+    const ryScale = 1 + gi.anisotropy * Math.abs(gi.sin);
     ctx.beginPath();
     for (let a = 0; a <= Math.PI * 2; a += 0.03) {
       const wobble = Math.sin(a * freq) * amp;
-      const x = c + (radius + wobble) * Math.cos(a);
-      const y = c + (radius + wobble) * Math.sin(a);
+      const x = c + (radius + wobble) * rxScale * Math.cos(a);
+      const y = c + (radius + wobble) * ryScale * Math.sin(a);
       if (a === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.lineWidth = mode === 'laser' ? 0.4 * wood.lineWeight :
-      clampLW(2.0 * gwScale * wood.lineWeight);
+    // 樹種感応: lineWidth
+    ctx.lineWidth = mode === 'laser' ? Math.max(0.4 * wood.lineWeight * (lsm ? lsm.lineScale : 1), lsm ? lsm.minLineWidth : 0.3) :
+      clampLW(2.0 * gwScale * wood.lineWeight * (nsm ? nsm.depthEmphasis : 1));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
