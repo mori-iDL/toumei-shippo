@@ -919,11 +919,13 @@ class DrawingRecorder {
   stroke() { this._syncState(); this._ctx.stroke();
     if (this._currentPath && this._currentPath.segments.length > 0) {
       this._paths.push({ ...this._currentPath, type: 'stroke' });
+      this._currentPath = null;
     }
   }
   fill() { this._syncState(); this._ctx.fill();
     if (this._currentPath && this._currentPath.segments.length > 0) {
       this._paths.push({ ...this._currentPath, type: 'fill' });
+      this._currentPath = null;
     }
   }
 
@@ -936,14 +938,21 @@ class DrawingRecorder {
         this._currentPath.segments.push({ cmd: 'CIRCLE', cx, cy, r });
       }
     } else {
-      // 部分弧はline近似（SVG arcは複雑なので）
-      const steps = Math.max(8, Math.ceil(Math.abs(endAngle - startAngle) / (Math.PI / 8)));
-      for (let i = 0; i <= steps; i++) {
-        const a = startAngle + (endAngle - startAngle) * (i / steps);
-        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
-        if (this._currentPath) {
-          this._currentPath.segments.push({ cmd: i === 0 ? 'M' : 'L', x, y });
-        }
+      // 部分弧はSVG Arc (A)コマンドとして記録 — CADツールが円弧として最適化可能
+      if (this._currentPath) {
+        const sx = cx + r * Math.cos(startAngle);
+        const sy = cy + r * Math.sin(startAngle);
+        const ex = cx + r * Math.cos(endAngle);
+        const ey = cy + r * Math.sin(endAngle);
+        // 実際の弧の角度範囲を計算
+        let angleDiff = endAngle - startAngle;
+        if (ccw) { if (angleDiff > 0) angleDiff = -(2 * Math.PI - angleDiff); }
+        else { if (angleDiff < 0) angleDiff = 2 * Math.PI + angleDiff; }
+        this._currentPath.segments.push({
+          cmd: 'ARC', cx, cy, r, sx, sy, ex, ey,
+          largeArc: Math.abs(angleDiff) > Math.PI ? 1 : 0,
+          sweepFlag: ccw ? 0 : 1
+        });
       }
     }
   }
@@ -2258,7 +2267,7 @@ function marchingSquares(grid, gw, gh, threshold, scaleX, scaleY) {
 // SVG/DXFでは何百もの微小な2点パスに分裂する。
 // 録画順で隣接するパスの終点と始点が一致する場合、1本のポリラインに結合する。
 function mergeConnectedPaths(paths, tolerance) {
-  if (!tolerance) tolerance = 1.0; // 1px = 0.2mm
+  if (!tolerance) tolerance = 0.5; // 0.5px = 0.1mm（NC加工精度に十分、誤結合リスク低減）
   const result = [];
   let current = null;
 
@@ -2535,6 +2544,13 @@ function pathToSVG(p, scale, colorOverride, suppressOpacity, clipBounds) {
       d += `L${x.toFixed(2)},${y.toFixed(2)} `;
     } else if (seg.cmd === 'Z') {
       d += 'Z ';
+    } else if (seg.cmd === 'ARC') {
+      // 部分弧: まずstart点へ移動/接続し、SVG Aコマンドで弧を描画
+      const [sxc, syc] = clamp(seg.sx * scale, seg.sy * scale);
+      d += (d ? 'L' : 'M') + `${sxc.toFixed(2)},${syc.toFixed(2)} `;
+      const [exc, eyc] = clamp(seg.ex * scale, seg.ey * scale);
+      const rs = (seg.r * scale).toFixed(2);
+      d += `A${rs},${rs} 0 ${seg.largeArc} ${seg.sweepFlag} ${exc.toFixed(2)},${eyc.toFixed(2)} `;
     } else if (seg.cmd === 'CIRCLE') {
       // 複合パス内のcircle → 円をパスで近似
       const c = seg;
@@ -2674,6 +2690,20 @@ function exportDXF() {
         dxf += `0\nCIRCLE\n100\nAcDbEntity\n8\n${layer}\n100\nAcDbCircle\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n`;
         dxfCircleCount++;
       }
+    }
+
+    // ARCセグメントをDXF ARCエンティティに変換
+    const arcs = p.segments.filter(s => s.cmd === 'ARC');
+    for (const a of arcs) {
+      const cx = a.cx * pxToMm, cy = 70 - a.cy * pxToMm, r = a.r * pxToMm;
+      if (cx < clipMin || cx > clipMax || cy < clipMin || cy > clipMax) continue;
+      // DXF ARC: 開始角度と終了角度（度数法、反時計回り）、Y軸反転のため角度も反転
+      const startDeg = (-a.startAngle * 180 / Math.PI + 360) % 360;
+      const endDeg = (-a.endAngle * 180 / Math.PI + 360) % 360;
+      // sweepFlag=0(CCW)ならDXFそのまま、sweepFlag=1(CW)なら開始・終了を入替
+      const s0 = a.sweepFlag ? endDeg : startDeg;
+      const s1 = a.sweepFlag ? startDeg : endDeg;
+      dxf += `0\nARC\n100\nAcDbEntity\n8\n${layer}\n100\nAcDbCircle\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0\n40\n${r.toFixed(3)}\n100\nAcDbArc\n50\n${s0.toFixed(3)}\n51\n${s1.toFixed(3)}\n`;
     }
 
     // LINEセグメントをポリラインに変換（座標クランプ付き）
