@@ -158,6 +158,33 @@ header .sub {
   color: var(--accent);
   transition: color 0.5s ease;
 }
+/* 自動モードメッセージ */
+.algo-auto-msg {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 6px 0 2px;
+  line-height: 1.5;
+}
+/* 手動バッジ */
+.manual-badge {
+  display: inline-block;
+  font-size: 8px;
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+}
+/* ゴースト表示（自動なら: ○○）*/
+.auto-ghost {
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.5;
+  margin-top: 2px;
+  font-style: italic;
+}
 
 .row2 {
   display: grid;
@@ -956,8 +983,15 @@ canvas.vgroove-canvas {
     <div class="spacer"></div>
     <div class="section-title"><span class="num">03</span>アルゴリズム</div>
 
+    <div class="algo-auto-msg">誕生データから自動で最適な模様が選ばれています</div>
+
+    <div class="custom-toggle" onclick="toggleCraftsmanMode()">
+      <span class="arrow" id="craftsman-arrow">▶</span>
+      <span>職人モード — アルゴリズムを手動で選択</span>
+    </div>
+    <div class="custom-detail" id="craftsman-detail">
     <div class="field">
-      <label>プライマリ（自動選択 or 手動）</label>
+      <label>主アルゴリズム</label>
       <select id="algo-primary">
         <option value="auto">自動（季節から選択）</option>
         <option value="fibonacci">Fibonacci Spiral</option>
@@ -968,7 +1002,7 @@ canvas.vgroove-canvas {
       </select>
     </div>
     <div class="field">
-      <label>セカンダリ（自動選択 or 手動）</label>
+      <label>副アルゴリズム</label>
       <select id="algo-secondary">
         <option value="auto">自動（名前の音韻から選択）</option>
         <option value="flow">Flow Field</option>
@@ -978,6 +1012,7 @@ canvas.vgroove-canvas {
         <option value="wave">Wave Function</option>
       </select>
     </div>
+    </div><!-- /craftsman-detail -->
 
   </div>
 
@@ -986,18 +1021,20 @@ canvas.vgroove-canvas {
 
     <div class="algo-display" id="algo-info">
       <div class="algo-badge">
-        <div class="label">PRIMARY</div>
+        <div class="label">PRIMARY <span class="manual-badge" id="primary-manual" style="display:none">手動</span></div>
         <div class="name" id="primary-name">Fibonacci Spiral</div>
         <div class="reason" id="primary-reason">← 春生まれ</div>
+        <div class="auto-ghost" id="primary-ghost"></div>
       </div>
       <div class="algo-blend">
         <div class="ratio" id="blend-ratio">7:3</div>
         <div class="label">BLEND</div>
       </div>
       <div class="algo-badge">
-        <div class="label">SECONDARY</div>
+        <div class="label">SECONDARY <span class="manual-badge" id="secondary-manual" style="display:none">手動</span></div>
         <div class="name" id="secondary-name">Flow Field</div>
         <div class="reason" id="secondary-reason">← 「あ」音優位</div>
+        <div class="auto-ghost" id="secondary-ghost"></div>
       </div>
     </div>
 
@@ -2269,6 +2306,32 @@ function render() {
     document.getElementById('secondary-reason').textContent = '';
   }
   
+  // 手動オーバーライド検知 — バッジ + ゴースト表示
+  const isPriManual = document.getElementById('algo-primary').value !== 'auto';
+  const isSecManual = document.getElementById('algo-secondary').value !== 'auto';
+  const priBadge = document.getElementById('primary-manual');
+  const priGhost = document.getElementById('primary-ghost');
+  if (isPriManual) {
+    priBadge.style.display = '';
+    const autoAlgo = SEASON_ALGO[inp.season];
+    priGhost.textContent = `自動なら: ${autoAlgo.name}`;
+    document.getElementById('primary-reason').textContent = '';
+  } else {
+    priBadge.style.display = 'none';
+    priGhost.textContent = '';
+  }
+  const secBadge = document.getElementById('secondary-manual');
+  const secGhost = document.getElementById('secondary-ghost');
+  if (isSecManual) {
+    secBadge.style.display = '';
+    const autoAlgo = VOWEL_ALGO[inp.vowelWeights.dominant] || VOWEL_ALGO['a'];
+    secGhost.textContent = `自動なら: ${autoAlgo.name}`;
+    document.getElementById('secondary-reason').textContent = '';
+  } else {
+    secBadge.style.display = 'none';
+    secGhost.textContent = '';
+  }
+
   const pRatio = Math.round(inp.blend * 10);
   const sRatio = 10 - pRatio;
   document.getElementById('blend-ratio').textContent = `${pRatio}:${sRatio}`;
@@ -3148,6 +3211,15 @@ function setWeather(el) {
   const desc = WEATHER_PARAMS[el.dataset.weather].desc;
   updateParamHint('weather-hint', desc);
   debouncedRender();
+}
+
+// === 職人モード ===
+function toggleCraftsmanMode() {
+  const detail = document.getElementById('craftsman-detail');
+  const arrow = document.getElementById('craftsman-arrow');
+  if (!detail) return;
+  const isOpen = detail.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open', isOpen);
 }
 
 // === V溝プリセット ===
