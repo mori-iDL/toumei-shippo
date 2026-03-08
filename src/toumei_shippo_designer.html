@@ -502,6 +502,70 @@ canvas.vgroove-canvas {
   font-size: 12px;
 }
 
+/* ===== SPECIES CARD GRID ===== */
+.species-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+.species-group-label {
+  grid-column: 1 / -1;
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  padding: 4px 0 2px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 4px;
+}
+.species-group-label:first-child { margin-top: 0; }
+.species-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: var(--bg);
+}
+.species-card:hover {
+  border-color: var(--accent);
+  background: rgba(196, 149, 106, 0.06);
+}
+.species-card.selected {
+  border-color: var(--accent);
+  background: rgba(196, 149, 106, 0.10);
+  box-shadow: 0 0 0 2px rgba(196, 149, 106, 0.25);
+}
+.species-card .wood-swatch {
+  height: 18px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--skin) 0%, var(--skin) 50%, var(--heart) 50%, var(--heart) 100%);
+}
+.species-card .card-name {
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.species-card .card-char {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+.species-card .card-fab {
+  display: flex;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--text-dim);
+}
+.species-card .card-fab span {
+  opacity: 0.8;
+}
+
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
@@ -595,6 +659,11 @@ canvas.vgroove-canvas {
   .story-card { padding: 14px 16px; }
   .story-card h3 { font-size: 13px; }
   .story-text { font-size: 13px; line-height: 1.8; }
+
+  /* 樹種カード — モバイル */
+  .species-card { padding: 8px; }
+  .species-card .card-name { font-size: 12px; }
+  .species-card .wood-swatch { height: 14px; }
 }
 </style>
 </head>
@@ -679,7 +748,7 @@ canvas.vgroove-canvas {
 
     <div class="field">
       <label>樹種</label>
-      <select id="species">
+      <select id="species" style="display:none">
         <optgroup label="市産材（盛岡市産）">
           <option value="sugi">スギ</option>
           <option value="karamatsu">カラマツ</option>
@@ -694,6 +763,7 @@ canvas.vgroove-canvas {
           <option value="keyaki">ケヤキ</option>
         </optgroup>
       </select>
+      <div id="species-grid" class="species-grid"></div>
     </div>
 
     <div class="field">
@@ -1197,32 +1267,41 @@ const WOOD_PARAMS = {
   // 市産材（盛岡市産）
   sugi:       { lineSpacing: 2.0,  lineWeight: 0.6,  grainStrength: 0.25, name: 'スギ', char: '柔・直', origin: '盛岡市産',
                 fabrication: { laser: '◎', vgroove: '◎' }, laserHint: null,
-                aging: '飴色に深まり、柔らかな艶が生まれます', texture: 'soft', hardness: 0.2 },
+                aging: '飴色に深まり、柔らかな艶が生まれます', texture: 'soft', hardness: 0.2,
+                skinColor: '#e8d5b8', heartColor: '#c4a882' },
   karamatsu:  { lineSpacing: 0.8,  lineWeight: 1.1,  grainStrength: 0.6,  name: 'カラマツ', char: '堅・環', origin: '盛岡市産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: '脂分あり。煙・ヤニに注意',
-                aging: '濃い赤褐色に変わり、年輪がより力強く', texture: 'medium', hardness: 0.55 },
+                aging: '濃い赤褐色に変わり、年輪がより力強く', texture: 'medium', hardness: 0.55,
+                skinColor: '#d4a574', heartColor: '#a67548' },
   akamatsu:   { lineSpacing: 1.2,  lineWeight: 0.85, grainStrength: 0.5,  name: 'アカマツ', char: '脂・温', origin: '盛岡市産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: '脂分あり。カラマツと同様',
-                aging: '黄褐色に落ち着き、温かみが増します', texture: 'medium', hardness: 0.45 },
+                aging: '黄褐色に落ち着き、温かみが増します', texture: 'medium', hardness: 0.45,
+                skinColor: '#dbb88a', heartColor: '#b8935e' },
   nara:       { lineSpacing: 0.65, lineWeight: 1.3,  grainStrength: 0.85, name: 'ナラ', char: '重・緻', origin: '盛岡市産',
                 fabrication: { laser: '△', vgroove: '◎' }, laserHint: '硬い材。高出力が必要で、細線は焼け残りリスクあり',
-                aging: '深い飴色に変わり、虎斑杢がより際立ちます', texture: 'hard', hardness: 0.85 },
+                aging: '深い飴色に変わり、虎斑杢がより際立ちます', texture: 'hard', hardness: 0.85,
+                skinColor: '#c8a87a', heartColor: '#9c7e52' },
   kuri:       { lineSpacing: 0.6,  lineWeight: 1.5,  grainStrength: 0.7,  name: 'クリ', char: '硬・密', origin: '盛岡市産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
-                aging: '濃い褐色に深まり、タンニンが風格を育みます', texture: 'hard', hardness: 0.75 },
+                aging: '濃い褐色に深まり、タンニンが風格を育みます', texture: 'hard', hardness: 0.75,
+                skinColor: '#b89060', heartColor: '#8c6840' },
   // 県産材（岩手県産）
   yamazakura: { lineSpacing: 1.0,  lineWeight: 0.9,  grainStrength: 0.35, name: 'ヤマザクラ', char: '艶・雅', origin: '岩手県産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
-                aging: '深い赤褐色に変わり、緻密な木肌に艶が宿ります', texture: 'medium', hardness: 0.6 },
+                aging: '深い赤褐色に変わり、緻密な木肌に艶が宿ります', texture: 'medium', hardness: 0.6,
+                skinColor: '#c89078', heartColor: '#a06850' },
   onigurumi:  { lineSpacing: 1.1,  lineWeight: 0.8,  grainStrength: 0.4,  name: 'オニグルミ', char: '柔・暗', origin: '岩手県産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
-                aging: 'やや明るく変化し、滑らかな手触りが深まります', texture: 'medium', hardness: 0.4 },
+                aging: 'やや明るく変化し、滑らかな手触りが深まります', texture: 'medium', hardness: 0.4,
+                skinColor: '#9c8068', heartColor: '#7a5e48' },
   itayakaede: { lineSpacing: 1.3,  lineWeight: 0.7,  grainStrength: 0.3,  name: 'イタヤカエデ', char: '硬・白', origin: '岩手県産',
                 fabrication: { laser: '○', vgroove: '◎' }, laserHint: null,
-                aging: '白い木肌が飴色に変わり、時間を纏います', texture: 'hard', hardness: 0.8 },
+                aging: '白い木肌が飴色に変わり、時間を纏います', texture: 'hard', hardness: 0.8,
+                skinColor: '#e8d8c4', heartColor: '#d0c0a8' },
   keyaki:     { lineSpacing: 0.7,  lineWeight: 1.2,  grainStrength: 1.0,  name: 'ケヤキ', char: '力・杢', origin: '岩手県産',
                 fabrication: { laser: '△', vgroove: '◎' }, laserHint: '硬い材。高出力が必要',
-                aging: '深い飴色に変わり、美しい杢目がより鮮やかに', texture: 'hard', hardness: 0.9 },
+                aging: '深い飴色に変わり、美しい杢目がより鮮やかに', texture: 'hard', hardness: 0.9,
+                skinColor: '#c4a070', heartColor: '#9c7848' },
 };
 
 // --- Blend ratio from birth time ---
@@ -3037,6 +3116,59 @@ document.querySelectorAll('select').forEach(el => {
   el.addEventListener('change', () => { debouncedRender(); });
 });
 
+// === Species Card Grid ===
+function generateSpeciesCards() {
+  const grid = document.getElementById('species-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const citySpecies = ['sugi', 'karamatsu', 'akamatsu', 'nara', 'kuri'];
+  const prefSpecies = ['yamazakura', 'onigurumi', 'itayakaede', 'keyaki'];
+  const currentVal = document.getElementById('species').value;
+
+  function addGroup(label, keys) {
+    const lbl = document.createElement('div');
+    lbl.className = 'species-group-label';
+    lbl.textContent = label;
+    grid.appendChild(lbl);
+    keys.forEach(key => {
+      const sp = WOOD_PARAMS[key];
+      const card = document.createElement('div');
+      card.className = 'species-card' + (key === currentVal ? ' selected' : '');
+      card.dataset.species = key;
+      card.style.setProperty('--skin', sp.skinColor);
+      card.style.setProperty('--heart', sp.heartColor);
+      card.innerHTML = `<div class="wood-swatch"></div>`
+        + `<div class="card-name">${sp.name}</div>`
+        + `<div class="card-char">${sp.char}</div>`
+        + `<div class="card-fab"><span>L${sp.fabrication.laser}</span><span>V${sp.fabrication.vgroove}</span></div>`;
+      card.addEventListener('click', () => selectSpecies(key));
+      grid.appendChild(card);
+    });
+  }
+  addGroup('市産材（盛岡市産）', citySpecies);
+  addGroup('県産材（岩手県産）', prefSpecies);
+}
+
+function selectSpecies(key) {
+  const sel = document.getElementById('species');
+  sel.value = key;
+  // Update card selection state
+  document.querySelectorAll('.species-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.species === key);
+  });
+  sel.dispatchEvent(new Event('change'));
+}
+
+// Safety test compatibility: sync card highlight from hidden select
+function syncSpeciesCardFromSelect() {
+  const val = document.getElementById('species').value;
+  document.querySelectorAll('.species-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.species === val);
+  });
+}
+
+generateSpeciesCards();
+
 // Initial render after DOM is ready
 updateDisplayValues();
 validateName();
@@ -3175,6 +3307,7 @@ setTimeout(() => { render(); }, 100);
     document.getElementById('name').value = savedName;
     document.getElementById('birthday').value = savedBirthday;
     document.getElementById('species').value = savedSpecies;
+    syncSpeciesCardFromSelect();
     if (savedConfigTab) setBitConfig(savedConfigTab);
     if (savedChamferBtn) setChamferWidth(savedChamferBtn);
     if (savedComboBtn) setChamferCombo(savedComboBtn);
