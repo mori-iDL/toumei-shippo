@@ -566,6 +566,79 @@ canvas.vgroove-canvas {
   opacity: 0.8;
 }
 
+/* ===== CARVING PRESETS ===== */
+.carving-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.carving-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: var(--bg);
+  text-align: center;
+}
+.carving-preset:hover {
+  border-color: var(--vgroove);
+  background: rgba(74,144,217,0.06);
+}
+.carving-preset.selected {
+  border-color: var(--vgroove);
+  background: rgba(74,144,217,0.10);
+  box-shadow: 0 0 0 2px rgba(74,144,217,0.25);
+}
+.carving-preset .preset-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.carving-preset .preset-name {
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+.carving-preset .preset-desc {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+.custom-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 0;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+.custom-toggle:hover { color: var(--text); }
+.custom-toggle .arrow {
+  transition: transform 0.2s;
+  font-size: 8px;
+}
+.custom-toggle .arrow.open { transform: rotate(90deg); }
+.custom-detail {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+.custom-detail.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
@@ -767,7 +840,29 @@ canvas.vgroove-canvas {
     </div>
 
     <div class="field">
-      <label>V溝面取り幅 <span style="font-size:9px;color:var(--text-dim)">(60°ビット固定)</span></label>
+      <label>V溝の雰囲気 <span style="font-size:9px;color:var(--text-dim)">(60°ビット固定)</span></label>
+      <div class="carving-presets" id="carving-presets">
+        <div class="carving-preset selected" data-preset="yasashii" onclick="selectCarvingPreset(this)">
+          <span class="preset-icon">〜</span>
+          <span class="preset-name">やさしい</span>
+          <span class="preset-desc">穏やかな均一の線</span>
+        </div>
+        <div class="carving-preset" data-preset="shikkari" onclick="selectCarvingPreset(this)">
+          <span class="preset-icon">≡</span>
+          <span class="preset-name">しっかり</span>
+          <span class="preset-desc">太と細の対比</span>
+        </div>
+        <div class="carving-preset" data-preset="komayaka" onclick="selectCarvingPreset(this)">
+          <span class="preset-icon">≋</span>
+          <span class="preset-name">こまやか</span>
+          <span class="preset-desc">三層の豊かな陰影</span>
+        </div>
+      </div>
+      <div class="custom-toggle" onclick="toggleCustomCarving()">
+        <span class="arrow" id="custom-arrow">▶</span>
+        <span>カスタム設定を開く</span>
+      </div>
+      <div class="custom-detail" id="custom-carving-detail">
       <div class="bit-config-tabs">
         <div class="bit-config-tab active" data-config="single" onclick="setBitConfig(this)">
           <span class="config-name">Single</span>
@@ -838,6 +933,7 @@ canvas.vgroove-canvas {
         <span>工具交換: 0回 / 追加時間: 0分</span>
         <span class="cost-val" id="bit-cost-val">+¥0</span>
       </div>
+      </div><!-- /custom-carving-detail -->
     </div>
 
     <div class="spacer"></div>
@@ -3022,6 +3118,63 @@ function setWeather(el) {
   debouncedRender();
 }
 
+// === V溝プリセット ===
+// プリセット名はMTG⑩で最終確定予定。変更は CARVING_PRESETS のみ
+const CARVING_PRESETS = {
+  yasashii: { config: 'single', chamfer: 'medium', label: 'やさしい' },
+  shikkari: { config: 'dual', combo: { primary: 'bold', secondary: 'fine' }, label: 'しっかり' },
+  komayaka: { config: 'triple', label: 'こまやか' }
+};
+
+function selectCarvingPreset(el) {
+  const key = el.dataset.preset;
+  const preset = CARVING_PRESETS[key];
+  if (!preset) return;
+  // Update preset card UI
+  document.querySelectorAll('.carving-preset').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  // Apply config internally: activate the correct bit-config-tab
+  const tab = document.querySelector(`.bit-config-tab[data-config="${preset.config}"]`);
+  if (tab) setBitConfig(tab);
+  // Set chamfer/combo details
+  if (preset.config === 'single' && preset.chamfer) {
+    const btn = document.querySelector(`#bit-single-panel .bit-angle-btn[data-chamfer="${preset.chamfer}"]`);
+    if (btn) setChamferWidth(btn);
+  }
+  if (preset.config === 'dual' && preset.combo) {
+    const btn = document.querySelector(`#bit-dual-panel .bit-combo-btn[data-primary="${preset.combo.primary}"][data-secondary="${preset.combo.secondary}"]`);
+    if (btn) setChamferCombo(btn);
+  }
+}
+
+function toggleCustomCarving() {
+  const detail = document.getElementById('custom-carving-detail');
+  const arrow = document.getElementById('custom-arrow');
+  if (!detail) return;
+  const isOpen = detail.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open', isOpen);
+}
+
+// Sync preset card highlight when custom config changes directly
+function syncPresetFromConfig() {
+  const activeTab = document.querySelector('.bit-config-tab.active');
+  if (!activeTab) return;
+  const config = activeTab.dataset.config;
+  let matchKey = null;
+  if (config === 'single') {
+    const activeBtn = document.querySelector('#bit-single-panel .bit-angle-btn.active');
+    if (activeBtn && activeBtn.dataset.chamfer === 'medium') matchKey = 'yasashii';
+  } else if (config === 'dual') {
+    const activeBtn = document.querySelector('#bit-dual-panel .bit-combo-btn.active');
+    if (activeBtn && activeBtn.dataset.primary === 'bold' && activeBtn.dataset.secondary === 'fine') matchKey = 'shikkari';
+  } else if (config === 'triple') {
+    matchKey = 'komayaka';
+  }
+  document.querySelectorAll('.carving-preset').forEach(c => {
+    c.classList.toggle('selected', c.dataset.preset === matchKey);
+  });
+}
+
 // V溝ビット構成の切替（Single/Dual/Triple）
 function setBitConfig(el) {
   document.querySelectorAll('.bit-config-tab').forEach(t => t.classList.remove('active'));
@@ -3031,6 +3184,7 @@ function setBitConfig(el) {
   document.getElementById('bit-dual-panel').style.display = config === 'dual' ? '' : 'none';
   document.getElementById('bit-triple-panel').style.display = config === 'triple' ? '' : 'none';
   updateBitCostBadge(config);
+  syncPresetFromConfig();
   debouncedRender();
 }
 
@@ -3041,6 +3195,7 @@ function setChamferWidth(el) {
     panel.querySelectorAll('.bit-angle-btn').forEach(b => b.classList.remove('active'));
   }
   el.classList.add('active');
+  syncPresetFromConfig();
   debouncedRender();
 }
 
@@ -3055,6 +3210,7 @@ function setChamferCombo(el) {
   const swEl = document.getElementById('dual-secondary-width');
   if (pwEl) pwEl.textContent = VGROOVE.chamfers[p].widthMm + 'mm';
   if (swEl) swEl.textContent = VGROOVE.chamfers[s].widthMm + 'mm';
+  syncPresetFromConfig();
   debouncedRender();
 }
 
