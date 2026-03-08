@@ -144,6 +144,20 @@ header .sub {
   min-width: 40px;
   text-align: right;
 }
+.param-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  min-height: 16px;
+  transition: color 0.3s ease;
+}
+.param-hint.changed {
+  color: var(--accent2);
+}
+.algo-badge .name.flash {
+  color: var(--accent);
+  transition: color 0.5s ease;
+}
 
 .row2 {
   display: grid;
@@ -777,6 +791,7 @@ canvas.vgroove-canvas {
           <input type="range" id="weight" min="2000" max="5000" value="3150" step="10">
           <span class="range-val" id="weight-val">3150</span>
         </div>
+        <div class="param-hint" id="weight-hint">バランスの取れた線</div>
       </div>
       <div class="field">
         <label>身長 (cm)</label>
@@ -784,6 +799,7 @@ canvas.vgroove-canvas {
           <input type="range" id="height" min="40" max="60" value="49" step="0.5">
           <span class="range-val" id="height-val">49.0</span>
         </div>
+        <div class="param-hint" id="height-hint">バランスの取れた構図</div>
       </div>
     </div>
 
@@ -814,6 +830,7 @@ canvas.vgroove-canvas {
         <div class="weather-btn" data-weather="rainy" onclick="setWeather(this)">🌧 雨</div>
         <div class="weather-btn" data-weather="snowy" onclick="setWeather(this)">❄ 雪</div>
       </div>
+      <div class="param-hint" id="weather-hint">穏やかで直線的</div>
     </div>
 
     <div class="spacer"></div>
@@ -2216,11 +2233,24 @@ function gatherInputs() {
 function render() {
   const inp = gatherInputs();
   
-  // Update algorithm display
-  document.getElementById('primary-name').textContent = inp.primary.name;
-  document.getElementById('primary-reason').textContent = 
+  // Update algorithm display (with flash on change)
+  const priEl = document.getElementById('primary-name');
+  const secEl = document.getElementById('secondary-name');
+  const prevPri = priEl.textContent;
+  const prevSec = secEl.textContent;
+  priEl.textContent = inp.primary.name;
+  document.getElementById('primary-reason').textContent =
     inp.primary.jp ? `← ${SEASON_JP[inp.season]}生まれ → ${inp.primary.jp}` : '';
-  document.getElementById('secondary-name').textContent = inp.secondary.name;
+  secEl.textContent = inp.secondary.name;
+  // Flash when algorithm name changes
+  if (prevPri && prevPri !== inp.primary.name) {
+    priEl.classList.add('flash');
+    setTimeout(() => priEl.classList.remove('flash'), 500);
+  }
+  if (prevSec && prevSec !== inp.secondary.name) {
+    secEl.classList.add('flash');
+    setTimeout(() => secEl.classList.remove('flash'), 500);
+  }
   // 主役母音＋参加母音を表示
   if (inp.secondary.jp && inp.vowelWeights) {
     const vowelJpMap = {a:'あ', i:'い', u:'う', e:'え', o:'お'};
@@ -2482,7 +2512,7 @@ function updateStory(inp) {
       }
     })()}<br><br>
     出生時刻 ${inp.hours}:${String(inp.minutes).padStart(2,'0')} のブレンド比率は <span class="highlight">${Math.round(inp.blend*10)}:${10-Math.round(inp.blend*10)}</span>。${inp.hours < 6 || inp.hours > 18 ? '夜の時間帯は、二つのアルゴリズムがより深く溶け合います。' : '昼の時間帯は、プライマリの構造がより明確に表れます。'}<br><br>
-    体重 ${inp.weight}g が模様の${inp.weight < 2500 ? '繊細な' : inp.weight < 2800 ? 'しなやかな' : inp.weight < 3200 ? 'バランスのとれた' : inp.weight < 3800 ? '力強い' : '堂々とした'}表情を、身長 ${inp.height}cm が${inp.height < 44 ? '凝縮された' : inp.height < 47 ? '引き締まった' : inp.height < 51 ? 'バランスのとれた' : inp.height < 54 ? '伸びやかな' : '大らかな'}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
+    体重 ${inp.weight}g が模様の${getWeightDesc(inp.weight).adj}表情を、身長 ${inp.height}cm が${getHeightDesc(inp.height).adj}構図を決定。${inp.weather.label}は${inp.weather.desc}な流れを生んでいます。<br><br>
     素材は${inp.wood.origin} <span class="highlight">${inp.wood.name}</span>（${inp.wood.char}）。この樹種の特性が線の太さと間隔を微調整します。${(() => {
       const cw = inp.chamferWidths;
       const info = k => { const c = VGROOVE.chamfers[k]; return `${c.label}（${c.widthMm}mm, 深さ${c.depthMm}mm）`; };
@@ -3115,6 +3145,8 @@ function dxfPolyline(points, closed, layer) {
 function setWeather(el) {
   document.querySelectorAll('.weather-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  const desc = WEATHER_PARAMS[el.dataset.weather].desc;
+  updateParamHint('weather-hint', desc);
   debouncedRender();
 }
 
@@ -3238,10 +3270,40 @@ function debouncedRender() {
   renderTimer = setTimeout(() => { render(); }, 50);
 }
 
+// --- パラメータヒント ---
+// hint: スライダー下の表示テキスト, adj: ストーリーカード内の形容詞
+function getWeightDesc(w) {
+  if (w < 2400) return { hint: '繊細で軽やかな線', adj: '繊細な' };
+  if (w < 2800) return { hint: '柔らかな細い線', adj: 'しなやかな' };
+  if (w < 3200) return { hint: 'バランスの取れた線', adj: 'バランスのとれた' };
+  if (w < 3800) return { hint: 'しっかりとした線', adj: '力強い' };
+  return { hint: '堂々とした太い線', adj: '堂々とした' };
+}
+function getHeightDesc(h) {
+  if (h < 43) return { hint: '中心に凝縮した密な構図', adj: '凝縮された' };
+  if (h < 46) return { hint: 'やや内向きな構図', adj: '引き締まった' };
+  if (h < 52) return { hint: 'バランスの取れた構図', adj: 'バランスのとれた' };
+  if (h < 55) return { hint: '伸びやかに広がる構図', adj: '伸びやかな' };
+  return { hint: '開放的に展開する構図', adj: '大らかな' };
+}
+function updateParamHint(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.textContent !== text) {
+    el.textContent = text;
+    el.classList.add('changed');
+    setTimeout(() => el.classList.remove('changed'), 300);
+  }
+}
+
 // Update range display values
 function updateDisplayValues() {
-  document.getElementById('weight-val').textContent = document.getElementById('weight').value;
-  document.getElementById('height-val').textContent = parseFloat(document.getElementById('height').value).toFixed(1);
+  const w = parseInt(document.getElementById('weight').value);
+  const h = parseFloat(document.getElementById('height').value);
+  document.getElementById('weight-val').textContent = w;
+  document.getElementById('height-val').textContent = h.toFixed(1);
+  updateParamHint('weight-hint', getWeightDesc(w).hint);
+  updateParamHint('height-hint', getHeightDesc(h).hint);
 }
 
 // --- 名前入力バリデーション ---
