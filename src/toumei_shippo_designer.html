@@ -19,6 +19,7 @@
   --white: #f0ebe3;
   --laser: #e85d3a;
   --vgroove: #4a90d9;
+  --combined: #9b7dbd;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -279,7 +280,7 @@ header .sub {
 /* Canvas area */
 .canvas-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin-bottom: 24px;
 }
@@ -303,6 +304,7 @@ header .sub {
 }
 .canvas-header .type.laser { color: var(--laser); }
 .canvas-header .type.vgroove { color: var(--vgroove); }
+.canvas-header .type.combined { color: var(--combined); }
 .canvas-header .size {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
@@ -320,6 +322,9 @@ canvas {
   background: #f5ede0;
 }
 canvas.vgroove-canvas {
+  background: #e8dcc8;
+}
+canvas.combined-canvas {
   background: #e8dcc8;
 }
 
@@ -1063,7 +1068,22 @@ canvas.vgroove-canvas {
         </div>
         <div class="export-row">
           <button class="export-btn" onclick="exportSVG('vgroove')">SVG 書出し</button>
-          <button class="export-btn" onclick="exportDXF()">DXF 書出し</button>
+          <button class="export-btn" onclick="exportDXF('vgroove')">DXF 書出し</button>
+        </div>
+      </div>
+
+      <div class="canvas-card">
+        <div class="canvas-header">
+          <span class="type combined">● COMBINED NC + LASER</span>
+          <span class="size">70×70mm（有効64×64）</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="combined-canvas" width="350" height="350" class="combined-canvas"></canvas>
+        </div>
+        <div class="export-row">
+          <button class="export-btn" onclick="exportSVG('combined')">SVG 書出し</button>
+          <button class="export-btn" onclick="exportPNG('combined')">PNG 書出し</button>
+          <button class="export-btn" onclick="exportDXF('combined')">DXF 書出し</button>
         </div>
       </div>
     </div>
@@ -1204,7 +1224,7 @@ class DrawingRecorder {
 }
 
 // モジュールスコープ: 最後のrender()で記録されたパスデータ
-let lastRecordedPaths = { laser: [], vgroove: [] };
+let lastRecordedPaths = { laser: [], vgroove: [], combined: [] };
 
 const SCALE = 350; // canvas px = 70mm
 const CENTER = SCALE / 2;
@@ -2425,12 +2445,14 @@ function render() {
     const secondaryAlpha = 1 - inp.blend;
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue; // 5%未満はノイズ防止で省略
+      const effectiveAlpha = secondaryAlpha * weight;
+      if (effectiveAlpha < 0.25) continue; // 薄すぎる副パターンは描画しない（うっすら線防止）
       const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
       if (fn) {
         lctx.save();
         lctx.strokeStyle = '#2c261e';
         lctx.fillStyle = '#2c261e';
-        fn(lctx, params, 'laser', secondaryAlpha * weight);
+        fn(lctx, params, 'laser', effectiveAlpha);
         lctx.restore();
       }
     }
@@ -2481,12 +2503,14 @@ function render() {
     const secondaryAlphaV = Math.max(0.65, 1 - inp.blend);
     for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
       if (weight < 0.05) continue;
+      const effectiveAlphaV = secondaryAlphaV * weight;
+      if (effectiveAlphaV < 0.25) continue; // 薄すぎる副パターンは描画しない（うっすら線防止）
       const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
       if (fn) {
         vctx.save();
         vctx.strokeStyle = '#3c3223';
         vctx.fillStyle = '#3c3223';
-        fn(vctx, paramsSecondary, 'vgroove', secondaryAlphaV * weight);
+        fn(vctx, paramsSecondary, 'vgroove', effectiveAlphaV);
         vctx.restore();
       }
     }
@@ -2549,7 +2573,155 @@ function render() {
 
   vctx.restore(); // クリッピング解除
   lastRecordedPaths.vgroove = vgrooveRec.getPaths();
-  
+
+  // --- COMBINED CANVAS (NC + LASER) ---
+  const cc = document.getElementById('combined-canvas');
+  const rawCctx = cc.getContext('2d');
+  rawCctx.clearRect(0, 0, SCALE, SCALE);
+  rawCctx.fillStyle = '#e8dcc8';
+  rawCctx.fillRect(0, 0, SCALE, SCALE);
+
+  const combinedRec = new DrawingRecorder(rawCctx);
+  const cctx = combinedRec;
+
+  // === Step 1: V溝パターンを先に描画（V溝キャンバスと同じロジック） ===
+  cctx.strokeStyle = '#3c3223';
+  cctx.fillStyle = '#3c3223';
+
+  cctx.save();
+  cctx.beginPath();
+  cctx.rect(MARGIN_PX, MARGIN_PX, PATTERN_SIZE, PATTERN_SIZE);
+  cctx.clip();
+
+  try {
+    // V溝プライマリ
+    cctx.setLayer('vgroove:' + inp.chamferWidths.primary);
+    const vPrimaryFn = PRIMARY_FNS[inp.primary.key];
+    if (vPrimaryFn) {
+      cctx.save();
+      cctx.strokeStyle = '#3c3223';
+      cctx.fillStyle = '#3c3223';
+      if (vPrimaryFn.length >= 4) {
+        vPrimaryFn(cctx, params, 'vgroove', inp.blend);
+      } else {
+        vPrimaryFn(cctx, params, 'vgroove');
+      }
+      cctx.restore();
+    }
+
+    // V溝セカンダリ
+    cctx.setLayer('vgroove:sub:' + inp.chamferWidths.secondary);
+    const vSecondaryAlpha = Math.max(0.65, 1 - inp.blend);
+    for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
+      if (weight < 0.05) continue;
+      const effectiveAlphaVC = vSecondaryAlpha * weight;
+      if (effectiveAlphaVC < 0.25) continue;
+      const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
+      if (fn) {
+        cctx.save();
+        cctx.strokeStyle = '#3c3223';
+        cctx.fillStyle = '#3c3223';
+        fn(cctx, paramsSecondary, 'vgroove', effectiveAlphaVC);
+        cctx.restore();
+      }
+    }
+
+    // V溝トリプル時のディテールレイヤー
+    if (inp.bitConfig === 'triple') {
+      cctx.setLayer('vgroove:' + inp.chamferWidths.detail);
+      cctx.save();
+      cctx.strokeStyle = '#3c3223';
+
+      const detailRngC = mulberry32(paramsDetail.seed);
+      const nwC = Math.max(-1, Math.min(1, (params.weight - 3000) / 2000));
+      const nhC = Math.max(-1, Math.min(1, (params.height - 49) / 11));
+
+      cctx.lineWidth = Math.max(VGROOVE.minLineWidthPx, 1.6 + nwC * 0.4);
+      cctx.setLineDash([5, 4]);
+      cctx.globalAlpha = 0.7;
+
+      const spacing1C = 7 + 5 * nwC;
+      const angle1C = (Math.PI / 5) + nhC * (Math.PI / 10);
+      const dx1C = Math.cos(angle1C);
+      const dy1C = Math.sin(angle1C);
+
+      for (let t = -SCALE; t <= SCALE * 2; t += spacing1C) {
+        const jitter = (detailRngC() - 0.5) * 2;
+        cctx.beginPath();
+        cctx.moveTo(t + jitter, 0);
+        cctx.lineTo(t + dy1C * SCALE + jitter, dx1C * SCALE);
+        cctx.stroke();
+      }
+
+      cctx.setLineDash([3, 6]);
+      cctx.globalAlpha = 0.5;
+      cctx.lineWidth = Math.max(VGROOVE.minLineWidthPx, 1.3);
+      const angle2C = -(Math.PI / 5) + nhC * (Math.PI / 8);
+      const dx2C = Math.cos(angle2C);
+      const dy2C = Math.sin(angle2C);
+
+      for (let t = -SCALE; t <= SCALE * 2; t += spacing1C * 1.5) {
+        const jitter = (detailRngC() - 0.5) * 3;
+        cctx.beginPath();
+        cctx.moveTo(t + jitter, 0);
+        cctx.lineTo(t + dy2C * SCALE + jitter, dx2C * SCALE);
+        cctx.stroke();
+      }
+      cctx.restore();
+    }
+  } catch(e) { console.error('Combined V-groove render error:', e); }
+
+  cctx.restore(); // V溝クリッピング解除
+
+  // === Step 2: レーザーパターンを薄めのアルファで重ねて描画 ===
+  const LASER_OVERLAY_ALPHA = 0.65;
+
+  cctx.strokeStyle = '#2c261e';
+  cctx.fillStyle = '#2c261e';
+
+  cctx.save();
+  cctx.beginPath();
+  cctx.rect(MARGIN_PX, MARGIN_PX, PATTERN_SIZE, PATTERN_SIZE);
+  cctx.clip();
+
+  try {
+    // レーザープライマリ
+    const lPrimaryFn = PRIMARY_FNS[inp.primary.key];
+    if (lPrimaryFn) {
+      cctx.setLayer('laser:pattern');
+      cctx.save();
+      cctx.strokeStyle = '#2c261e';
+      cctx.fillStyle = '#2c261e';
+      cctx.globalAlpha = LASER_OVERLAY_ALPHA;
+      if (lPrimaryFn.length >= 4) {
+        lPrimaryFn(cctx, params, 'laser', inp.blend);
+      } else {
+        lPrimaryFn(cctx, params, 'laser');
+      }
+      cctx.restore();
+    }
+
+    // レーザーセカンダリ
+    cctx.setLayer('laser:background');
+    const lSecondaryAlpha = (1 - inp.blend) * LASER_OVERLAY_ALPHA;
+    for (const [vowel, weight] of Object.entries(inp.vowelWeights.weights)) {
+      if (weight < 0.05) continue;
+      const effectiveAlphaLC = lSecondaryAlpha * weight;
+      if (effectiveAlphaLC < 0.25) continue;
+      const fn = SECONDARY_FNS[VOWEL_ALGO[vowel].key];
+      if (fn) {
+        cctx.save();
+        cctx.strokeStyle = '#2c261e';
+        cctx.fillStyle = '#2c261e';
+        fn(cctx, params, 'laser', effectiveAlphaLC);
+        cctx.restore();
+      }
+    }
+  } catch(e) { console.error('Combined laser render error:', e); }
+
+  cctx.restore(); // レーザークリッピング解除
+  lastRecordedPaths.combined = combinedRec.getPaths();
+
   // --- STORY ---
   updateStory(inp);
 }
@@ -2789,14 +2961,15 @@ function exportSVG(mode) {
   defs += `    </clipPath>\n`;
   defs += `  </defs>\n`;
 
-  // desc情報（V溝時のみ面幅構成を記載）
+  // desc情報（V溝/Combined時のみ面幅構成を記載）
   let descExtra = '';
-  if (mode === 'vgroove') {
+  if (mode === 'vgroove' || mode === 'combined') {
     const inp = gatherInputs();
     const cInfo = k => { const c = VGROOVE.chamfers[k]; return `${k}(${c.widthMm}mm, d${c.depthMm}mm)`; };
     if (inp.bitConfig === 'single') descExtra = ` | 60deg bit | Single chamfer: ${cInfo(inp.chamferWidths.primary)}`;
     else if (inp.bitConfig === 'dual') descExtra = ` | 60deg bit | Dual chamfer: ${cInfo(inp.chamferWidths.primary)} + ${cInfo(inp.chamferWidths.secondary)}`;
     else descExtra = ` | 60deg bit | Triple chamfer: ${cInfo('bold')} + ${cInfo('medium')} + ${cInfo('fine')}`;
+    if (mode === 'combined') descExtra += ' | Combined NC+Laser';
   }
 
   let bodyContent = '';
@@ -2874,7 +3047,7 @@ function exportSVG(mode) {
       }
       bodyContent += `  </g>\n`;
     }
-  } else {
+  } else if (mode === 'laser') {
     // レーザーモード: 3層（accent/pattern/background）色分けレイヤー
     // xTool P2S等で色ごとにパワー/スピード/パス数を設定できる
     const laserLayerMap = {};  // { 'accent': [...], 'pattern': [...], 'background': [...] }
@@ -2919,17 +3092,109 @@ function exportSVG(mode) {
       }
       bodyContent += `  </g>\n`;
     }
+  } else if (mode === 'combined') {
+    // COMBINEDモード: V溝パス（vgroove:プレフィックス）とレーザーパス（laser:プレフィックス）を別グループに分けて出力
+    const inp = gatherInputs();
+    const MIN_STROKE_WIDTH_MM_C = 0.3;
+    const MIN_OPACITY_COMBINED = 0.3;
+
+    // パスをV溝とレーザーに振り分け
+    const vgrooveCPaths = [];
+    const laserCPaths = [];
+    for (const p of paths) {
+      if (p.globalAlpha < MIN_OPACITY_COMBINED) continue;
+      const layer = p.layer || '';
+      if (layer.startsWith('vgroove:')) {
+        const strokeWidthMm = (p.lineWidth || 1) * pxToMm;
+        if (strokeWidthMm < MIN_STROKE_WIDTH_MM_C) continue;
+        vgrooveCPaths.push({ ...p, layer: layer.replace('vgroove:', '') });
+      } else if (layer.startsWith('laser:')) {
+        laserCPaths.push({ ...p, layer: layer.replace('laser:', '') });
+      }
+    }
+
+    // V溝グループ（NC加工パス）
+    const mergedVCPaths = mergeConnectedPaths(vgrooveCPaths);
+    const vLayerMap = {};
+    for (const p of mergedVCPaths) {
+      const rawLayer = p.layer || 'default';
+      const isSub = rawLayer.startsWith('sub:');
+      let layerName;
+      if (isSub && inp.bitConfig === 'single') {
+        layerName = inp.chamferWidths.primary;
+      } else {
+        layerName = isSub ? rawLayer.replace('sub:', '') : rawLayer;
+      }
+      const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
+      const svgEl = pathToSVG(p, pxToMm, color, true, clipBounds);
+      if (!svgEl) continue;
+      if (!vLayerMap[layerName]) vLayerMap[layerName] = [];
+      vLayerMap[layerName].push(svgEl);
+    }
+    bodyContent += `\n  <!-- V-Groove NC layers -->\n`;
+    const vLayerOrder = ['bold', 'medium', 'fine', 'default'];
+    for (const layerName of vLayerOrder) {
+      const elements = vLayerMap[layerName];
+      if (!elements || elements.length === 0) continue;
+      const color = SVG_LAYER_COLORS[layerName] || '#3c3223';
+      const ch = VGROOVE.chamfers[layerName];
+      const label = !ch ? 'vgroove-other' : `vgroove-${layerName} (${ch.widthMm}mm, d${ch.depthMm}mm)`;
+      bodyContent += `  <g id="vgroove_${layerName}" inkscape:label="${label}" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      for (const el of elements) {
+        bodyContent += `    ${el}\n`;
+      }
+      bodyContent += `  </g>\n`;
+    }
+
+    // レーザーグループ（レーザー刻印パス）
+    const mergedLCPaths = mergeConnectedPaths(laserCPaths);
+    for (const p of mergedLCPaths) {
+      if (p.type === 'stroke' && p.lineWidth < LASER_MIN_STROKE_PX) {
+        p.lineWidth = LASER_MIN_STROKE_PX;
+      }
+    }
+    const laserCLayerMap = {};
+    for (const p of mergedLCPaths) {
+      const layerName = p.layer || 'pattern';
+      const color = LASER_LAYER_COLORS[layerName] || '#FF0000';
+      const svgEl = pathToSVG(p, pxToMm, color, false, clipBounds);
+      if (!svgEl) continue;
+      if (!laserCLayerMap[layerName]) laserCLayerMap[layerName] = [];
+      laserCLayerMap[layerName].push(svgEl);
+    }
+    const laserCLayerLabels = {
+      'accent':     'Laser Accent — 3pass, deep',
+      'pattern':    'Laser Pattern — 2pass, standard',
+      'background': 'Laser Background — 1pass, subtle',
+    };
+    bodyContent += `\n  <!-- Laser Engraving layers -->\n`;
+    for (const layerName of ['accent', 'pattern', 'background']) {
+      const elements = laserCLayerMap[layerName];
+      if (!elements || elements.length === 0) continue;
+      const color = LASER_LAYER_COLORS[layerName] || '#FF0000';
+      const label = laserCLayerLabels[layerName] || `laser-${layerName}`;
+      bodyContent += `  <g id="laser_${layerName}" inkscape:label="${label}" inkscape:groupmode="layer" stroke="${color}" clip-path="url(#pattern-clip)">\n`;
+      for (const el of elements) {
+        bodyContent += `    ${el}\n`;
+      }
+      bodyContent += `  </g>\n`;
+    }
   }
 
   // モード別SVGヘッダー最適化:
   // レーザー → Inkscape/xTool向け: mm単位 + inkscape名前空間
   // V溝NC → Fusion 360/Rhinoceros向け: 単位なし + CADインポートガイド
+  // Combined → 両方の名前空間を含む
   const isLaser = mode === 'laser';
+  const isCombined = mode === 'combined';
+  const needsMm = isLaser || isCombined;
+  const needsInkscape = isLaser || isCombined;
+  const modeTitle = isLaser ? 'Laser' : (isCombined ? 'Combined NC + Laser' : 'V-Groove NC');
   const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<!-- Physical size: 70mm x 70mm | Pattern area: 64mm x 64mm${!isLaser ? ' | Import at 1:1 scale (mm) in CAD tools' : ''} -->
-<svg xmlns="http://www.w3.org/2000/svg"${isLaser ? '\n     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"' : ''}
-     ${isLaser ? 'width="70mm" height="70mm"' : 'width="70" height="70"'} viewBox="0 0 70 70">
-  <title>とうめいしっぽ パラメトリックパネル — ${isLaser ? 'Laser' : 'V-Groove NC'}</title>
+<!-- Physical size: 70mm x 70mm | Pattern area: 64mm x 64mm${(!isLaser && !isCombined) ? ' | Import at 1:1 scale (mm) in CAD tools' : ''} -->
+<svg xmlns="http://www.w3.org/2000/svg"${needsInkscape ? '\n     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"' : ''}
+     ${needsMm ? 'width="70mm" height="70mm"' : 'width="70" height="70"'} viewBox="0 0 70 70">
+  <title>とうめいしっぽ パラメトリックパネル — ${modeTitle}</title>
   <desc>Generated: ${new Date().toISOString()} | Vector output${descExtra}</desc>
 ${defs}${bodyContent}
 </svg>`;
@@ -3028,15 +3293,18 @@ function pathToSVG(p, scale, colorOverride, suppressOpacity, clipBounds) {
 }
 
 function exportPNG(mode) {
-  const canvas = document.getElementById(mode === 'laser' ? 'laser-canvas' : 'vgroove-canvas');
+  const canvasId = mode === 'laser' ? 'laser-canvas' : (mode === 'combined' ? 'combined-canvas' : 'vgroove-canvas');
+  const canvas = document.getElementById(canvasId);
   const a = document.createElement('a');
   a.href = canvas.toDataURL('image/png');
   a.download = `toumei_shippo_${mode}_${Date.now()}.png`;
   a.click();
 }
 
-function exportDXF() {
-  const paths = lastRecordedPaths.vgroove || [];
+function exportDXF(mode) {
+  // mode省略時はvgroove（後方互換）
+  const exportMode = mode || 'vgroove';
+  const paths = lastRecordedPaths[exportMode] || [];
   const pxToMm = 70 / SCALE;  // 0.2mm per px
   const inp = gatherInputs();
 
@@ -3068,11 +3336,17 @@ function exportDXF() {
   dxf += '0\nLTYPE\n2\nCONTINUOUS\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0.0\n';
   dxf += '0\nENDTAB\n';
   // LAYER テーブル（各レイヤーに線種CONTINUOUSを明示）
-  dxf += '0\nTABLE\n2\nLAYER\n70\n4\n';
+  const layerCount = exportMode === 'combined' ? 7 : 4;
+  dxf += `0\nTABLE\n2\nLAYER\n70\n${layerCount}\n`;
   dxf += '0\nLAYER\n2\nBORDER\n70\n0\n62\n7\n6\nCONTINUOUS\n';          // 白 — 外枠・有効エリア枠
   dxf += '0\nLAYER\n2\nCHAMFER_BOLD\n70\n0\n62\n1\n6\nCONTINUOUS\n';   // 赤 — 太面幅(0.8mm)
   dxf += '0\nLAYER\n2\nCHAMFER_MEDIUM\n70\n0\n62\n3\n6\nCONTINUOUS\n'; // 緑 — 中面幅(0.5mm)
   dxf += '0\nLAYER\n2\nCHAMFER_FINE\n70\n0\n62\n5\n6\nCONTINUOUS\n';   // 青 — 細面幅(0.3mm)
+  if (exportMode === 'combined') {
+    dxf += '0\nLAYER\n2\nLASER_PATTERN\n70\n0\n62\n2\n6\nCONTINUOUS\n';    // 黄 — レーザーパターン主
+    dxf += '0\nLAYER\n2\nLASER_BACKGROUND\n70\n0\n62\n4\n6\nCONTINUOUS\n'; // シアン — レーザー副パターン
+    dxf += '0\nLAYER\n2\nLASER_ACCENT\n70\n0\n62\n6\n6\nCONTINUOUS\n';     // マゼンタ — レーザーアクセント
+  }
   dxf += '0\nENDTAB\n0\nENDSEC\n';
   // Entities
   dxf += '0\nSECTION\n2\nENTITIES\n';
@@ -3105,19 +3379,43 @@ function exportDXF() {
   // 2. 連続パス結合（SVGと同一ロジック）
   const mergedDPaths = mergeConnectedPaths(filteredDPaths);
 
+  // レーザーレイヤー名 → DXFレイヤー名マップ（combined用）
+  const DXF_LASER_LAYER_MAP = { 'pattern': 'LASER_PATTERN', 'background': 'LASER_BACKGROUND', 'accent': 'LASER_ACCENT' };
+
   // 3. レイヤー割当て・DXFエンティティ生成
   let dxfPolylineCount = 0, dxfSegmentCount = 0, dxfCircleCount = 0;
   for (const p of mergedDPaths) {
     const rawLayer = p.layer || 'default';
-    const isSub = rawLayer.startsWith('sub:');
-    // F3: Single mode → sub:パスもプライマリレイヤーに統合
-    let layerKey;
-    if (isSub && inp.bitConfig === 'single') {
-      layerKey = inp.chamferWidths.primary;
+
+    // combinedモード: laser: / vgroove: プレフィックスで振り分け
+    let layer;
+    if (exportMode === 'combined') {
+      if (rawLayer.startsWith('laser:')) {
+        const lKey = rawLayer.replace('laser:', '');
+        layer = DXF_LASER_LAYER_MAP[lKey] || 'LASER_PATTERN';
+      } else {
+        // vgroove: プレフィックスまたは未設定 → V溝レイヤー
+        const vRaw = rawLayer.startsWith('vgroove:') ? rawLayer.replace('vgroove:', '') : rawLayer;
+        const isSub = vRaw.startsWith('sub:');
+        let layerKey;
+        if (isSub && inp.bitConfig === 'single') {
+          layerKey = inp.chamferWidths.primary;
+        } else {
+          layerKey = isSub ? vRaw.replace('sub:', '') : vRaw;
+        }
+        layer = DXF_LAYER_MAP[layerKey] || 'CHAMFER_BOLD';
+      }
     } else {
-      layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;
+      const isSub = rawLayer.startsWith('sub:');
+      // F3: Single mode → sub:パスもプライマリレイヤーに統合
+      let layerKey;
+      if (isSub && inp.bitConfig === 'single') {
+        layerKey = inp.chamferWidths.primary;
+      } else {
+        layerKey = isSub ? rawLayer.replace('sub:', '') : rawLayer;
+      }
+      layer = DXF_LAYER_MAP[layerKey] || 'CHAMFER_BOLD';
     }
-    const layer = DXF_LAYER_MAP[layerKey] || 'CHAMFER_BOLD';
 
     if (p.type === 'fillRect') {
       const cxMm = (p.x + p.w / 2) * pxToMm;
@@ -3185,7 +3483,7 @@ function exportDXF() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `toumei_shippo_vgroove_${Date.now()}.dxf`;
+  a.download = `toumei_shippo_${exportMode}_${Date.now()}.dxf`;
   a.click();
   URL.revokeObjectURL(url);
 }
