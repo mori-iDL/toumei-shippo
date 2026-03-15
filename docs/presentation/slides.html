@@ -587,6 +587,67 @@
     background: var(--white);
     cursor: pointer;
   }
+
+  /* ===== SLIDE 04: Three-Layer Flow ===== */
+  .flow-box {
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .flow-box-layer1 {
+    background: rgba(196,149,106,0.07);
+    border: 1px solid rgba(196,149,106,0.18);
+  }
+  .flow-box-layer2 {
+    background: rgba(45,138,78,0.05);
+    border: 1px solid rgba(45,138,78,0.14);
+  }
+  .flow-box-layer3 {
+    background: rgba(122,92,46,0.06);
+    border: 1px solid rgba(122,92,46,0.16);
+  }
+  .flow-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .flow-cause-row {
+    padding: 4px 0 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ===== SLIDE 05: Algorithm Previews ===== */
+  .algo-card {
+    background: rgba(45,138,78,0.05);
+    border: 1px solid rgba(45,138,78,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .vowel-card {
+    flex: 1;
+    background: rgba(196,149,106,0.07);
+    border: 1px solid rgba(196,149,106,0.14);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .blend-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #2d8a4e 50%, var(--accent) 50%);
+  }
 </style>
 </head>
 <body>
@@ -863,7 +924,7 @@
             <span style="font-size: 14px; font-weight: 600; color: var(--gray-700);">How much — いくらか</span>
           </div>
           <div style="font-size: 13px; line-height: 1.6; color: var(--gray-700);">
-            🏷 価格検討中（単品〜9枚コンプリート）
+            単品 ¥1,800〜 ／ 9枚 ¥16,000〜
           </div>
           <div style="margin-top: auto; padding-top: 8px; font-size: 11px; color: var(--gray-500);">出産祝い相場 ¥3,000〜10,000 を意識した価格設計</div>
         </div>
@@ -886,163 +947,269 @@
   <div class="slide-number">04 / 13</div>
   <div class="slide-inner">
     <div class="tag">しくみ</div>
-    <h2 class="headline-l" style="margin-bottom: 8px;">三層翻訳アーキテクチャ</h2>
+    <h2 class="headline-l" style="margin-bottom: 6px;">三層翻訳アーキテクチャ</h2>
     <p class="body-l" style="margin-bottom: 16px;">赤ちゃんの声が、木の模様になるまで。</p>
 
-    <div style="display: flex; gap: 40px; flex: 1; align-items: stretch;">
+    <div style="display: flex; gap: 36px; flex: 1; align-items: stretch;">
 
-      <!-- 左カラム: はるかちゃんの変換ストーリー -->
-      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0;">
+      <!-- 左カラム: はるかちゃんのフローチャート -->
+      <div style="flex: 1.1; display: flex; flex-direction: column; justify-content: center; gap: 0;">
 
-        <!-- Layer 1: 入力データ -->
-        <div style="background: rgba(196,149,106,0.06); border: 1px solid rgba(196,149,106,0.15); border-radius: 10px; padding: 14px 18px;">
-          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
-            <span class="headline-s" style="color: var(--accent);">Layer 1</span>
-            <span class="body-s" style="color: var(--gray-500);">Biographical Voice — いのちの声</span>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; padding-left: 2px;">
-            <div class="body-s" style="color: var(--gray-700);">名前「<span style="color: var(--accent); font-weight: 500;">はるか</span>」→ 母音 <strong style="font-weight:500;">あ</strong>・う・あ</div>
-            <div class="body-s" style="color: var(--gray-700);">体重 3200g → やや力強い構造</div>
-            <div class="body-s" style="color: var(--gray-700);">誕生日 3月15日 → <strong style="font-weight:500;">春</strong></div>
-            <div class="body-s" style="color: var(--gray-700);">身長 50cm → 標準的な展開</div>
-            <div class="body-s" style="color: var(--gray-700);">出生時刻 7:30 → 朝の光</div>
-            <div class="body-s" style="color: var(--gray-700);">天気 ☀ 晴れ → 穏やかな揺らぎ</div>
-          </div>
-        </div>
+        <!-- 見出し -->
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 12px;">「はるか」ちゃんの場合</div>
 
-        <!-- 矢印 + 因果説明 1→2 -->
-        <div style="padding: 5px 0 5px 16px; display: flex; align-items: center; gap: 10px;">
-          <span style="color: var(--gray-400); font-size: 16px;">↓</span>
-          <span class="caption" style="color: var(--gray-500);">名前の母音と季節がアルゴリズムを選び、体格と天気が質感を決める</span>
-        </div>
-
-        <!-- Layer 2: 変換エンジン -->
-        <div style="background: rgba(45,138,78,0.05); border: 1px solid rgba(45,138,78,0.12); border-radius: 10px; padding: 14px 18px;">
-          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
-            <span class="headline-s" style="color: #2d8a4e;">Layer 2</span>
-            <span class="body-s" style="color: var(--gray-500);">Natural Computation — 自然計算</span>
+        <!-- Layer 1 BOX -->
+        <div class="flow-box flow-box-layer1">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span class="flow-label" style="color: var(--accent);">Layer 1</span>
+            <span style="font-size: 11px; color: var(--gray-500); font-weight: 500;">いのちの声</span>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 3px; padding-left: 2px;">
-            <div class="body-s" style="color: var(--gray-700);"><span style="color:#2d8a4e; font-weight:500;">春</span>が選んだ主構造 → <strong style="font-weight:500;">フィボナッチ螺旋</strong>（成長のリズム）</div>
-            <div class="body-s" style="color: var(--gray-700);"><span style="color:var(--accent); font-weight:500;">あ</span>が選んだ副旋律 → <strong style="font-weight:500;">Flow</strong>（風の流れ）＋ うの和音 Perlin</div>
-            <div class="body-s" style="color: var(--gray-700);">朝 7:30 → 主と副がバランスよく<strong style="font-weight:500;">混ざり合う</strong></div>
-          </div>
-        </div>
-
-        <!-- 矢印 + 因果説明 2→3 -->
-        <div style="padding: 5px 0 5px 16px; display: flex; align-items: center; gap: 10px;">
-          <span style="color: var(--gray-400); font-size: 16px;">↓</span>
-          <span class="caption" style="color: var(--gray-500);">生成された模様が、選んだ木の特性を受けて最終形になる</span>
-        </div>
-
-        <!-- Layer 3: 出力メディア（木の色調） -->
-        <div style="background: rgba(139,100,50,0.06); border: 1px solid rgba(139,100,50,0.15); border-radius: 10px; padding: 14px 18px;">
-          <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
-            <span class="headline-s" style="color: #7a5c2e;">Layer 3</span>
-            <span class="body-s" style="color: var(--gray-500);">Wood Character — 木の固有特性</span>
-          </div>
-          <div class="body-s" style="color: var(--gray-700); padding-left: 2px;">
-            <strong style="font-weight:500;">スギ</strong>（柔らかい木目）→ 広い線間隔・細い線幅・繊細な木目
-          </div>
-          <div style="padding-left: 2px; margin-top: 6px;">
-            <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 3px;">
-              <span class="caption" style="color: #7a5c2e; font-weight: 500; white-space: nowrap;">市産材</span>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">スギ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">カラマツ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">アカマツ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ナラ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">クリ</div>
+          <!-- 入力データ グリッド -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <!-- 名前 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(196,149,106,0.10); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(196,149,106,0.18); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--accent); flex-shrink: 0;">名</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--accent);">はるか</div>
+                <div style="font-size: 10px; color: var(--gray-500);">母音: あ・う・あ</div>
+              </div>
             </div>
-            <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 4px;">
-              <span class="caption" style="color: #7a5c2e; font-weight: 500; white-space: nowrap;">県産材</span>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ヤマザクラ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">オニグルミ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">イタヤカエデ</div>
-              <div class="layer-chip" style="font-size: 10px; padding: 1px 7px; opacity: 0.55; background: rgba(139,100,50,0.08);">ケヤキ</div>
+            <!-- 誕生日 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(45,138,78,0.08); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(45,138,78,0.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #2d8a4e; flex-shrink: 0;">誕</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: #2d8a4e;">3月15日</div>
+                <div style="font-size: 10px; color: var(--gray-500);">春 — 成長の季節</div>
+              </div>
             </div>
-            <span class="caption" style="color: var(--gray-500);">KD・無節・PL ｜ 15×70×70mm フロア材原板</span>
+            <!-- 体重 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(196,149,106,0.06); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gray-600); flex-shrink: 0;">重</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--gray-700);">3200g</div>
+                <div style="font-size: 10px; color: var(--gray-500);">やや力強い線</div>
+              </div>
+            </div>
+            <!-- 身長 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(196,149,106,0.06); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gray-600); flex-shrink: 0;">長</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--gray-700);">50cm</div>
+                <div style="font-size: 10px; color: var(--gray-500);">標準的な広がり</div>
+              </div>
+            </div>
+            <!-- 時刻 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(196,149,106,0.06); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gray-600); flex-shrink: 0;">刻</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--gray-700);">7:30 朝</div>
+                <div style="font-size: 10px; color: var(--gray-500);">主副が均等に混ざる</div>
+              </div>
+            </div>
+            <!-- 天気 -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(196,149,106,0.06); border-radius: 8px; padding: 8px 10px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">☀</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--gray-700);">晴れ</div>
+                <div style="font-size: 10px; color: var(--gray-500);">穏やかな揺らぎ</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 中央: 三層の粒子が有機的に交わり、ひとつの模様に収束する -->
-      <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 120px;">
-        <svg width="120" height="380" viewBox="0 0 120 380" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
-          <defs>
-            <radialGradient id="merge-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#c4956a" stop-opacity="0.15"/>
-              <stop offset="50%" stop-color="#2d8a4e" stop-opacity="0.06"/>
-              <stop offset="100%" stop-color="#7a5c2e" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <!-- 合流点の柔らかな光 -->
-          <ellipse cx="105" cy="190" rx="28" ry="38" fill="url(#merge-glow)"/>
-          <!-- Layer 1: いのちの声 — 暖色の粒子が上から流れ込む -->
-          <path d="M2 50 C20 52, 40 58, 56 76 C72 94, 86 128, 96 158 C102 174, 106 184, 108 190"
-                stroke="#c4956a" stroke-width="6" fill="none" opacity="0.6"
-                stroke-linecap="round" stroke-dasharray="0 12"/>
-          <path d="M0 42 C16 44, 36 50, 52 68 C68 86, 84 120, 95 154 C100 168, 105 182, 107 188"
-                stroke="#c4956a" stroke-width="4" fill="none" opacity="0.35"
-                stroke-linecap="round" stroke-dasharray="0 16" stroke-dashoffset="-5"/>
-          <path d="M4 58 C22 58, 44 66, 62 86 C78 106, 90 140, 100 166 C104 176, 108 186, 109 191"
-                stroke="#c4956a" stroke-width="3" fill="none" opacity="0.25"
-                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-10"/>
-          <!-- Layer 2: 自然計算 — 緑の粒子が中央を流れる -->
-          <path d="M2 170 C22 170, 44 173, 62 177 C78 181, 90 185, 100 188 C104 189, 107 190, 108 190"
-                stroke="#2d8a4e" stroke-width="6" fill="none" opacity="0.55"
-                stroke-linecap="round" stroke-dasharray="0 12" stroke-dashoffset="-3"/>
-          <path d="M0 163 C18 164, 40 167, 58 172 C74 176, 88 181, 98 186 C103 188, 106 189, 107 189"
-                stroke="#2d8a4e" stroke-width="4" fill="none" opacity="0.35"
-                stroke-linecap="round" stroke-dasharray="0 16" stroke-dashoffset="-8"/>
-          <path d="M3 178 C24 177, 46 180, 66 184 C82 187, 94 190, 103 192 C106 192, 108 192, 109 192"
-                stroke="#2d8a4e" stroke-width="3" fill="none" opacity="0.25"
-                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-2"/>
-          <!-- Layer 3: 木の固有特性 — 木色の粒子が下から合流 -->
-          <path d="M2 320 C20 318, 40 312, 56 296 C72 280, 86 252, 96 222 C102 206, 106 196, 108 190"
-                stroke="#7a5c2e" stroke-width="5.5" fill="none" opacity="0.5"
-                stroke-linecap="round" stroke-dasharray="0 12" stroke-dashoffset="-7"/>
-          <path d="M0 328 C18 324, 40 316, 58 300 C76 284, 90 256, 100 228 C104 212, 108 198, 109 192"
-                stroke="#7a5c2e" stroke-width="3.5" fill="none" opacity="0.3"
-                stroke-linecap="round" stroke-dasharray="0 16"/>
-          <path d="M4 314 C18 312, 36 304, 52 290 C68 276, 86 246, 96 216 C102 202, 106 194, 107 189"
-                stroke="#7a5c2e" stroke-width="3" fill="none" opacity="0.2"
-                stroke-linecap="round" stroke-dasharray="0 20" stroke-dashoffset="-12"/>
-          <!-- 合流ゾーン: 三色の粒子が混ざり合う -->
-          <circle cx="92" cy="174" r="3" fill="#c4956a" opacity="0.4"/>
-          <circle cx="96" cy="200" r="3.5" fill="#2d8a4e" opacity="0.35"/>
-          <circle cx="89" cy="207" r="3" fill="#7a5c2e" opacity="0.3"/>
-          <circle cx="98" cy="181" r="3.5" fill="#c4956a" opacity="0.35"/>
-          <circle cx="101" cy="194" r="4" fill="#2d8a4e" opacity="0.4"/>
-          <circle cx="95" cy="188" r="3" fill="#7a5c2e" opacity="0.32"/>
-          <circle cx="104" cy="184" r="3.5" fill="#c4956a" opacity="0.3"/>
-          <circle cx="100" cy="198" r="3" fill="#2d8a4e" opacity="0.28"/>
-          <circle cx="105" cy="192" r="3.5" fill="#7a5c2e" opacity="0.35"/>
-          <circle cx="88" cy="185" r="2.5" fill="#c4956a" opacity="0.22"/>
-          <circle cx="93" cy="196" r="2.5" fill="#2d8a4e" opacity="0.2"/>
-          <circle cx="86" cy="194" r="2.5" fill="#7a5c2e" opacity="0.18"/>
-          <!-- 合流後: 混ざった粒子が右へ流れ出す -->
-          <circle cx="111" cy="190" r="3" fill="#c4956a" opacity="0.25"/>
-          <circle cx="113" cy="187" r="2.5" fill="#2d8a4e" opacity="0.28"/>
-          <circle cx="114" cy="193" r="2.5" fill="#7a5c2e" opacity="0.22"/>
-          <circle cx="117" cy="190" r="2.5" fill="#c4956a" opacity="0.18"/>
-          <circle cx="119" cy="188" r="2" fill="#2d8a4e" opacity="0.15"/>
-          <circle cx="120" cy="191" r="2" fill="#7a5c2e" opacity="0.12"/>
-        </svg>
+        <!-- 矢印 + 因果ラベル -->
+        <div class="flow-cause-row">
+          <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 0 L7 15 M3 11 L7 16 L11 11" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 11px; color: var(--gray-400);">名前の母音と誕生日の季節がアルゴリズムを選ぶ</span>
+        </div>
+
+        <!-- Layer 2 BOX -->
+        <div class="flow-box flow-box-layer2">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span class="flow-label" style="color: #2d8a4e;">Layer 2</span>
+            <span style="font-size: 11px; color: var(--gray-500); font-weight: 500;">自然計算エンジン</span>
+          </div>
+          <!-- 主副ブレンドの可視化 -->
+          <div style="display: flex; gap: 8px; align-items: stretch;">
+            <!-- 主アルゴリズム -->
+            <div style="flex: 1; background: rgba(45,138,78,0.08); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <div style="font-size: 10px; font-weight: 700; color: #2d8a4e; letter-spacing: 0.06em; text-transform: uppercase;">主 — 春</div>
+              <!-- 螺旋SVGアイコン -->
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                <path d="M22 22 C22 22, 19 18, 16 16 C10 12, 7 18, 10 24 C13 30, 20 33, 27 30 C34 27, 37 19, 33 12 C29 5, 19 3, 12 8 C5 13, 3 23, 7 32" stroke="#2d8a4e" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.85"/>
+                <circle cx="22" cy="22" r="2" fill="#2d8a4e" opacity="0.5"/>
+              </svg>
+              <div style="font-size: 12px; font-weight: 600; color: #2d8a4e;">フィボナッチ螺旋</div>
+              <div style="font-size: 10px; color: var(--gray-500);">成長のリズム</div>
+            </div>
+            <!-- ブレンドバー -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 36px;">
+              <div style="font-size: 8px; color: var(--gray-400); writing-mode: vertical-lr; letter-spacing: 0.04em; transform: rotate(180deg);">朝7:30</div>
+              <div style="width: 8px; flex: 1; border-radius: 4px; background: linear-gradient(to bottom, #2d8a4e, #7ab893, #c4956a); opacity: 0.65;"></div>
+              <div style="font-size: 8px; color: var(--accent); font-weight: 600;">混合</div>
+            </div>
+            <!-- 副アルゴリズム -->
+            <div style="flex: 1; background: rgba(196,149,106,0.10); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <div style="font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase;">副 — あ</div>
+              <!-- 風のSVGアイコン -->
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                <path d="M8 16 Q18 10, 28 18 Q36 24, 30 30" stroke="var(--accent)" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M6 22 Q16 17, 26 23 Q34 28, 28 34" stroke="var(--accent)" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.5"/>
+                <path d="M10 28 Q18 24, 24 29" stroke="var(--accent)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.35"/>
+              </svg>
+              <div style="font-size: 12px; font-weight: 600; color: var(--accent);">Flow Field</div>
+              <div style="font-size: 10px; color: var(--gray-500);">風の流れ</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 矢印 + 因果ラベル -->
+        <div class="flow-cause-row">
+          <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M7 0 L7 15 M3 11 L7 16 L11 11" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 11px; color: var(--gray-400);">生成した模様が、選んだ木の特性を受けて最終形になる</span>
+        </div>
+
+        <!-- Layer 3 BOX -->
+        <div class="flow-box flow-box-layer3">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span class="flow-label" style="color: #7a5c2e;">Layer 3</span>
+            <span style="font-size: 11px; color: var(--gray-500); font-weight: 500;">木の固有特性</span>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <!-- 木の断面SVGイコン -->
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+              <rect x="4" y="4" width="44" height="44" rx="6" fill="rgba(122,92,46,0.08)" stroke="rgba(122,92,46,0.2)" stroke-width="1"/>
+              <!-- 木目ライン（スギのイメージ：広めの均一な線間隔） -->
+              <line x1="10" y1="14" x2="42" y2="14" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+              <line x1="10" y1="20" x2="42" y2="20" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+              <line x1="10" y1="26" x2="42" y2="26" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+              <line x1="10" y1="32" x2="42" y2="32" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+              <line x1="10" y1="38" x2="42" y2="38" stroke="#c4956a" stroke-width="0.8" opacity="0.5"/>
+            </svg>
+            <div style="flex: 1;">
+              <div style="font-size: 15px; font-weight: 600; color: #7a5c2e; margin-bottom: 4px;">スギ — 盛岡市産</div>
+              <div style="display: flex; gap: 16px;">
+                <div style="font-size: 11px; color: var(--gray-500);">線間隔 <span style="color: #7a5c2e; font-weight: 600;">3.0（広め）</span></div>
+                <div style="font-size: 11px; color: var(--gray-500);">線幅 <span style="color: #7a5c2e; font-weight: 600;">0.8（細め）</span></div>
+              </div>
+              <div style="font-size: 10px; color: var(--gray-400); margin-top: 3px;">柔らかい木目が繊細なパターンを包み込む</div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 右カラム: 実際のアウトプット（主役） -->
-      <div style="width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div style="background: linear-gradient(145deg, #3e3028, #2c2018); border-radius: 16px; padding: 18px; box-shadow: 0 12px 48px rgba(44,32,24,0.25), inset 0 1px 0 rgba(255,255,255,0.04);">
-          <img src="screenshots/pattern_haruka_laser.png" alt="はるかちゃんのパターン" style="width: 310px; height: 310px; display: block; border-radius: 6px;">
+      <div style="width: 460px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;">
+
+        <!-- 完成パネル — SVGで「はるかちゃん」の模様を再現 -->
+        <div style="background: linear-gradient(145deg, #3e3028, #2c2018); border-radius: 20px; padding: 20px; box-shadow: 0 16px 64px rgba(44,32,24,0.30), inset 0 1px 0 rgba(255,255,255,0.05);">
+          <!-- 70×70mmパネルのSVG再現 — フィボナッチ螺旋 + フローフィールドのブレンド -->
+          <svg width="340" height="340" viewBox="0 0 340 340" style="display: block; border-radius: 8px; background: #f5ede0;">
+
+            <!-- 背景: スギ木目 (薄い水平線) -->
+            <g opacity="0.12">
+              <line x1="0" y1="34" x2="340" y2="34" stroke="#8b6914" stroke-width="1.2"/>
+              <line x1="0" y1="68" x2="340" y2="68" stroke="#8b6914" stroke-width="0.9"/>
+              <line x1="0" y1="102" x2="340" y2="102" stroke="#8b6914" stroke-width="1.1"/>
+              <line x1="0" y1="136" x2="340" y2="136" stroke="#8b6914" stroke-width="0.8"/>
+              <line x1="0" y1="170" x2="340" y2="170" stroke="#8b6914" stroke-width="1.0"/>
+              <line x1="0" y1="204" x2="340" y2="204" stroke="#8b6914" stroke-width="0.9"/>
+              <line x1="0" y1="238" x2="340" y2="238" stroke="#8b6914" stroke-width="1.1"/>
+              <line x1="0" y1="272" x2="340" y2="272" stroke="#8b6914" stroke-width="0.8"/>
+              <line x1="0" y1="306" x2="340" y2="306" stroke="#8b6914" stroke-width="1.0"/>
+            </g>
+
+            <!-- 主アルゴリズム: フィボナッチ螺旋（春・緑） -->
+            <!-- 螺旋の中心: 170,170 — ゴールデン比で外側へ広がる -->
+            <g stroke="#2d8a4e" fill="none" stroke-linecap="round" opacity="0.75">
+              <!-- 内側から外側へ: 自然な螺旋軌跡 -->
+              <path d="M170 170 C172 162, 180 158, 186 163 C192 168, 192 178, 186 184 C178 192, 165 192, 156 184 C145 174, 143 158, 152 147 C162 135, 180 132, 194 140 C210 149, 216 168, 210 185 C202 206, 182 216, 160 212 C134 207, 118 186, 120 160 C122 130, 144 110, 172 108 C204 106, 228 130, 232 162 C237 198, 216 228, 182 238" stroke-width="1.4"/>
+              <path d="M170 170 C168 158, 158 150, 148 155 C136 162, 133 177, 140 188 C149 202, 166 208, 182 202 C200 195, 210 176, 206 158 C200 137, 181 124, 160 126 C136 128, 117 147, 116 172 C115 200, 133 225, 158 232 C187 240, 218 228, 230 200" stroke-width="1.0" opacity="0.6"/>
+            </g>
+
+            <!-- 副アルゴリズム: フローフィールド（あ・流れ・温かみ） -->
+            <!-- 風の流れを模した曲線群 -->
+            <g stroke="#c4956a" fill="none" stroke-linecap="round" opacity="0.55">
+              <!-- 流れの線1 — 中央から右上へ -->
+              <path d="M40 120 Q80 100, 120 115 Q160 130, 200 110 Q240 90, 280 105 Q310 116, 330 108" stroke-width="1.3"/>
+              <!-- 流れの線2 -->
+              <path d="M30 155 Q70 138, 115 150 Q155 162, 195 145 Q238 126, 278 140 Q310 152, 335 144" stroke-width="1.1"/>
+              <!-- 流れの線3 -->
+              <path d="M35 190 Q75 175, 118 186 Q160 198, 200 182 Q242 165, 280 177 Q312 187, 334 180" stroke-width="1.2"/>
+              <!-- 流れの線4 -->
+              <path d="M45 225 Q82 212, 125 220 Q167 229, 205 216 Q244 202, 282 213 Q311 222, 332 217" stroke-width="0.9"/>
+              <!-- 螺旋と絡む短い流れ線 -->
+              <path d="M90 80 Q120 68, 155 78 Q185 87, 210 74 Q238 60, 265 72" stroke-width="0.8" opacity="0.7"/>
+              <path d="M60 260 Q95 250, 130 258 Q168 267, 205 254 Q240 241, 274 252 Q300 260, 322 255" stroke-width="0.8" opacity="0.7"/>
+              <!-- 短い補助線 -->
+              <path d="M100 295 Q140 285, 180 292 Q218 299, 255 288" stroke-width="0.7" opacity="0.5"/>
+              <path d="M78 46 Q118 36, 158 44 Q195 52, 232 41 Q262 32, 290 40" stroke-width="0.7" opacity="0.5"/>
+            </g>
+
+            <!-- 螺旋の点: 中心 -->
+            <circle cx="170" cy="170" r="3" fill="#2d8a4e" opacity="0.5"/>
+            <!-- 補助点: フィボナッチ数列の節点 -->
+            <circle cx="186" cy="163" r="2" fill="#2d8a4e" opacity="0.35"/>
+            <circle cx="194" cy="140" r="1.5" fill="#2d8a4e" opacity="0.3"/>
+
+            <!-- 読み解き注釈（オーバーレイ） -->
+            <!-- 螺旋ラベル -->
+            <line x1="215" y1="240" x2="235" y2="260" stroke="#2d8a4e" stroke-width="0.8" opacity="0.5" stroke-dasharray="3,2"/>
+            <circle cx="235" cy="262" r="3" fill="#2d8a4e" opacity="0.6"/>
+
+          </svg>
         </div>
+
+        <!-- キャプション -->
         <div style="margin-top: 18px; text-align: center;">
           <div class="headline-s" style="margin-bottom: 4px;">「はるか」ちゃんの模様</div>
-          <div class="body-s" style="color: var(--gray-500); margin-bottom: 10px;">3月15日生まれ・3200g・50cm・晴れ</div>
-          <div style="display: flex; flex-direction: column; gap: 2px; align-items: center;">
-            <div class="caption" style="color: var(--gray-600);"><span style="color: var(--accent);">螺旋</span>の成長リズム × <span style="color: #2d8a4e;">Flow</span>の風</div>
-            <div class="caption" style="color: var(--gray-600);"><span style="color: var(--gray-700);">スギ</span>の柔らかい木肌に宿る</div>
-          </div>
+          <div class="body-s" style="color: var(--gray-500); margin-bottom: 14px;">3月15日生まれ・3200g・50cm・晴れ・スギ</div>
         </div>
+
+        <!-- 読み解きラベル — 色分けで要素を視覚的に紐付け -->
+        <div style="width: 100%; background: var(--gray-100); border-radius: 12px; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 10px; font-weight: 700; color: var(--gray-500); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px;">この模様を読み解くと</div>
+
+          <!-- 春 = 緑 -->
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(45,138,78,0.06); border-radius: 8px; border-left: 3px solid #2d8a4e;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;">
+              <path d="M10 10 C10 10, 8 7, 6 6 C3 4, 2 7, 4 10 C6 13, 9 14, 12 12 C15 10, 16 7, 14 4 C12 1, 7 1, 4 4" stroke="#2d8a4e" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <span style="font-size: 12px; font-weight: 700; color: #2d8a4e;">螺旋の骨格</span>
+              <span style="font-size: 12px; color: var(--gray-600);"> — 春の成長リズム（誕生日: 3月）</span>
+            </div>
+          </div>
+
+          <!-- あ = 温かみ色 -->
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(196,149,106,0.08); border-radius: 8px; border-left: 3px solid var(--accent);">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;">
+              <path d="M2 10 Q6 6, 10 10 Q14 14, 18 10" stroke="var(--accent)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M2 14 Q6 11, 10 14 Q14 17, 18 14" stroke="var(--accent)" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+            <div>
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent);">流れの旋律</span>
+              <span style="font-size: 12px; color: var(--gray-600);"> — 「あ」の母音が呼ぶ風</span>
+            </div>
+          </div>
+
+          <!-- スギ = 木色 -->
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(122,92,46,0.06); border-radius: 8px; border-left: 3px solid #7a5c2e;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;">
+              <rect x="2" y="2" width="16" height="16" rx="3" fill="rgba(122,92,46,0.1)" stroke="rgba(122,92,46,0.3)" stroke-width="0.8"/>
+              <line x1="4" y1="7" x2="16" y2="7" stroke="#c4956a" stroke-width="0.8" opacity="0.6"/>
+              <line x1="4" y1="10" x2="16" y2="10" stroke="#c4956a" stroke-width="0.8" opacity="0.6"/>
+              <line x1="4" y1="13" x2="16" y2="13" stroke="#c4956a" stroke-width="0.8" opacity="0.6"/>
+            </svg>
+            <div>
+              <span style="font-size: 12px; font-weight: 700; color: #7a5c2e;">スギの包容</span>
+              <span style="font-size: 12px; color: var(--gray-600);"> — 柔らかい木肌が受けとめる</span>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
@@ -1056,234 +1223,516 @@
 <!-- ===================== SLIDE 3: 技術詳解 ===================== -->
 <div class="slide">
   <div class="slide-number">05 / 13</div>
-  <div class="slide-inner">
+  <div class="slide-inner" style="padding-bottom: 60px;">
     <div class="tag">しくみ（詳解）</div>
-    <h2 class="headline-l" style="margin-bottom: 8px;">三層翻訳アーキテクチャ — 全体像</h2>
-    <p class="body-l" style="margin-bottom: 20px;">7つの声が、自然計算と木の特性を通じて、唯一無二の模様になる。</p>
+    <h2 class="headline-l" style="margin-bottom: 6px;">三層翻訳アーキテクチャ — 全体マップ</h2>
+    <p class="body-l" style="margin-bottom: 12px;">7つの声が、自然計算と木の特性を通じて、唯一無二の模様になる。</p>
 
-    <div style="display: flex; gap: 20px; flex: 1; align-items: stretch;">
+    <!-- 上段: 横型フローチャート -->
+    <div style="margin-bottom: 14px; padding: 14px 20px; background: var(--gray-100); border-radius: 14px;">
+      <svg width="100%" height="72" viewBox="0 0 1640 72" preserveAspectRatio="xMidYMid meet" style="display: block;">
+
+        <!-- Layer 1: 7つの入力 -->
+        <rect x="0" y="8" width="380" height="56" rx="10" fill="rgba(196,149,106,0.12)" stroke="rgba(196,149,106,0.30)" stroke-width="1.2"/>
+        <text x="12" y="26" font-size="10" font-weight="700" fill="#b8941f" font-family="'Noto Sans JP',sans-serif" letter-spacing="0.06em">LAYER 1 — いのちの声</text>
+        <!-- 入力アイコン列 -->
+        <g font-family="'Noto Sans JP',sans-serif" font-size="11" fill="#8b6914">
+          <rect x="12" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.18)"/>
+          <text x="29" y="49" text-anchor="middle" font-weight="600">名</text>
+          <rect x="52" y="33" width="34" height="24" rx="5" fill="rgba(45,138,78,0.15)"/>
+          <text x="69" y="49" text-anchor="middle" font-weight="600" fill="#2d8a4e">誕</text>
+          <rect x="92" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.12)"/>
+          <text x="109" y="49" text-anchor="middle" fill="#6b6b6b">刻</text>
+          <rect x="132" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.12)"/>
+          <text x="149" y="49" text-anchor="middle" fill="#6b6b6b">重</text>
+          <rect x="172" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.12)"/>
+          <text x="189" y="49" text-anchor="middle" fill="#6b6b6b">長</text>
+          <rect x="212" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.12)"/>
+          <text x="229" y="49" text-anchor="middle" font-size="14">☀</text>
+          <rect x="252" y="33" width="34" height="24" rx="5" fill="rgba(196,149,106,0.06)" opacity="0.6"/>
+          <text x="269" y="49" text-anchor="middle" fill="#9b9b9b">地</text>
+        </g>
+        <!-- 分岐の説明 -->
+        <text x="300" y="38" font-size="9" fill="#b8941f" font-family="'Noto Sans JP',sans-serif">名前→副</text>
+        <text x="300" y="52" font-size="9" fill="#2d8a4e" font-family="'Noto Sans JP',sans-serif">誕生日→主</text>
+        <text x="300" y="62" font-size="9" fill="#6b6b6b" font-family="'Noto Sans JP',sans-serif">他→質感調律</text>
+
+        <!-- 矢印 1→2 -->
+        <line x1="388" y1="36" x2="448" y2="36" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="448" y1="36" x2="440" y2="30" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="448" y1="36" x2="440" y2="42" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <!-- 分岐ライン上 -->
+        <line x1="388" y1="50" x2="448" y2="50" stroke="var(--gray-300)" stroke-width="1.0" stroke-dasharray="4,3" opacity="0.5"/>
+
+        <!-- Layer 2: 自然計算エンジン -->
+        <rect x="456" y="8" width="700" height="56" rx="10" fill="rgba(45,138,78,0.07)" stroke="rgba(45,138,78,0.22)" stroke-width="1.2"/>
+        <text x="468" y="26" font-size="10" font-weight="700" fill="#2d8a4e" font-family="'Noto Sans JP',sans-serif" letter-spacing="0.06em">LAYER 2 — 自然計算エンジン</text>
+        <!-- 主アルゴリズム -->
+        <g font-family="'Noto Sans JP',sans-serif">
+          <text x="468" y="42" font-size="9" fill="#2d8a4e" font-weight="600">主（季節）</text>
+          <rect x="468" y="45" width="42" height="16" rx="4" fill="rgba(45,138,78,0.12)"/>
+          <text x="489" y="57" font-size="9" text-anchor="middle" fill="#2d8a4e" font-weight="500">春：螺旋</text>
+          <rect x="514" y="45" width="42" height="16" rx="4" fill="rgba(45,138,78,0.10)"/>
+          <text x="535" y="57" font-size="9" text-anchor="middle" fill="#2d8a4e" font-weight="500">夏：細胞</text>
+          <rect x="560" y="45" width="42" height="16" rx="4" fill="rgba(45,138,78,0.10)"/>
+          <text x="581" y="57" font-size="9" text-anchor="middle" fill="#2d8a4e" font-weight="500">秋：斑紋</text>
+          <rect x="606" y="45" width="42" height="16" rx="4" fill="rgba(45,138,78,0.10)"/>
+          <text x="627" y="57" font-size="9" text-anchor="middle" fill="#2d8a4e" font-weight="500">冬：枝</text>
+        </g>
+        <!-- ブレンドバー -->
+        <rect x="660" y="33" width="80" height="8" rx="4" fill="url(#blendGrad)"/>
+        <text x="700" y="28" font-size="9" text-anchor="middle" fill="#6b6b6b" font-family="'Noto Sans JP',sans-serif">ブレンド（時刻）</text>
+        <defs>
+          <linearGradient id="blendGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#2d8a4e" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#c4956a" stop-opacity="0.7"/>
+          </linearGradient>
+        </defs>
+        <!-- 副アルゴリズム -->
+        <g font-family="'Noto Sans JP',sans-serif">
+          <text x="752" y="42" font-size="9" fill="#b8941f" font-weight="600">副（母音）</text>
+          <rect x="752" y="45" width="24" height="16" rx="4" fill="rgba(196,149,106,0.14)"/>
+          <text x="764" y="57" font-size="10" text-anchor="middle" fill="#8b6914" font-weight="600">あ</text>
+          <rect x="780" y="45" width="24" height="16" rx="4" fill="rgba(196,149,106,0.12)"/>
+          <text x="792" y="57" font-size="10" text-anchor="middle" fill="#8b6914" font-weight="600">い</text>
+          <rect x="808" y="45" width="24" height="16" rx="4" fill="rgba(196,149,106,0.12)"/>
+          <text x="820" y="57" font-size="10" text-anchor="middle" fill="#8b6914" font-weight="600">う</text>
+          <rect x="836" y="45" width="24" height="16" rx="4" fill="rgba(196,149,106,0.12)"/>
+          <text x="848" y="57" font-size="10" text-anchor="middle" fill="#8b6914" font-weight="600">え</text>
+          <rect x="864" y="45" width="24" height="16" rx="4" fill="rgba(196,149,106,0.12)"/>
+          <text x="876" y="57" font-size="10" text-anchor="middle" fill="#8b6914" font-weight="600">お</text>
+        </g>
+        <!-- 体重・身長・天気 -->
+        <text x="900" y="38" font-size="9" fill="#6b6b6b" font-family="'Noto Sans JP',sans-serif" font-weight="600">質感調律</text>
+        <text x="900" y="52" font-size="9" fill="#6b6b6b" font-family="'Noto Sans JP',sans-serif">体重 / 身長 / 天気</text>
+
+        <!-- 矢印 2→3 -->
+        <line x1="1163" y1="36" x2="1218" y2="36" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="1218" y1="36" x2="1210" y2="30" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="1218" y1="36" x2="1210" y2="42" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+
+        <!-- Layer 3: 木の固有特性 -->
+        <rect x="1226" y="8" width="260" height="56" rx="10" fill="rgba(122,92,46,0.07)" stroke="rgba(122,92,46,0.24)" stroke-width="1.2"/>
+        <text x="1238" y="26" font-size="10" font-weight="700" fill="#7a5c2e" font-family="'Noto Sans JP',sans-serif" letter-spacing="0.06em">LAYER 3 — 木の固有特性</text>
+        <g font-family="'Noto Sans JP',sans-serif" font-size="9" fill="#7a5c2e">
+          <text x="1238" y="42" font-weight="600">9樹種</text>
+          <text x="1280" y="42">× 線間隔</text>
+          <text x="1238" y="56">× 線幅</text>
+          <text x="1280" y="56">× 木目強度</text>
+        </g>
+
+        <!-- 矢印 3→出力 -->
+        <line x1="1493" y1="36" x2="1545" y2="36" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="1545" y1="36" x2="1537" y2="30" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="1545" y1="36" x2="1537" y2="42" stroke="var(--gray-300)" stroke-width="1.4" stroke-linecap="round"/>
+
+        <!-- 出力: 模様 -->
+        <rect x="1553" y="8" width="87" height="56" rx="10" fill="rgba(29,29,31,0.05)" stroke="rgba(29,29,31,0.15)" stroke-width="1.2"/>
+        <!-- 小さな螺旋SVG for output -->
+        <g transform="translate(1580,36)">
+          <path d="M0 0 C0 0,-3-4,-6-6 C-10-9,-13-5,-10-1 C-7 3,-2 5,3 3 C8 1,10-4,7-8 C4-12,-2-13,-6-10" stroke="#2d8a4e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.85"/>
+          <path d="M-10 4 Q-5 1, 0 4 Q4 7, 8 4" stroke="#c4956a" stroke-width="1.0" fill="none" stroke-linecap="round" opacity="0.7"/>
+        </g>
+        <text x="1596" y="55" font-size="9" text-anchor="middle" fill="#1d1d1f" font-family="'Noto Sans JP',sans-serif" font-weight="600">模様</text>
+
+      </svg>
+    </div>
+
+    <div style="display: flex; gap: 16px; flex: 1; align-items: stretch;">
 
       <!-- Layer 1: いのちの声 -->
-      <div style="flex: 1; background: rgba(196,149,106,0.04); border: 1px solid rgba(196,149,106,0.12); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
-        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
-          <span class="headline-s" style="color: var(--accent); font-size: 18px;">Layer 1</span>
-          <span class="caption" style="color: var(--gray-500);">7 Voices — いのちの声</span>
+      <div style="flex: 1; background: rgba(196,149,106,0.04); border: 1px solid rgba(196,149,106,0.14); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid rgba(196,149,106,0.12);">
+          <span style="font-size: 17px; font-weight: 700; color: var(--accent);">Layer 1</span>
+          <span style="font-size: 11px; color: var(--gray-500); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">いのちの声</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); flex-shrink: 0; font-weight: 500;">名</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">名前</strong> → 母音分析 → <span style="color:var(--accent)">副アルゴリズム</span></div>
+
+        <!-- 7パラメータ -->
+        <!-- 名前 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.08); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.20); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); flex-shrink: 0;">名</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">名前</div>
+            <div style="font-size: 10px; color: var(--gray-500);">母音分析 → 副アルゴリズム</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(45,138,78,0.10); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #2d8a4e; flex-shrink: 0; font-weight: 500;">誕</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">誕生日</strong> → 季節判定 → <span style="color:#2d8a4e">主アルゴリズム</span></div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8 L12 8 M9 5 L12 8 L9 11" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <!-- 誕生日 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(45,138,78,0.07); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(45,138,78,0.15); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #2d8a4e; flex-shrink: 0;">誕</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">誕生日</div>
+            <div style="font-size: 10px; color: var(--gray-500);">季節判定 → 主アルゴリズム</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); flex-shrink: 0; font-weight: 500;">刻</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">出生時刻</strong> → 主副の<span style="color:var(--accent)">ブレンド比率</span></div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8 L12 8 M9 5 L12 8 L9 11" stroke="#2d8a4e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <!-- 出生時刻 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.06); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); flex-shrink: 0;">刻</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">出生時刻</div>
+            <div style="font-size: 10px; color: var(--gray-500);">主副のブレンド比率</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">重</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">体重</strong> → 力強さ / 繊細さ</div>
+        </div>
+        <!-- 体重 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.06); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gray-600); flex-shrink: 0;">重</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">体重</div>
+            <div style="font-size: 10px; color: var(--gray-500);">力強さ / 繊細さ（線の太さ）</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">長</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">身長</strong> → 伸びやかさ / 凝縮</div>
+        </div>
+        <!-- 身長 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.06); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gray-600); flex-shrink: 0;">長</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">身長</div>
+            <div style="font-size: 10px; color: var(--gray-500);">伸びやかさ / 凝縮（展開度）</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.08); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-500); flex-shrink: 0; font-weight: 500;">地</div>
-            <div style="font-size: 13px; color: var(--gray-500);"><strong style="font-weight:500;">出生地</strong> → 地域性（将来拡張）</div>
+        </div>
+        <!-- 天気 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.06); border-radius: 8px;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.12); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">☀</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--black);">天気</div>
+            <div style="font-size: 10px; color: var(--gray-500);">揺らぎの質（乱流度）</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 26px; height: 26px; background: rgba(196,149,106,0.12); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray-600); flex-shrink: 0; font-weight: 500;">空</div>
-            <div style="font-size: 13px; color: var(--gray-700);"><strong style="font-weight:500;">天気</strong> → 乱流度（揺らぎの質）</div>
+        </div>
+        <!-- 出生地 -->
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(196,149,106,0.03); border-radius: 8px; opacity: 0.55;">
+          <div style="width: 24px; height: 24px; border-radius: 5px; background: rgba(196,149,106,0.08); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gray-400); flex-shrink: 0;">地</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--gray-500);">出生地</div>
+            <div style="font-size: 10px; color: var(--gray-400);">地域性（将来拡張）</div>
           </div>
         </div>
       </div>
 
       <!-- Arrow 1→2 -->
-      <div style="display: flex; align-items: center; width: 36px; flex-shrink: 0;">
-        <svg width="36" height="40" viewBox="0 0 36 40" fill="none">
-          <path d="M4 20 C14 20, 22 20, 32 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M27 15 L34 20 L27 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <div style="display: flex; align-items: center; width: 28px; flex-shrink: 0;">
+        <svg width="28" height="40" viewBox="0 0 28 40" fill="none">
+          <path d="M4 20 L22 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M18 15 L24 20 L18 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
 
       <!-- Layer 2: 自然計算エンジン -->
-      <div style="flex: 1.4; background: rgba(45,138,78,0.03); border: 1px solid rgba(45,138,78,0.10); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
-        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
-          <span class="headline-s" style="color: #2d8a4e; font-size: 18px;">Layer 2</span>
-          <span class="caption" style="color: var(--gray-500);">Engine — 自然計算エンジン</span>
+      <div style="flex: 1.6; background: rgba(45,138,78,0.03); border: 1px solid rgba(45,138,78,0.12); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: baseline; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid rgba(45,138,78,0.10);">
+          <span style="font-size: 17px; font-weight: 700; color: #2d8a4e;">Layer 2</span>
+          <span style="font-size: 11px; color: var(--gray-500); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">自然計算エンジン</span>
         </div>
 
-        <!-- 主アルゴリズム（季節） -->
-        <div style="margin-bottom: 12px;">
-          <div class="caption" style="color: #2d8a4e; margin-bottom: 6px; font-weight: 600;">主アルゴリズム（季節で選択）</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
-              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">春</div>
-              <div style="font-size: 11px; color: var(--gray-700);">フィボナッチ螺旋</div>
-              <div style="font-size: 10px; color: var(--gray-500);">成長のリズム・黄金比の展開</div>
+        <!-- 主アルゴリズム -->
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: #2d8a4e; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">主アルゴリズム — 誕生日の季節で決まる「模様の骨格」</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+
+            <!-- 春: フィボナッチ螺旋 -->
+            <div style="background: rgba(45,138,78,0.06); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink: 0;">
+                <rect width="52" height="52" rx="9" fill="rgba(45,138,78,0.10)"/>
+                <!-- フィボナッチ螺旋 — 内から外へ自然に展開 -->
+                <path d="M26 26 C26 26, 22 21, 18 18 C11 14, 8 21, 12 28 C16 35, 23 38, 31 34 C39 30, 43 20, 38 11 C33 3, 21 2, 13 9" stroke="#2d8a4e" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.9"/>
+                <path d="M26 26 C24 20, 18 17, 13 21 C7 26, 8 35, 14 40 C21 46, 31 46, 39 40 C47 34, 49 22, 44 13" stroke="#2d8a4e" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.4"/>
+                <circle cx="26" cy="26" r="2.5" fill="#2d8a4e" opacity="0.65"/>
+              </svg>
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: #2d8a4e; margin-bottom: 1px;">春 — フィボナッチ螺旋</div>
+                <div style="font-size: 10px; color: var(--gray-500); line-height: 1.5;">成長のリズム<br>黄金比で広がる</div>
+              </div>
             </div>
-            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
-              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">夏</div>
-              <div style="font-size: 11px; color: var(--gray-700);">ボロノイ分割</div>
-              <div style="font-size: 10px; color: var(--gray-500);">細胞分裂・領域の主張</div>
+
+            <!-- 夏: ボロノイ -->
+            <div style="background: rgba(45,138,78,0.06); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink: 0;">
+                <rect width="52" height="52" rx="9" fill="rgba(45,138,78,0.10)"/>
+                <!-- ボロノイ — 不規則な多角形セル -->
+                <line x1="26" y1="5"  x2="15" y2="20" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="26" y1="5"  x2="42" y2="17" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="42" y1="17" x2="47" y2="36" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="47" y1="36" x2="31" y2="47" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="31" y1="47" x2="13" y2="44" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="13" y1="44" x2="5"  y2="28" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <line x1="5"  y1="28" x2="15" y2="20" stroke="#2d8a4e" stroke-width="1.3" opacity="0.8"/>
+                <!-- 内部分割線 -->
+                <line x1="15" y1="20" x2="26" y2="30" stroke="#2d8a4e" stroke-width="1.0" opacity="0.55"/>
+                <line x1="26" y1="30" x2="42" y2="17" stroke="#2d8a4e" stroke-width="1.0" opacity="0.55"/>
+                <line x1="26" y1="30" x2="31" y2="47" stroke="#2d8a4e" stroke-width="1.0" opacity="0.55"/>
+                <line x1="26" y1="30" x2="5"  y2="28" stroke="#2d8a4e" stroke-width="1.0" opacity="0.55"/>
+                <line x1="26" y1="30" x2="47" y2="36" stroke="#2d8a4e" stroke-width="1.0" opacity="0.55"/>
+              </svg>
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: #2d8a4e; margin-bottom: 1px;">夏 — ボロノイ分割</div>
+                <div style="font-size: 10px; color: var(--gray-500); line-height: 1.5;">細胞のような区画<br>生命の領域主張</div>
+              </div>
             </div>
-            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
-              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">秋</div>
-              <div style="font-size: 11px; color: var(--gray-700);">反応拡散</div>
-              <div style="font-size: 10px; color: var(--gray-500);">チューリングパターン・有機的斑模様</div>
+
+            <!-- 秋: 反応拡散 -->
+            <div style="background: rgba(45,138,78,0.06); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink: 0;">
+                <rect width="52" height="52" rx="9" fill="rgba(45,138,78,0.10)"/>
+                <!-- 反応拡散 — チューリングパターン、有機的なドット -->
+                <circle cx="12" cy="12" r="4"   fill="#2d8a4e" opacity="0.72"/>
+                <circle cx="28" cy="10" r="3"   fill="#2d8a4e" opacity="0.55"/>
+                <circle cx="41" cy="15" r="4.5" fill="#2d8a4e" opacity="0.68"/>
+                <circle cx="8"  cy="26" r="3"   fill="#2d8a4e" opacity="0.52"/>
+                <circle cx="22" cy="26" r="5"   fill="#2d8a4e" opacity="0.72"/>
+                <circle cx="38" cy="30" r="3"   fill="#2d8a4e" opacity="0.58"/>
+                <circle cx="15" cy="40" r="3.5" fill="#2d8a4e" opacity="0.62"/>
+                <circle cx="32" cy="42" r="4.5" fill="#2d8a4e" opacity="0.68"/>
+                <circle cx="46" cy="43" r="2.5" fill="#2d8a4e" opacity="0.48"/>
+              </svg>
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: #2d8a4e; margin-bottom: 1px;">秋 — 反応拡散</div>
+                <div style="font-size: 10px; color: var(--gray-500); line-height: 1.5;">チューリングパターン<br>有機的な斑模様</div>
+              </div>
             </div>
-            <div style="background: rgba(45,138,78,0.06); border-radius: 8px; padding: 7px 11px;">
-              <div style="font-size: 13px; font-weight: 600; color: #2d8a4e;">冬</div>
-              <div style="font-size: 11px; color: var(--gray-700);">フラクタル分岐</div>
-              <div style="font-size: 10px; color: var(--gray-500);">枯木の枝・再帰的分岐構造</div>
+
+            <!-- 冬: フラクタル分岐 -->
+            <div style="background: rgba(45,138,78,0.06); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" style="flex-shrink: 0;">
+                <rect width="52" height="52" rx="9" fill="rgba(45,138,78,0.10)"/>
+                <!-- フラクタル分岐 — 枯木、再帰的な枝 -->
+                <line x1="26" y1="50" x2="26" y2="34" stroke="#2d8a4e" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+                <line x1="26" y1="34" x2="14" y2="22" stroke="#2d8a4e" stroke-width="2.0" stroke-linecap="round" opacity="0.8"/>
+                <line x1="26" y1="34" x2="38" y2="22" stroke="#2d8a4e" stroke-width="2.0" stroke-linecap="round" opacity="0.8"/>
+                <line x1="14" y1="22" x2="7"  y2="13" stroke="#2d8a4e" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+                <line x1="14" y1="22" x2="19" y2="13" stroke="#2d8a4e" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+                <line x1="38" y1="22" x2="31" y2="13" stroke="#2d8a4e" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+                <line x1="38" y1="22" x2="45" y2="13" stroke="#2d8a4e" stroke-width="1.4" stroke-linecap="round" opacity="0.65"/>
+                <line x1="7"  y1="13" x2="4"  y2="7"  stroke="#2d8a4e" stroke-width="1.0" stroke-linecap="round" opacity="0.50"/>
+                <line x1="7"  y1="13" x2="11" y2="7"  stroke="#2d8a4e" stroke-width="1.0" stroke-linecap="round" opacity="0.50"/>
+                <line x1="45" y1="13" x2="41" y2="7"  stroke="#2d8a4e" stroke-width="1.0" stroke-linecap="round" opacity="0.50"/>
+                <line x1="45" y1="13" x2="49" y2="7"  stroke="#2d8a4e" stroke-width="1.0" stroke-linecap="round" opacity="0.50"/>
+              </svg>
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: #2d8a4e; margin-bottom: 1px;">冬 — フラクタル分岐</div>
+                <div style="font-size: 10px; color: var(--gray-500); line-height: 1.5;">枯木の枝<br>再帰的な分岐構造</div>
+              </div>
             </div>
+
           </div>
         </div>
 
-        <!-- 副アルゴリズム（母音） -->
-        <div style="margin-bottom: 12px;">
-          <div class="caption" style="color: var(--accent); margin-bottom: 6px; font-weight: 600;">副アルゴリズム（名前の母音で選択）</div>
+        <!-- 副アルゴリズム -->
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">副アルゴリズム — 名前の母音が呼ぶ「テクスチャ」</div>
           <div style="display: flex; gap: 5px;">
-            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">あ</div>
-              <div style="font-size: 10px; color: var(--gray-600);">風の流れ</div>
+
+            <!-- あ: Flow Field -->
+            <div class="vowel-card">
+              <div style="font-size: 20px; font-weight: 700; color: var(--accent);">あ</div>
+              <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
+                <path d="M4 14 Q10 8, 18 14 Q26 20, 32 14" stroke="var(--accent)" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M4 20 Q10 14, 18 20 Q26 26, 32 20" stroke="var(--accent)" stroke-width="1.0" fill="none" stroke-linecap="round" opacity="0.5"/>
+                <path d="M4 8  Q10 2,  18 8  Q26 14, 32 8" stroke="var(--accent)" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.35"/>
+              </svg>
+              <div style="font-size: 9px; color: var(--gray-500); line-height: 1.3;">風の<br>流れ</div>
             </div>
-            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">い</div>
-              <div style="font-size: 10px; color: var(--gray-600);">波のリズム</div>
+
+            <!-- い: 正弦波 -->
+            <div class="vowel-card">
+              <div style="font-size: 20px; font-weight: 700; color: var(--accent);">い</div>
+              <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
+                <path d="M2 14 C6 6, 10 6, 14 14 C18 22, 22 22, 26 14 C30 6, 34 6, 36 14" stroke="var(--accent)" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M2 20 C6 13, 10 13, 14 20 C18 27, 22 27, 26 20 C30 13, 34 13, 36 20" stroke="var(--accent)" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.35"/>
+              </svg>
+              <div style="font-size: 9px; color: var(--gray-500); line-height: 1.3;">波の<br>リズム</div>
             </div>
-            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">う</div>
-              <div style="font-size: 10px; color: var(--gray-600);">大地の揺らぎ</div>
+
+            <!-- う: パーリンノイズ -->
+            <div class="vowel-card">
+              <div style="font-size: 20px; font-weight: 700; color: var(--accent);">う</div>
+              <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
+                <path d="M2 16 C5 12, 9 18, 13 14 C17 10, 21 18, 25 14 C29 10, 33 16, 36 13" stroke="var(--accent)" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M2 22 C6 18, 10 24, 14 20 C18 16, 22 23, 26 19 C30 15, 34 21, 36 18" stroke="var(--accent)" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.45"/>
+                <path d="M2 10 C5 7, 9 12, 13 9  C17 6, 21 12, 25 8  C29 4, 33 9, 36 7" stroke="var(--accent)" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.3"/>
+              </svg>
+              <div style="font-size: 9px; color: var(--gray-500); line-height: 1.3;">大地の<br>揺らぎ</div>
             </div>
-            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">え</div>
-              <div style="font-size: 10px; color: var(--gray-600);">交差する軌跡</div>
+
+            <!-- え: リサージュ -->
+            <div class="vowel-card">
+              <div style="font-size: 20px; font-weight: 700; color: var(--accent);">え</div>
+              <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
+                <!-- リサージュ：交差する軌跡 -->
+                <path d="M8 14 C8 6, 28 6, 28 14 C28 22, 8 22, 8 14" stroke="var(--accent)" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.75"/>
+                <path d="M4 8 C14 4, 22 24, 32 20" stroke="var(--accent)" stroke-width="1.0" fill="none" stroke-linecap="round" opacity="0.5"/>
+                <path d="M4 20 C14 24, 22 4, 32 8" stroke="var(--accent)" stroke-width="1.0" fill="none" stroke-linecap="round" opacity="0.5"/>
+              </svg>
+              <div style="font-size: 9px; color: var(--gray-500); line-height: 1.3;">交差する<br>軌跡</div>
             </div>
-            <div style="flex: 1; background: rgba(196,149,106,0.08); border-radius: 7px; padding: 6px 8px; text-align: center;">
-              <div style="font-size: 16px; font-weight: 600; color: var(--accent);">お</div>
-              <div style="font-size: 10px; color: var(--gray-600);">波紋の広がり</div>
+
+            <!-- お: 波動関数 -->
+            <div class="vowel-card">
+              <div style="font-size: 20px; font-weight: 700; color: var(--accent);">お</div>
+              <svg width="36" height="28" viewBox="0 0 36 28" fill="none">
+                <!-- 波紋の同心円 -->
+                <circle cx="18" cy="14" r="4"  stroke="var(--accent)" stroke-width="1.2" fill="none" opacity="0.85"/>
+                <circle cx="18" cy="14" r="8"  stroke="var(--accent)" stroke-width="1.0" fill="none" opacity="0.60"/>
+                <circle cx="18" cy="14" r="12" stroke="var(--accent)" stroke-width="0.8" fill="none" opacity="0.40"/>
+              </svg>
+              <div style="font-size: 9px; color: var(--gray-500); line-height: 1.3;">波紋の<br>広がり</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ブレンド図解 -->
+        <div style="background: rgba(45,138,78,0.04); border: 1px dashed rgba(45,138,78,0.15); border-radius: 8px; padding: 10px 14px;">
+          <div style="font-size: 10px; font-weight: 700; color: #2d8a4e; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px;">ブレンド — 出生時刻が主副の混合比を決定</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="text-align: center; flex-shrink: 0; width: 40px;">
+              <div style="font-size: 9px; color: #2d8a4e; font-weight: 600;">主100%</div>
+              <div style="font-size: 8px; color: var(--gray-500);">正午/真夜中</div>
+            </div>
+            <div style="flex: 1; position: relative;">
+              <!-- マーカーラベル -->
+              <div style="position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-size: 9px; color: var(--gray-500); white-space: nowrap;">朝・夕暮れ（最大混合）</div>
+              <!-- グラデーションバー -->
+              <div style="height: 10px; border-radius: 5px; background: linear-gradient(90deg, #2d8a4e, #7ab893, #c4956a);"></div>
+              <!-- 中央マーカー -->
+              <div style="position: absolute; left: 50%; top: 0; width: 2px; height: 10px; background: white; opacity: 0.5;"></div>
+            </div>
+            <div style="text-align: center; flex-shrink: 0; width: 40px;">
+              <div style="font-size: 9px; color: var(--accent); font-weight: 600;">最大混合</div>
+              <div style="font-size: 8px; color: var(--gray-500);">夜明け/夕暮れ</div>
             </div>
           </div>
         </div>
 
-        <!-- ブレンド・修飾 -->
-        <div style="background: rgba(45,138,78,0.03); border: 1px dashed rgba(45,138,78,0.15); border-radius: 8px; padding: 10px 14px; margin-top: auto;">
-          <div class="caption" style="color: var(--gray-600); margin-bottom: 3px; font-weight: 500;">ブレンド・修飾</div>
-          <div style="font-size: 11px; color: var(--gray-600); line-height: 1.5;">
-            出生時刻が主副の混合比を決定（正午=純粋な主 / 夜明け=最大混合）<br>
-            体重・身長が構造の質を、天気が揺らぎの質を調律する
-          </div>
-        </div>
       </div>
 
       <!-- Arrow 2→3 -->
-      <div style="display: flex; align-items: center; width: 36px; flex-shrink: 0;">
-        <svg width="36" height="40" viewBox="0 0 36 40" fill="none">
-          <path d="M4 20 C14 20, 22 20, 32 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M27 15 L34 20 L27 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <div style="display: flex; align-items: center; width: 28px; flex-shrink: 0;">
+        <svg width="28" height="40" viewBox="0 0 28 40" fill="none">
+          <path d="M4 20 L22 20" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M18 15 L24 20 L18 25" stroke="var(--gray-300)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
 
       <!-- Layer 3: 木の固有特性 -->
-      <div style="flex: 1; background: rgba(139,100,50,0.04); border: 1px solid rgba(139,100,50,0.12); border-radius: 14px; padding: 22px; display: flex; flex-direction: column;">
-        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px;">
-          <span class="headline-s" style="color: #7a5c2e; font-size: 18px;">Layer 3</span>
-          <span class="caption" style="color: var(--gray-500);">9 Woods — 木の固有特性</span>
+      <div style="flex: 1; background: rgba(122,92,46,0.04); border: 1px solid rgba(122,92,46,0.14); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid rgba(122,92,46,0.10);">
+          <span style="font-size: 17px; font-weight: 700; color: #7a5c2e;">Layer 3</span>
+          <span style="font-size: 11px; color: var(--gray-500); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">木の固有特性</span>
         </div>
 
-        <!-- 3軸パラメータ -->
-        <div style="display: flex; gap: 6px; margin-bottom: 10px;">
-          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">線間隔</div>
-          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">線幅</div>
-          <div style="font-size: 10px; color: #7a5c2e; background: rgba(139,100,50,0.08); padding: 3px 8px; border-radius: 4px; font-weight: 500;">木目強度</div>
+        <!-- 3軸の説明 -->
+        <div style="display: flex; gap: 6px;">
+          <div style="flex: 1; background: rgba(122,92,46,0.08); border-radius: 6px; padding: 6px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #7a5c2e;">線間隔</div>
+            <div style="font-size: 9px; color: var(--gray-500);">木目の密度感</div>
+          </div>
+          <div style="flex: 1; background: rgba(122,92,46,0.08); border-radius: 6px; padding: 6px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #7a5c2e;">線幅</div>
+            <div style="font-size: 9px; color: var(--gray-500);">線の存在感</div>
+          </div>
+          <div style="flex: 1; background: rgba(122,92,46,0.08); border-radius: 6px; padding: 6px 8px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #7a5c2e;">木目強度</div>
+            <div style="font-size: 9px; color: var(--gray-500);">模様への干渉</div>
+          </div>
         </div>
 
         <!-- 市産材 -->
-        <div style="margin-bottom: 10px;">
-          <div style="font-size: 11px; color: #7a5c2e; font-weight: 600; margin-bottom: 4px;">市産材（盛岡市産）</div>
-          <div style="display: flex; flex-direction: column; gap: 3px;">
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 60px; font-weight: 500;">スギ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">柔らかい木目・温かい色調</span>
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: #7a5c2e; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;">市産材 — 盛岡市産</div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 62px; flex-shrink: 0;">スギ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.35; width: 60%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">柔らか・温かい</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 60px; font-weight: 500;">カラマツ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">脂分・赤褐色・強靭</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 62px; flex-shrink: 0;">カラマツ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.55; width: 75%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">脂・赤褐色</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 60px; font-weight: 500;">アカマツ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">脂分豊富・力強い木目</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 62px; flex-shrink: 0;">アカマツ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.50; width: 68%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">脂・力強い</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 60px; font-weight: 500;">ナラ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">虎斑杢・堅牢</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 62px; flex-shrink: 0;">ナラ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.70; width: 85%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">虎斑杢・堅</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 60px; font-weight: 500;">クリ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">力強い年輪・タンニン豊富</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 62px; flex-shrink: 0;">クリ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.65; width: 80%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">力強い年輪</span>
             </div>
           </div>
         </div>
 
         <!-- 県産材 -->
-        <div style="margin-bottom: 10px;">
-          <div style="font-size: 11px; color: #7a5c2e; font-weight: 600; margin-bottom: 4px;">県産材（岩手県産）</div>
-          <div style="display: flex; flex-direction: column; gap: 3px;">
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 80px; font-weight: 500;">ヤマザクラ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">赤みの暖色・緻密</span>
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: #7a5c2e; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;">県産材 — 岩手県産</div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 72px; flex-shrink: 0;">ヤマザクラ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #d4806a; opacity: 0.50; width: 60%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">赤み・緻密</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 80px; font-weight: 500;">オニグルミ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">深い褐色・滑らか</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 72px; flex-shrink: 0;">オニグルミ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #8b6040; opacity: 0.65; width: 72%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">深褐色・滑</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 80px; font-weight: 500;">イタヤカエデ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">絹の光沢・白い木肌</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 72px; flex-shrink: 0;">イタヤカエデ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #d4c8a0; opacity: 0.80; width: 65%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">白・絹の光沢</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700);">
-              <span style="width: 80px; font-weight: 500;">ケヤキ</span>
-              <span style="font-size: 11px; color: var(--gray-500);">美しい杢目・堅牢</span>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(122,92,46,0.05); border-radius: 6px;">
+              <span style="font-size: 12px; font-weight: 600; color: #7a5c2e; width: 72px; flex-shrink: 0;">ケヤキ</span>
+              <div style="flex: 1; display: flex; gap: 3px;">
+                <div style="height: 4px; border-radius: 2px; background: #c4956a; opacity: 0.80; width: 90%;"></div>
+              </div>
+              <span style="font-size: 10px; color: var(--gray-500);">杢目・堅牢</span>
             </div>
           </div>
         </div>
 
         <!-- 仕様 -->
-        <div style="font-size: 11px; color: var(--gray-500); padding: 6px 10px; background: rgba(139,100,50,0.04); border-radius: 6px;">
-          KD・無節・PL｜15×70×70mm フロア材原板
-        </div>
-
-        <!-- Phase 2 UXビジョン -->
-        <div style="margin-top: 6px; padding: 8px 10px; background: rgba(255,149,0,0.05); border: 1px dashed rgba(255,149,0,0.2); border-radius: 6px;">
-          <div style="font-size: 10px; font-weight: 600; color: var(--orange); margin-bottom: 3px;">🏷 Phase 2 UXビジョン（検討中）</div>
-          <div style="font-size: 10px; color: var(--gray-600); line-height: 1.4;">
-            iPhoneで実物の木肌を撮影 → アプリ上でパターンをプレビュー → 実際の木目との重なりを確認してから注文
-          </div>
-          <div style="font-size: 9px; color: var(--gray-500); margin-top: 2px;">
-            課題: 撮影条件の標準化・色再現性・通信環境
-          </div>
+        <div style="font-size: 10px; color: var(--gray-400); padding: 6px 10px; background: rgba(122,92,46,0.04); border-radius: 6px;">
+          KD・無節・PL｜15×70×70mm
         </div>
       </div>
 
     </div>
 
     <!-- Bottom: 組み合わせのスケール -->
-    <div style="margin-top: 12px; padding: 12px 28px; background: linear-gradient(90deg, rgba(196,149,106,0.05), rgba(45,138,78,0.05), rgba(139,100,50,0.05)); border-radius: 10px; display: flex; justify-content: center; gap: 32px; align-items: center;">
-      <span style="color: var(--gray-600); font-size: 15px; font-weight: 500;">
-        <span style="color: #2d8a4e; font-size: 22px; font-weight: 700;">4</span><span style="font-size: 13px;"> 季節</span>
+    <div style="margin-top: 10px; padding: 10px 24px; background: linear-gradient(90deg, rgba(196,149,106,0.05), rgba(45,138,78,0.05), rgba(122,92,46,0.05)); border-radius: 10px; display: flex; justify-content: center; gap: 24px; align-items: center;">
+      <span style="color: var(--gray-600); font-size: 14px; font-weight: 500;">
+        <span style="color: #2d8a4e; font-size: 20px; font-weight: 700;">4</span><span style="font-size: 12px;"> 季節</span>
         <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
-        <span style="color: var(--accent); font-size: 22px; font-weight: 700;">5</span><span style="font-size: 13px;"> 母音</span>
+        <span style="color: var(--accent); font-size: 20px; font-weight: 700;">5</span><span style="font-size: 12px;"> 母音</span>
         <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
-        <span style="color: var(--gray-700); font-size: 22px; font-weight: 700;">&infin;</span><span style="font-size: 13px;"> 質感</span>
+        <span style="color: var(--gray-700); font-size: 20px; font-weight: 700;">&infin;</span><span style="font-size: 12px;"> 質感</span>
         <span style="color: var(--gray-400); margin: 0 4px;">&times;</span>
-        <span style="color: #7a5c2e; font-size: 22px; font-weight: 700;">9</span><span style="font-size: 13px;"> 樹種</span>
+        <span style="color: #7a5c2e; font-size: 20px; font-weight: 700;">9</span><span style="font-size: 12px;"> 樹種</span>
       </span>
-      <span style="color: var(--gray-400); font-size: 18px;">=</span>
-      <span style="color: var(--gray-700); font-size: 15px; font-weight: 500;">同じ赤ちゃんは二人といない。だから、同じ模様も二つとない。</span>
+      <span style="color: var(--gray-400); font-size: 16px;">=</span>
+      <span style="color: var(--gray-700); font-size: 14px; font-weight: 500;">同じ赤ちゃんは二人といない。だから、同じ模様も二つとない。</span>
     </div>
   </div>
   <div class="slide-footer">
@@ -1371,15 +1820,15 @@
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">単品（1枚）</span>
-            <span class="product-price" style="font-size: 22px;">¥2,800</span>
+            <span class="product-price" style="font-size: 22px;">¥1,800</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">3枚セット</span>
-            <span class="product-price" style="font-size: 22px;">¥7,500</span>
+            <span class="product-price" style="font-size: 22px;">¥5,000</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">9枚コンプリート</span>
-            <span class="product-price" style="font-size: 22px;">¥19,800</span>
+            <span class="product-price" style="font-size: 22px;">¥16,000</span>
           </div>
         </div>
         <ul class="feature-list">
@@ -1400,15 +1849,15 @@
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">単品（1枚）</span>
-            <span class="product-price" style="font-size: 22px;">¥3,800</span>
+            <span class="product-price" style="font-size: 22px;">¥2,800</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">3枚セット</span>
-            <span class="product-price" style="font-size: 22px;">¥9,800</span>
+            <span class="product-price" style="font-size: 22px;">¥8,000</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <span class="body-s">9枚コンプリート</span>
-            <span class="product-price" style="font-size: 22px;">¥27,800</span>
+            <span class="product-price" style="font-size: 22px;">¥25,000</span>
           </div>
         </div>
         <ul class="feature-list">
@@ -1524,15 +1973,15 @@
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥2,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利68%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥7,500<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利64%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥5,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利46%</span></span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥19,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利59%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥16,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
             </div>
           </div>
         </div>
@@ -1543,15 +1992,15 @@
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥3,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利63%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥2,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥9,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利57%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥8,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利48%</span></span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
               <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥27,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利55%</span></span>
+              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥25,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
             </div>
           </div>
         </div>
