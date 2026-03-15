@@ -1753,15 +1753,43 @@
   <div class="slide-number">07 / 13</div>
   <div class="slide-inner">
     <div class="tag">商品構成</div>
-    <h2 class="headline-l mb-12">Phase別 商品ラインナップ</h2>
-    <p class="body-l" style="margin-bottom: 28px;">段階的に価値を高めていく3フェーズ構成。</p>
+    <h2 class="headline-l mb-12">加工モード別 商品ラインナップ</h2>
+    <p class="body-l" style="margin-bottom: 28px;">お客様が3つの加工方法から選べる仕組み。</p>
 
     <div class="flex-row flex-1 gap-24">
-      <!-- Phase 1: 完成品 -->
-      <div class="product-card" style="flex: 1.2;">
-        <div class="pill mb-16" style="background: rgba(45,138,78,0.1); color: #2d8a4e;">Phase 1 — 完成品販売</div>
-        <div class="headline-s mb-8">既製パターン × 9樹種</div>
-        <p class="body-s mb-16">あらかじめ用意されたデザインパターンを<br>お好みの樹種で。NC加工＋オイル仕上げ。</p>
+      <!-- ①: レーザーのみ -->
+      <div class="product-card" style="flex: 1;">
+        <div class="pill mb-16" style="background: rgba(0,122,255,0.08); color: #007aff;">① レーザー刻印のみ</div>
+        <div class="headline-s mb-8">エントリー</div>
+        <p class="body-s mb-16">レーザーによる精密な線画彫刻。<br>繊細で均一な表現。</p>
+        <div class="flex-1"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">単品（1枚）</span>
+            <span class="product-price" style="font-size: 22px;">¥1,500</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">3枚セット</span>
+            <span class="product-price" style="font-size: 22px;">¥4,000</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span class="body-s">9枚コンプリート</span>
+            <span class="product-price" style="font-size: 22px;">¥13,000</span>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li>精密ベクトルライン</li>
+          <li>均一な線幅・繊細な表現</li>
+          <li>量産に適した加工</li>
+        </ul>
+      </div>
+
+      <!-- ②: NCのみ（featured） -->
+      <div class="product-card featured" style="flex: 1; border-color: #2d8a4e; box-shadow: 0 4px 20px rgba(45,138,78,0.12);">
+        <div class="badge-popular" style="background: #2d8a4e;">📍 今ここ</div>
+        <div class="pill mb-16" style="background: rgba(45,138,78,0.1); color: #2d8a4e;">② V溝NC加工のみ</div>
+        <div class="headline-s mb-8">スタンダード</div>
+        <p class="body-s mb-16">NC加工による立体的なV溝彫り。<br>可変幅・可変深さの力強い表現。</p>
         <div class="flex-1"></div>
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
@@ -1778,19 +1806,18 @@
           </div>
         </div>
         <ul class="feature-list">
-          <li>選べる9樹種（市産材5 + 県産材4）</li>
-          <li>NC加工 + 研磨 + オイル仕上げ</li>
-          <li>デザインストーリーカード付き</li>
-          <li style="color: var(--orange);">🏷 9枚: 収納トレイ or 箱（要検討）</li>
+          <li>可変幅・可変深さの立体彫刻</li>
+          <li>力強く温かみのある表現</li>
+          <li>NC加工＋研磨＋オイル仕上げ</li>
         </ul>
       </div>
 
-      <!-- Phase 2: テーラーメイド -->
-      <div class="product-card featured" style="flex: 1.2;">
-        <div class="badge-popular">付加価値</div>
-        <div class="pill pill-accent mb-16">Phase 2 — テーラーメイド</div>
-        <div class="headline-s mb-8">赤ちゃん固有パターン × 9樹種</div>
-        <p class="body-s mb-16">赤ちゃんの誕生データから生成した<br>世界にひとつだけのパターンをレーザー刻印。</p>
+      <!-- ③: NC＋レーザー -->
+      <div class="product-card" style="flex: 1;">
+        <div class="badge-popular" style="top: 20px; right: 20px; position: absolute; background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px;">付加価値</div>
+        <div class="pill pill-accent mb-16">③ NC加工 ＋ レーザー刻印</div>
+        <div class="headline-s mb-8">プレミアム</div>
+        <p class="body-s mb-16">V溝の立体感にレーザーの精密さを重ねた<br>最上位表現。</p>
         <div class="flex-1"></div>
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
@@ -1807,32 +1834,10 @@
           </div>
         </div>
         <ul class="feature-list">
-          <li>Phase 1の全内容 +</li>
-          <li>Webアプリで誕生データ入力</li>
-          <li>個別パターンのレーザー刻印</li>
-          <li style="color: var(--orange);">🏷 ギフトパッケージ対応（要検討）</li>
-          <li style="color: var(--orange);">🏷 9枚: 収納トレイ or 箱（要検討）</li>
+          <li>V溝の力強い構造 ＋ レーザーの繊細な細部</li>
+          <li>二つの加工の融合による唯一無二の表現</li>
+          <li>テーラーメイド（赤ちゃん固有パターン）</li>
         </ul>
-      </div>
-
-      <!-- Phase 3: サブスク -->
-      <div class="product-card" style="flex: 0.8;">
-        <div class="pill mb-16" style="background: var(--purple-subtle); color: var(--purple);">Phase 3 — サブスク</div>
-        <div class="headline-s mb-8">月額定額</div>
-        <p class="body-s mb-16">成長に合わせて新しい<br>パネルが届く仕組み。</p>
-        <div class="flex-1"></div>
-        <div style="margin-bottom: 16px;">
-          <span class="product-price" style="font-size: 28px;">¥1,980</span>
-          <span class="body-s" style="color: var(--gray-500);"> /月</span>
-        </div>
-        <ul class="feature-list">
-          <li style="color: var(--orange);">🏷 仮: 月1枚新パターン配送</li>
-          <li style="color: var(--orange);">🏷 仮: Webアプリ全機能開放</li>
-          <li style="color: var(--orange);">🏷 仮: 最低契約期間の設定</li>
-        </ul>
-        <div style="margin-top: 12px; padding: 8px 12px; background: rgba(255,149,0,0.06); border-radius: 8px;">
-          <span style="font-size: 11px; color: var(--orange);">⚠ Phase 3の詳細設計は要検討</span>
-        </div>
       </div>
     </div>
 
@@ -1852,34 +1857,44 @@
   <div class="slide-inner">
     <div class="tag">数字</div>
     <h2 class="headline-l" style="margin-bottom: 6px;">コストと価格の設計</h2>
-    <p class="body-s" style="margin-bottom: 20px; color: var(--gray-500);">事業収支シミュレーション v1 ベース ｜ 単位: 1枚あたり（70×70×15mm）</p>
+    <p class="body-s" style="margin-bottom: 20px; color: var(--gray-500);">加工モード別原価試算 ｜ 単位: 1枚あたり（70×70×15mm）</p>
 
     <div style="display: flex; gap: 32px; flex: 1;">
-      <!-- LEFT: 製造原価 Phase比較 -->
-      <div style="flex: 1.2;">
+      <!-- LEFT: 製造原価 加工モード比較 -->
+      <div style="flex: 1.4;">
         <div class="headline-s mb-16" style="color: var(--gray-700);">製造原価（松森工房）</div>
 
         <table class="cost-table" style="margin-bottom: 12px;">
           <thead>
             <tr>
               <th>工程</th>
-              <th style="text-align: right;">Phase 1<br><span style="font-weight: 400; text-transform: none;">完成品</span></th>
-              <th style="text-align: right;">Phase 2<br><span style="font-weight: 400; text-transform: none;">テーラーメイド</span></th>
+              <th style="text-align: right; color: #007aff;">① レーザー</th>
+              <th style="text-align: right; color: #2d8a4e;">② NC</th>
+              <th style="text-align: right; color: var(--accent);">③ NC＋レーザー</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>木材費（樹種により変動）</td>
               <td style="text-align: right;">¥35〜54</td>
-              <td style="text-align: right;">¥54</td>
+              <td style="text-align: right;">¥35〜54</td>
+              <td style="text-align: right;">¥35〜54</td>
             </tr>
             <tr>
               <td>NC加工費<br><span class="caption">5,500円/h × 7分/枚（消耗品・設備費込み）</span></td>
+              <td style="text-align: right; color: var(--gray-400);">—</td>
               <td style="text-align: right;">¥642</td>
               <td style="text-align: right;">¥642</td>
             </tr>
             <tr>
-              <td>研磨・仕上げ<br><span class="caption">しらたき工房委託（暫定）</span></td>
+              <td>レーザー刻印費<br><span class="caption">5-7分/枚 × 5,000円/h</span></td>
+              <td style="text-align: right;">¥500</td>
+              <td style="text-align: right; color: var(--gray-400);">—</td>
+              <td style="text-align: right;">¥500</td>
+            </tr>
+            <tr>
+              <td>研磨・仕上げ</td>
+              <td style="text-align: right;">¥100</td>
               <td style="text-align: right;">¥100</td>
               <td style="text-align: right;">¥100</td>
             </tr>
@@ -1887,16 +1902,13 @@
               <td>オイル塗装材料</td>
               <td style="text-align: right;">¥100</td>
               <td style="text-align: right;">¥100</td>
-            </tr>
-            <tr>
-              <td>レーザー刻印費<br><span class="caption">5-7分/枚 × 5,000円/h</span></td>
-              <td style="text-align: right; color: var(--gray-400);">—</td>
-              <td style="text-align: right;">¥500</td>
+              <td style="text-align: right;">¥100</td>
             </tr>
             <tr class="total-row">
               <td>合計原価 / 枚</td>
-              <td style="text-align: right;">¥877〜896</td>
-              <td style="text-align: right;">¥1,396</td>
+              <td style="text-align: right; color: #007aff;">¥735〜754</td>
+              <td style="text-align: right; color: #2d8a4e;">¥877〜896</td>
+              <td style="text-align: right; color: var(--accent);">¥1,377〜1,396</td>
             </tr>
           </tbody>
         </table>
@@ -1913,62 +1925,68 @@
       <div style="flex: 1;">
         <div class="headline-s mb-16" style="color: var(--gray-700);">販売価格（消費者向け）</div>
 
-        <!-- Phase 1 -->
-        <div style="margin-bottom: 20px;">
-          <div style="font-size: 13px; font-weight: 600; color: #2d8a4e; margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 1 — 完成品販売</div>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
+        <!-- ①レーザー -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #007aff; margin-bottom: 6px; letter-spacing: 0.05em;">① レーザー刻印のみ</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(0,122,255,0.06); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">単品（1枚）</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,500<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約51%</span></span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥5,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利46%</span></span>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(0,122,255,0.06); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">3枚セット</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥4,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約47%</span></span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--gray-100); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥16,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Phase 2 -->
-        <div style="margin-bottom: 20px;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 2 — テーラーメイド</div>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">単品（1枚）</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥2,800<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">3枚セット</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥8,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利48%</span></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--accent-subtle); border-radius: 8px;">
-              <span style="font-size: 14px; font-weight: 500;">9枚コンプリート</span>
-              <span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;">¥25,000<span style="font-size: 12px; font-weight: 400; color: var(--gray-500);"> 粗利50%</span></span>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(0,122,255,0.06); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">9枚コンプリート</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥13,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約43%</span></span>
             </div>
           </div>
         </div>
 
-        <!-- Phase 3 -->
-        <div>
-          <div style="font-size: 13px; font-weight: 600; color: var(--purple); margin-bottom: 8px; letter-spacing: 0.05em;">PHASE 3 — サブスクリプション</div>
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--purple-subtle); border-radius: 8px;">
-            <span style="font-size: 14px; font-weight: 500;">月額</span>
-            <span style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,980<span style="font-size: 13px; font-weight: 400; color: var(--gray-500);"> /月</span></span>
+        <!-- ②NC -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #2d8a4e; margin-bottom: 6px; letter-spacing: 0.05em;">② V溝NC加工のみ</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(45,138,78,0.07); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">単品（1枚）</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥1,800<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約50%</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(45,138,78,0.07); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">3枚セット</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥5,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約46%</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(45,138,78,0.07); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">9枚コンプリート</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥16,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約50%</span></span>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top: 16px; padding: 10px 14px; background: rgba(52,199,89,0.06); border: 1px solid rgba(52,199,89,0.15); border-radius: 8px;">
-          <div class="caption" style="color: var(--green); font-weight: 500;">投資回収期間: 約7.8ヶ月（シミュレーション値）</div>
+        <!-- ③NC＋レーザー -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 6px; letter-spacing: 0.05em;">③ NC加工 ＋ レーザー刻印</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">単品（1枚）</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥2,800<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約50%</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">3枚セット</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥8,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約48%</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--accent-subtle); border-radius: 8px;">
+              <span style="font-size: 13px; font-weight: 500;">9枚コンプリート</span>
+              <span style="font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;">¥25,000<span style="font-size: 11px; font-weight: 400; color: var(--gray-500);"> 粗利約50%</span></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div style="margin-top: 12px; padding: 12px 20px; background: var(--gray-100); border-radius: 10px; display: flex; gap: 24px;">
       <span class="body-s" style="color: var(--gray-600);">📌 販売価格は叩き台（原価ベース試算・MTGで議論）</span>
-      <span class="body-s" style="color: var(--gray-600);">📌 Phase 1→2 の差額¥500 = レーザー刻印の付加価値</span>
+      <span class="body-s" style="color: var(--gray-600);">📌 ①→③の差額は加工工程の追加分。お客様がお好みの加工を選べる</span>
     </div>
   </div>
   <div class="slide-footer">
@@ -2000,7 +2018,7 @@
           </div>
           <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
             既製パターン × 9樹種<br>
-            NC加工＋研磨＋オイル仕上げ
+            3加工モードから選択
           </div>
           <ul class="phase-items" style="flex: 1; font-size: 12px;">
             <li>単品・3枚・9枚コンプリート</li>
@@ -2008,7 +2026,7 @@
             <li>イベント・WS出展</li>
           </ul>
           <div style="padding: 6px 10px; background: rgba(45,138,78,0.08); border-radius: 8px; margin-top: 6px;">
-            <span style="font-size: 11px; color: #2d8a4e; font-weight: 600;">原価 ¥877/枚</span>
+            <span style="font-size: 11px; color: #2d8a4e; font-weight: 600;">原価 ¥735〜1,396/枚</span>
           </div>
         </div>
       </div>
@@ -2025,7 +2043,7 @@
           </div>
           <div style="font-size: 12px; color: var(--gray-700); line-height: 1.6; margin-bottom: 8px;">
             赤ちゃん固有のパターンを<br>
-            Webアプリで生成 → レーザー刻印
+            Webアプリで生成 → 3加工モード選択
           </div>
           <ul class="phase-items" style="flex: 1; font-size: 12px;">
             <li>誕生データ → 固有パターン生成</li>
