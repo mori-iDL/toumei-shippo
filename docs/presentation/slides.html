@@ -648,6 +648,36 @@
     border-radius: 3px;
     background: linear-gradient(90deg, #2d8a4e 50%, var(--accent) 50%);
   }
+
+  /* ===== PRINT / PDF ===== */
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+  @media print {
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      background: none;
+      margin: 0;
+      padding: 0;
+    }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      margin: 0;
+      box-shadow: none;
+      page-break-after: always;
+      page-break-inside: avoid;
+      break-after: page;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+    .slide:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1893,7 +1923,7 @@
               <td style="text-align: right;">¥500</td>
             </tr>
             <tr>
-              <td>研磨・仕上げ</td>
+              <td>研磨・仕上げ<br><span class="caption">しらたき工房委託（B型事業所・約5分/枚・¥1,200/h相当）</span></td>
               <td style="text-align: right;">¥100</td>
               <td style="text-align: right;">¥100</td>
               <td style="text-align: right;">¥100</td>
@@ -2325,8 +2355,7 @@
         <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
           <li class="body-s"><span style="color: var(--orange);">→</span> モバイル対応（スマホで操作体験を届ける）</li>
           <li class="body-s"><span style="color: var(--orange);">→</span> 加工データ出力の最適化（NC加工の効率化）</li>
-          <li class="body-s"><span style="color: var(--orange);">→</span> EC基盤の構築（Shopify）</li>
-          <li class="body-s"><span style="color: var(--orange);">→</span> デザイン要件定義（阿部さんとご一緒に）</li>
+          <li class="body-s"><span style="color: var(--orange);">→</span> デザイン要件定義</li>
         </ul>
       </div>
     </div>
@@ -2443,7 +2472,7 @@
           も一緒に考えたいです。
         </div>
         <div style="margin-top: 16px; padding: 10px 14px; background: rgba(45,138,78,0.06); border-radius: 8px;">
-          <span class="body-s" style="color: #2d8a4e;">新田さんの「1万円以下」の<br>方向性をベースに考えています</span>
+          <span class="body-s" style="color: #2d8a4e;">新田さんが目指す価格との調整</span>
         </div>
       </div>
 
@@ -2469,7 +2498,7 @@
     </div>
 
     <div style="text-align: center; margin-top: auto; padding-top: 20px;">
-      <p class="body-l" style="color: var(--gray-500);">今日すべて決まらなくても大丈夫です。方向性を揃えることを大切にしましょう。</p>
+      <p class="body-l" style="color: var(--gray-500);"></p>
     </div>
   </div>
   <div class="slide-footer">

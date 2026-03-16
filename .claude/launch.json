@@ -12,6 +12,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8766", "-d", "/Users/matsumorimasahito/Projects/Toumei-Shippo/docs/visualize"],
       "port": 8766
+    },
+    {
+      "name": "slides",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8767", "-d", "/Users/matsumorimasahito/Projects/Toumei-Shippo/docs/presentation"],
+      "port": 8767
     }
   ]
 }
