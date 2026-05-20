@@ -325,21 +325,20 @@
 
     .compare {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       overflow: hidden;
-      background: var(--surface);
+      background: var(--line);
       box-shadow: var(--shadow);
     }
 
     .tool {
       padding: 16px;
-      border-left: 1px solid var(--line);
       min-height: 160px;
+      background: var(--surface);
     }
-
-    .tool:first-child { border-left: 0; }
 
     .tool h3 {
       margin: 0 0 8px;
@@ -467,17 +466,24 @@
       }
 
       .tool {
-        border-left: 0;
-        border-top: 1px solid var(--line);
+        min-height: 0;
       }
-
-      .tool:first-child { border-top: 0; }
     }
 
     @media (max-width: 560px) {
       .page {
         width: min(100% - 24px, 1180px);
         padding-top: 14px;
+      }
+
+      .section-head {
+        display: grid;
+        gap: 8px;
+        align-items: start;
+      }
+
+      .section-note {
+        max-width: none;
       }
 
       .status-strip {
@@ -504,7 +510,7 @@
         <div class="eyebrow"><span class="dot"></span> direction prototype / client preview</div>
         <h1>葉形と模様を、顧客入力から製造までつなぐ。</h1>
         <p class="lead">
-          とうめいしっぽの生成模様プロトタイプを、チームで判断しやすいように図解した共有ページです。完成仕様ではなく、どのサンプルを加工し、どの導線を本実装へ進めるかを揃えるための地図です。
+          とうめいしっぽの生成模様プロトタイプを、チームで判断しやすいように図解した共有ページです。葉形の試作へ進む前に、外形だけでなく模様・加工方法・見積もり導線までを一度そろえて確認するための地図です。
         </p>
       </div>
       <aside class="summary-box">
@@ -521,13 +527,38 @@
     <section class="section">
       <div class="section-head">
         <h2>今日共有したい判断材料</h2>
-        <p class="section-note">葉形の外形だけではなく、顧客情報、文様生成、加工方言、管理者製造データまでを一つの流れとして見る。</p>
+        <p class="section-note">新田さんからの葉形要望に対して、外形形状だけを先に切るのではなく、模様と加工を統合した方向性として確認する。</p>
       </div>
       <div class="status-strip">
         <div class="status"><span>1 / 方向性</span><strong>葉形ポイント柄と正方形総柄を比較</strong></div>
         <div class="status"><span>2 / 生成</span><strong>個人情報由来の生成IDで模様が変化</strong></div>
-        <div class="status"><span>3 / 加工</span><strong>Laser / NC / Hybridを別データ思想で扱う</strong></div>
-        <div class="status"><span>4 / 次</span><strong>試作加工して視認性と安全性を検証</strong></div>
+        <div class="status"><span>3 / 見積</span><strong>加工時間から概算単価を見にいく</strong></div>
+        <div class="status"><span>4 / 次</span><strong>試作加工して視認性・安全性・価格感を検証</strong></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>共有時の前提</h2>
+        <p class="section-note">くどい説明ではなく、最初にこの3点だけ共有できれば議論の向きが揃う。</p>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>まず確認したいこと</h3>
+          <ul class="checklist">
+            <li><span class="mark">1</span><span>葉形は新しい要望なので、外形だけでなく模様と一体で判断したい。</span></li>
+            <li><span class="mark">2</span><span>この画面は完成品ではなく、加工サンプルを選ぶための方向性確認。</span></li>
+            <li><span class="mark">3</span><span>葉形ポイント柄と正方形総柄を比較し、次に作る試作品を絞る。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>価格確認への道筋</h3>
+          <ul class="checklist">
+            <li><span class="mark next">1</span><span>サンプル用SVG / DXFを出し、Fusion等に読み込む。</span></li>
+            <li><span class="mark next">2</span><span>NCツールパスで加工時間をシミュレーションする。</span></li>
+            <li><span class="mark next">3</span><span>加工時間、材料、研磨、仕上げを合わせて概算単価を出す。</span></li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -560,7 +591,7 @@
           <div class="lane-content">
             <div class="node making"><small>admin</small><h3>管理者確認</h3><p>葉形、正方形、樹種、加工方言、密度、余白を確認する。</p></div>
             <div class="node making"><small>svg</small><h3>SVG / DXF</h3><p>Laser、NC、Hybridで同じ線を使い回さず、加工ごとのデータへ分ける。</p></div>
-            <div class="node making"><small>layout</small><h3>75 x 900 板取り</h3><p>工房側だけで扱う配置確認。顧客に見せる必要はない。</p></div>
+            <div class="node making"><small>cam</small><h3>Fusionで概算</h3><p>ツールパスと加工時間を見て、葉形追加による単価影響を確認する。</p></div>
             <div class="node making"><small>test</small><h3>試作加工</h3><p>線幅、溝深さ、研磨後の残り、手触り、安全Rを現物で見る。</p></div>
           </div>
         </div>
@@ -568,7 +599,7 @@
           <div class="lane-title">チーム判断</div>
           <div class="lane-content">
             <div class="node team"><small>share</small><h3>URL共有</h3><p>新田さん、阿部さん、内藤さんへ、方向性確認用として共有する。</p></div>
-            <div class="node team"><small>decide</small><h3>優先試作を選ぶ</h3><p>葉形NC、正方形Laser、正方形Hybridなど、目的別に絞る。</p></div>
+            <div class="node team"><small>decide</small><h3>優先試作を選ぶ</h3><p>葉形の形状確認と価格感も含め、目的別に2〜3案へ絞る。</p></div>
             <div class="node team"><small>photo</small><h3>撮影する</h3><p>クラウドファンディングに必要な実物写真と説明素材を集める。</p></div>
             <div class="node team"><small>cf</small><h3>CFへ進める</h3><p>公開可能な思想と、隠すべき製造ノウハウを分けて情報整理する。</p></div>
           </div>
@@ -600,6 +631,7 @@
           <h3>葉形はポイント柄、正方形は総柄。</h3>
           <p>葉形は余白と手触りを活かし、中心に一つの紋として成立させる。正方形は上下左右の偏りを抑え、端で切れても続きが読める総柄として扱う。</p>
           <p>Laserは細密な焼き色、NCは60度Vビットで読める太さと間隔、HybridはNCの触感骨格とLaserの細部を分離する。</p>
+          <p>次はこの中から試作用データを出し、加工時間と見た目の両方で判断する。</p>
           <div class="links">
             <a class="link-button" href="../prototypes/stitch-grammar-v02-pilot.html?b=61880d5-2">生成模様 v0.4.7 を開く</a>
             <a class="link-button" href="#tools">ツール方針を見る</a>
@@ -629,7 +661,7 @@
             <li><span class="mark next">1</span><span>Google Forms / Sheetsで、同意つき顧客入力と管理表を設計する。</span></li>
             <li><span class="mark next">2</span><span>Notionに共有URL、判断、未決事項、試作候補を集約する。</span></li>
             <li><span class="mark next">3</span><span>SVG / DXF / CAM出力を、Laser用、NC用、Hybrid用に分けて設計する。</span></li>
-            <li><span class="mark next">4</span><span>試作加工で、視認性、安全R、研磨後の溝残りを確認する。</span></li>
+            <li><span class="mark next">4</span><span>Fusion等で加工時間を見て、概算見積もりの根拠を作る。</span></li>
           </ul>
         </div>
       </div>
@@ -638,7 +670,7 @@
     <section class="section" id="tools">
       <div class="section-head">
         <h2>ツール方針</h2>
-        <p class="section-note">MiroやFigmaは有効。ただし今は、共有URLで見られるHTML図解とNotionハブを先に固める。</p>
+        <p class="section-note">アプリ生成だけで終わらせず、木工・デザインの実務ツールへ接続できる流れを目指す。</p>
       </div>
       <div class="compare">
         <div class="tool">
@@ -654,7 +686,17 @@
         <div class="tool">
           <h3>HTML図解</h3>
           <p>非エンジニア向けに、URLだけで共有できる説明資料。</p>
-          <span class="badge primary">今日作る</span>
+          <span class="badge primary">共有用</span>
+        </div>
+        <div class="tool">
+          <h3>Fusion</h3>
+          <p>SVG/DXFからツールパス、加工時間、概算見積もりへつなぐ。</p>
+          <span class="badge primary">次段階</span>
+        </div>
+        <div class="tool">
+          <h3>Rhino / Grasshopper</h3>
+          <p>生成ルールと形状制約を本格的なパラメトリック設計へ拡張する。</p>
+          <span class="badge">構想</span>
         </div>
         <div class="tool">
           <h3>Miro</h3>
@@ -678,9 +720,9 @@
         <div class="panel">
           <h3>短期</h3>
           <ul class="checklist">
-            <li><span class="mark next">1</span><span>チームにURLを共有し、葉形と正方形のどちらを優先試作するか決める。</span></li>
+            <li><span class="mark next">1</span><span>チームにURLを共有し、葉形外形と模様の統合方向を確認する。</span></li>
             <li><span class="mark next">2</span><span>Google Forms / Sheetsの項目案を作り、個人情報管理の説明文を整理する。</span></li>
-            <li><span class="mark next">3</span><span>NC試作では線幅、中心間隔、溝深さ、研磨後の見え方を重点確認する。</span></li>
+            <li><span class="mark next">3</span><span>Fusionで加工時間を見て、葉形追加による概算単価を整理する。</span></li>
           </ul>
         </div>
         <div class="panel">
@@ -688,12 +730,12 @@
           <ul class="checklist">
             <li><span class="mark later">1</span><span>加工済みサンプルを撮影し、クラウドファンディング用の説明素材へ展開する。</span></li>
             <li><span class="mark later">2</span><span>管理者アプリでSVG / DXF / CAM / 75 x 900板取りを扱えるようにする。</span></li>
-            <li><span class="mark later">3</span><span>必要に応じてFigmaでUI設計、Miroでチームワークショップへ展開する。</span></li>
+            <li><span class="mark later">3</span><span>Rhino / GrasshopperやFusionと接続し、生成から製造までの実践的な設計ワークフローへ拡張する。</span></li>
           </ul>
         </div>
       </div>
       <p class="warning">
-        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。
+        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。加工時間と概算単価は、サンプルデータ作成後のCAM検証で確認します。
       </p>
     </section>
 
