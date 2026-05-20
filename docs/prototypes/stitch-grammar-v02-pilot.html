@@ -319,6 +319,8 @@
 
     .footer {
       display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
       color: var(--muted);
@@ -331,6 +333,7 @@
       border: 1px solid rgba(126, 111, 89, 0.18);
       border-radius: 5px;
       padding: 2px 5px;
+      word-break: break-all;
     }
 
     @media (max-width: 920px) {
@@ -373,6 +376,15 @@
 
       .segmented {
         grid-template-columns: 1fr;
+      }
+
+      .footer {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .tool-button {
+        width: 100%;
       }
     }
   </style>
