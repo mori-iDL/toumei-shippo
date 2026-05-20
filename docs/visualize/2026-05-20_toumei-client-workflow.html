@@ -221,7 +221,7 @@
 
     .lane-content {
       display: grid;
-      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 12px;
       padding: 16px;
       overflow-x: auto;
@@ -369,7 +369,7 @@
 
     .product-preview {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: minmax(360px, 0.95fr) 1fr;
       gap: 20px;
       align-items: center;
       border: 1px solid var(--line);
@@ -377,6 +377,12 @@
       border-radius: var(--radius);
       padding: 20px;
       box-shadow: var(--shadow);
+    }
+
+    .preview-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .sample-board {
@@ -502,6 +508,13 @@
       border-bottom: 0;
     }
 
+    .estimate-table.price-table th:not(:first-child),
+    .estimate-table.price-table td:not(:first-child) {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
     .estimate-table td:nth-child(3),
     .estimate-table td:nth-child(4),
     .estimate-table td:nth-child(5) {
@@ -578,8 +591,14 @@
         grid-template-columns: 1fr;
       }
 
+      .preview-pair {
+        grid-template-columns: 1fr;
+      }
+
       .lane-content {
-        grid-template-columns: repeat(4, 210px);
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 210px;
       }
     }
 
@@ -620,7 +639,7 @@
       <div class="status-strip">
         <div class="status"><span>1 / 方向性</span><strong>葉形ポイント柄と正方形総柄を比較</strong></div>
         <div class="status"><span>2 / 生成</span><strong>個人情報由来の生成IDで模様が変化</strong></div>
-        <div class="status"><span>3 / 見積</span><strong>材料・加工・諸経費を分けて概算</strong></div>
+        <div class="status"><span>3 / 見積</span><strong>1個あたり概算単価まで表示</strong></div>
         <div class="status"><span>4 / 次</span><strong>試作加工して視認性・安全性・価格感を検証</strong></div>
       </div>
     </section>
@@ -726,9 +745,81 @@
           </tbody>
         </table>
       </div>
-      <p class="cost-note">
-        単価根拠: Notion「松森木工所 加工費単価の正式共有」。ここでは加工機の稼働時間だけを概算し、材料、研磨、仕上げ、治具、タブ、刃物交換、検品、梱包、設計工数、段取り按分は含めない。Shinx 4-5軸単価で見る場合はNC部分が上振れする。
+      <p class="warning">
+        この金額は現時点の概算です。正式見積ではありません。塗装、初回治具、試作開発費、撮影、印刷物、パッケージ、配送、消費税は含みません。
       </p>
+      <p class="cost-note">
+        加工単価は社内加工単価をもとにした概算です。この表では加工機の稼働時間だけを示しており、下の「1個あたり概算単価」では材料、研磨/サンドブラスト、データ作成、外形仕上げ、検品梱包、消耗品、諸経費を仮反映しています。Shinx 4-5軸単価で見る場合はNC部分が上振れします。
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>1個あたり概算単価 税別</h2>
+        <p class="section-note">900mm材・9個取りを主計算にし、材料グループと加工バリエーションの組み合わせで見えるようにした仮単価です。</p>
+      </div>
+      <p class="warning">
+        この金額は現時点の概算です。正式見積ではありません。塗装、初回治具、試作開発費、撮影、印刷物、パッケージ、配送、消費税は含みません。
+      </p>
+      <div class="table-wrap">
+        <table class="estimate-table price-table">
+          <thead>
+            <tr>
+              <th>材料グループ</th>
+              <th>Square / Laser</th>
+              <th>Leaf / NC V-bit</th>
+              <th>Square / NC</th>
+              <th>Hybrid</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>スギ / アカマツ / カラマツ</td>
+              <td>約¥1,350</td>
+              <td>約¥1,450〜1,600</td>
+              <td>約¥1,600〜1,800</td>
+              <td>約¥1,750〜2,000</td>
+            </tr>
+            <tr>
+              <td>クリ / ケヤキ</td>
+              <td>約¥1,400</td>
+              <td>約¥1,500〜1,600</td>
+              <td>約¥1,600〜1,850</td>
+              <td>約¥1,750〜2,000</td>
+            </tr>
+            <tr>
+              <td>ナラ / ヤマザクラ / オニグルミ / イタヤカエデ</td>
+              <td>約¥1,400</td>
+              <td>約¥1,500〜1,600</td>
+              <td>約¥1,600〜1,850</td>
+              <td>約¥1,750〜2,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cost-note">
+        材料・加工・研磨/サンドブラスト・データ作成・外形仕上げ・検品梱包・消耗品・諸経費を含む。塗装、初回治具、試作開発費、撮影、デザイン制作、配送、消費税は別。税込は税別 × 1.10 を目安にする。
+      </p>
+      <div class="split" style="margin-top: 16px;">
+        <div class="panel">
+          <h3>単価に仮反映したもの</h3>
+          <ul class="checklist">
+            <li><span class="mark">1</span><span>材料: 900mm材・9個取り、送料別、材料ロス15%、材料掛け35%。</span></li>
+            <li><span class="mark">2</span><span>加工: 初回シミュレーション時間に安全率1.25を反映済み。</span></li>
+            <li><span class="mark">3</span><span>研磨/サンドブラスト: [仮] 5分/個 × ¥4,000/h。</span></li>
+            <li><span class="mark">4</span><span>データ/CAM: 顧客ごとに異なるため [仮] 5分/個 × ¥4,000/h。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>追加前提</h3>
+          <ul class="checklist">
+            <li><span class="mark next">1</span><span>外形仕上げ: 残り厚さ1mmをハンドトリマーで切削 [仮] 2分/個。</span></li>
+            <li><span class="mark next">2</span><span>検品・簡易梱包: [仮] 2分/個。新田さんへ渡す簡易包装想定。</span></li>
+            <li><span class="mark next">3</span><span>消耗品: 刃物摩耗・レーザー消耗品として [仮] ¥100/個。</span></li>
+            <li><span class="mark next">4</span><span>諸経費: 小計 × 10%。塗装は含まない。</span></li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section class="section">
@@ -740,10 +831,10 @@
         <div class="panel">
           <h3>量産単価の基本式</h3>
           <ul class="checklist">
-            <li><span class="mark">1</span><span>材料費 = 坪単価 ÷ 取数。送料、材料ロス10〜20%、材料掛けは正式見積で加える。</span></li>
-            <li><span class="mark">2</span><span>加工費 = 加工時間 ÷ 60 × 時間単価。LaserとNCは別単価で見る。</span></li>
-            <li><span class="mark">3</span><span>仕上げ・検品・梱包 = [仮] 手作業時間/個 × ¥4,000/h。研磨量と梱包仕様で更新する。</span></li>
-            <li><span class="mark">4</span><span>諸経費 = 小計 × 10%。最後に消費税を分けて表示する。</span></li>
+            <li><span class="mark">1</span><span>材料費 = 坪単価 ÷ 取数。主計算は900mm材・9個取り、送料別、ロス15%、材料掛け35%。</span></li>
+            <li><span class="mark">2</span><span>加工費 = 加工時間 ÷ 60 × 時間単価。シミュレーション時間に安全率1.25を掛ける。</span></li>
+            <li><span class="mark">3</span><span>研磨/サンドブラスト = [仮] 5分/個 × ¥4,000/h。塗装は含まない。</span></li>
+            <li><span class="mark">4</span><span>データ/CAM、外形仕上げ、検品・簡易梱包、消耗品を加え、諸経費10%と消費税を分けて表示する。</span></li>
           </ul>
         </div>
         <div class="panel">
@@ -751,7 +842,7 @@
           <ul class="checklist">
             <li><span class="mark next">1</span><span>初回試作用のデータ作成、CAM調整、テストカットは試作開発費として別建て。</span></li>
             <li><span class="mark next">2</span><span>治具製作や量産前の条件出しは、数量確定後に按分または別項目化する。</span></li>
-            <li><span class="mark next">3</span><span>材料費は1個あたり数十円台なので、価格差の主因は加工、仕上げ、検品、梱包、試作調整になる。</span></li>
+            <li><span class="mark next">3</span><span>撮影、チラシ、説明カード、パッケージ、販路開拓、クラウドファンディング準備は別建て。</span></li>
           </ul>
         </div>
       </div>
@@ -794,6 +885,9 @@
       <p class="cost-note">
         材料費計算: 450mm材は96枚/坪 × 5個 = 480個/坪、900mm材は48枚/坪 × 9個 = 432個/坪。PDFは送料別途。正式見積では送料按分、材料ロス、材料掛け、仕上げ仕様を加える。
       </p>
+      <p class="cost-note">
+        研磨工程は、初期見積では手作業研磨またはサンドブラストを同じ5分/個で仮置きする。しらたき工房さんとの地域連携は社会的価値のある候補だが、初回試作では品質、納期、安全性、検品基準を優先し、プロ仕上げまたはサンドブラストで比較する。
+      </p>
     </section>
 
     <section class="section">
@@ -832,10 +926,12 @@
         <div class="lane">
           <div class="lane-title">チーム判断</div>
           <div class="lane-content">
-            <div class="node team"><small>share</small><h3>URL共有</h3><p>新田さん、阿部さん、内藤さんへ、方向性確認用として共有する。</p></div>
-            <div class="node team"><small>decide</small><h3>優先試作を選ぶ</h3><p>葉形の形状確認と価格感も含め、目的別に2〜3案へ絞る。</p></div>
-            <div class="node team"><small>photo</small><h3>撮影する</h3><p>クラウドファンディングに必要な実物写真と説明素材を集める。</p></div>
-            <div class="node team"><small>cf</small><h3>CFへ進める</h3><p>公開可能な思想と、隠すべき製造ノウハウを分けて情報整理する。</p></div>
+            <div class="node team"><small>share</small><h3>方向性承認</h3><p>このアプリの方向性で進めてよいかを確認する。</p></div>
+            <div class="node team"><small>decide</small><h3>優先試作決定</h3><p>葉形と正方形、LaserとNCから、目的別に2〜3案へ絞る。</p></div>
+            <div class="node team"><small>test</small><h3>試作加工・見積更新</h3><p>現物の見え方、手触り、加工時間を反映して概算を更新する。</p></div>
+            <div class="node team"><small>photo</small><h3>撮影</h3><p>クラウドファンディングや提案資料に使える実物写真を撮る。</p></div>
+            <div class="node team"><small>design</small><h3>チラシ / 説明カード / パッケージ</h3><p>商品に添える説明や売り場で伝える言葉を検討する。</p></div>
+            <div class="node team"><small>cf</small><h3>販路・CF準備</h3><p>公開する思想と、内部に残す製造ノウハウを分けて整理する。</p></div>
           </div>
         </div>
       </div>
@@ -847,19 +943,39 @@
         <p class="section-note">「こぎん刺しの丸写し」ではなく、構造を学んだうえで木製玩具の条件へ翻訳していることを明確にする。</p>
       </div>
       <div class="product-preview">
-        <div class="sample-board">
-          <svg viewBox="0 0 100 100" role="img" aria-label="葉形ポイント柄と正方形総柄の概念図">
-            <rect x="7" y="7" width="86" height="86" rx="9" fill="#d1ad79" stroke="#8d6a3f" stroke-width="1"/>
-            <path d="M50 12 C68 15 80 34 77 55 C74 75 58 88 50 91 C42 88 26 75 23 55 C20 34 32 15 50 12 Z" fill="#8f744d" stroke="#5f472b" stroke-width="1.2"/>
-            <path d="M50 20 L50 82" stroke="#6f8055" stroke-width="0.7" stroke-dasharray="4 4"/>
-            <g stroke-linecap="round" stroke-width="2.4">
-              <path d="M42 31 H58" stroke="#2f6f8f"/>
-              <path d="M34 43 H45 M55 43 H66" stroke="#5b93a7"/>
-              <path d="M29 55 H40 M45 55 H55 M60 55 H71" stroke="#2f6f8f"/>
-              <path d="M34 67 H45 M55 67 H66" stroke="#5b93a7"/>
-              <path d="M42 79 H58" stroke="#2f6f8f"/>
-            </g>
-          </svg>
+        <div class="preview-pair">
+          <div class="sample-board">
+            <svg viewBox="0 0 100 100" role="img" aria-label="葉形ポイント柄の概念図">
+              <rect x="7" y="7" width="86" height="86" rx="9" fill="#d1ad79" stroke="#8d6a3f" stroke-width="1"/>
+              <path d="M50 12 C68 15 80 34 77 55 C74 75 58 88 50 91 C42 88 26 75 23 55 C20 34 32 15 50 12 Z" fill="#8f744d" stroke="#5f472b" stroke-width="1.2"/>
+              <path d="M50 20 L50 82" stroke="#6f8055" stroke-width="0.7" stroke-dasharray="4 4"/>
+              <g stroke-linecap="round" stroke-width="2.4">
+                <path d="M42 31 H58" stroke="#2f6f8f"/>
+                <path d="M34 43 H45 M55 43 H66" stroke="#5b93a7"/>
+                <path d="M29 55 H40 M45 55 H55 M60 55 H71" stroke="#2f6f8f"/>
+                <path d="M34 67 H45 M55 67 H66" stroke="#5b93a7"/>
+                <path d="M42 79 H58" stroke="#2f6f8f"/>
+              </g>
+            </svg>
+          </div>
+          <div class="sample-board">
+            <svg viewBox="0 0 100 100" role="img" aria-label="正方形総柄の概念図">
+              <rect x="7" y="7" width="86" height="86" rx="9" fill="#d1ad79" stroke="#8d6a3f" stroke-width="1"/>
+              <clipPath id="squarePatternClip">
+                <rect x="13" y="13" width="74" height="74" rx="6"/>
+              </clipPath>
+              <g clip-path="url(#squarePatternClip)" stroke-linecap="round" stroke-width="2.2">
+                <path d="M-2 20 H18 M31 20 H55 M68 20 H102" stroke="#2f6f8f"/>
+                <path d="M9 31 H34 M47 31 H74 M87 31 H111" stroke="#5b93a7"/>
+                <path d="M-7 42 H24 M37 42 H62 M75 42 H106" stroke="#2f6f8f"/>
+                <path d="M13 53 H38 M51 53 H77 M90 53 H116" stroke="#7c6fb0"/>
+                <path d="M-4 64 H22 M35 64 H60 M73 64 H104" stroke="#2f6f8f"/>
+                <path d="M8 75 H34 M47 75 H74 M87 75 H111" stroke="#5b93a7"/>
+                <path d="M-5 86 H18 M31 86 H55 M68 86 H102" stroke="#2f6f8f"/>
+              </g>
+              <rect x="13" y="13" width="74" height="74" rx="6" fill="none" stroke="#5f472b" stroke-width="0.8" opacity="0.55"/>
+            </svg>
+          </div>
         </div>
         <div class="sample-copy">
           <h3>葉形はポイント柄、正方形は総柄。</h3>
@@ -947,6 +1063,31 @@
 
     <section class="section">
       <div class="section-head">
+        <h2>Rhino / Grasshopper が加える価値</h2>
+        <p class="section-note">HTMLアプリだけではなく、プロの設計ツールとつながることで、生成模様を実際に作れるワークフローへ近づける。</p>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>顧客情報を、形と模様へ変換する</h3>
+          <ul class="checklist">
+            <li><span class="mark">1</span><span>名前、出生時刻、天気などの固有情報を、安全な加工制約の中で形状と模様へ変換する。</span></li>
+            <li><span class="mark">2</span><span>葉形外寸70mm、入隅R、線幅、線間隔などの制約を守りながら、個別性を出す。</span></li>
+            <li><span class="mark">3</span><span>意匠、加工、見積、試作までを同じパラメータで管理できることが付加価値になる。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>コモディティ化しない実践性</h3>
+          <ul class="checklist">
+            <li><span class="mark later">1</span><span>単なるアプリ生成ではなく、木工の現場で使うFusionやRhino / Grasshopperへ接続する。</span></li>
+            <li><span class="mark later">2</span><span>モデリング、ポストプロセッサー、NC加工、レーザー加工までを分断しない。</span></li>
+            <li><span class="mark later">3</span><span>まずは試作品を作ることを優先し、接続範囲は段階的に広げる。</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
         <h2>次のロードマップ</h2>
         <p class="section-note">今日の共有から、試作加工、撮影、クラウドファンディングへつなぐ。</p>
       </div>
@@ -955,16 +1096,18 @@
           <h3>短期</h3>
           <ul class="checklist">
             <li><span class="mark next">1</span><span>チームにURLを共有し、葉形外形と模様の統合方向を確認する。</span></li>
-            <li><span class="mark next">2</span><span>Google Forms / Sheetsの項目案を作り、個人情報管理の説明文を整理する。</span></li>
-            <li><span class="mark next">3</span><span>初回加工時間をもとに、葉形追加による概算単価と上振れ条件を整理する。</span></li>
+            <li><span class="mark next">2</span><span>優先試作を決め、加工済みサンプルで視認性、手触り、安全R、研磨後の残りを検証する。</span></li>
+            <li><span class="mark next">3</span><span>実加工時間と仕上げ時間を反映し、1個あたり概算単価を更新する。</span></li>
+            <li><span class="mark next">4</span><span>Google Forms / Sheetsの項目案を作り、個人情報管理の説明文を整理する。</span></li>
           </ul>
         </div>
         <div class="panel">
           <h3>中期</h3>
           <ul class="checklist">
             <li><span class="mark later">1</span><span>加工済みサンプルを撮影し、クラウドファンディング用の説明素材へ展開する。</span></li>
-            <li><span class="mark later">2</span><span>管理者アプリでSVG / DXF / CAM / 75 x 900板取りを扱えるようにする。</span></li>
-            <li><span class="mark later">3</span><span>Rhino / GrasshopperやFusionと接続し、生成から製造までの実践的な設計ワークフローへ拡張する。</span></li>
+            <li><span class="mark later">2</span><span>チラシ、説明カード、パッケージ、販路開拓、クラウドファンディング準備を進める。</span></li>
+            <li><span class="mark later">3</span><span>管理者アプリでSVG / DXF / CAM / 75 x 900板取りを扱えるようにする。</span></li>
+            <li><span class="mark later">4</span><span>Rhino / GrasshopperやFusionと接続し、生成から製造までの実践的な設計ワークフローへ拡張する。</span></li>
           </ul>
         </div>
       </div>
@@ -975,7 +1118,7 @@
 
     <footer class="footer">
       <p>
-        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、Notion「松森木工所 加工費単価の正式共有」、材料費PDF「とうめいしっぽ様（R7.12.4）」、ローカル共有ブリーフ、生成模様 v0.4.11。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
+        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、社内加工単価、材料費PDF「とうめいしっぽ様（R7.12.4）」、ローカル共有ブリーフ、生成模様 v0.4.11。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
       </p>
       <p>
         参考: <a href="https://support.google.com/docs/answer/2917686?hl=en">Google Docs Editors Help</a> / <a href="https://developers.google.com/apps-script/reference/forms/destination-type">Google Apps Script DestinationType</a>
