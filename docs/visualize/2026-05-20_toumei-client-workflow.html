@@ -2,7 +2,7 @@
 <!--
   とうめいしっぽ クライアント共有ワークフロー図解
   目的: 非エンジニアのチームメンバーに、生成模様プロトタイプと顧客入力/製造管理の全体像を伝える
-  出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認 / CLIENT_PREVIEW_WORKFLOW_BRIEF_2026-05-20.md / 生成模様v0.4.7
+  出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認 / CLIENT_PREVIEW_WORKFLOW_BRIEF_2026-05-20.md / 生成模様v0.4.11 / 加工シミュレーションスクリーンショット
   生成日: 2026-05-20
   /visualize v1.0
 -->
@@ -427,6 +427,94 @@
       text-decoration: none;
     }
 
+    .simulation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .figure-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .figure-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .figure-card figcaption {
+      margin: 0;
+      padding: 12px 14px 14px;
+    }
+
+    .figure-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .figure-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .estimate-table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .estimate-table th,
+    .estimate-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .estimate-table th {
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .estimate-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .estimate-table td:nth-child(3),
+    .estimate-table td:nth-child(4),
+    .estimate-table td:nth-child(5) {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cost-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     .warning {
       border-left: 4px solid var(--warn);
       background: var(--soft-warn);
@@ -445,7 +533,7 @@
     }
 
     @media (max-width: 940px) {
-      .hero, .split, .product-preview {
+      .hero, .split, .product-preview, .simulation-grid {
         grid-template-columns: 1fr;
       }
 
@@ -499,7 +587,7 @@
       body { background: #fff; }
       .page { width: 100%; padding: 0; }
       .link-button { text-decoration: none; }
-      .flow, .panel, .compare, .product-preview, .summary-box { box-shadow: none; }
+      .flow, .panel, .compare, .product-preview, .summary-box, .figure-card, .table-wrap { box-shadow: none; }
     }
   </style>
 </head>
@@ -517,7 +605,7 @@
         <h2>現在地</h2>
         <dl>
           <div><dt>公開</dt><dd>GitHub Pagesで共有可能</dd></div>
-          <div><dt>アプリ</dt><dd>生成模様 v0.4.7</dd></div>
+          <div><dt>アプリ</dt><dd>生成模様 v0.4.11</dd></div>
           <div><dt>Notion</dt><dd>プロジェクトDB配下で進行中</dd></div>
           <div><dt>次回</dt><dd>2026-06-10 MTGへ向けた試作判断</dd></div>
         </dl>
@@ -555,11 +643,92 @@
           <h3>価格確認への道筋</h3>
           <ul class="checklist">
             <li><span class="mark next">1</span><span>サンプル用SVG / DXFを出し、Fusion等に読み込む。</span></li>
-            <li><span class="mark next">2</span><span>NCツールパスで加工時間をシミュレーションする。</span></li>
-            <li><span class="mark next">3</span><span>加工時間、材料、研磨、仕上げを合わせて概算単価を出す。</span></li>
+            <li><span class="mark next">2</span><span>NCとレーザーの初回シミュレーション時間を確認した。</span></li>
+            <li><span class="mark next">3</span><span>加工時間から機械費だけの概算を出し、材料、研磨、仕上げは別途積み上げる。</span></li>
           </ul>
         </div>
       </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>初回加工シミュレーション</h2>
+        <p class="section-note">スクリーンショット時点の読取値です。正式見積ではなく、試作候補を選ぶための概算根拠として扱う。</p>
+      </div>
+      <div class="simulation-grid">
+        <figure class="figure-card">
+          <img src="assets/toumei-sim-laser-square-20260520.png" alt="xTool P2Sで正方形総柄レーザー加工を確認したスクリーンショット">
+          <figcaption>
+            <strong>Square / Laser</strong>
+            <span>xTool P2S 読取: 1分11秒。細線スコアの低負荷比較軸。</span>
+          </figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/toumei-sim-leaf-nc-20260520.png" alt="Fusionで葉形NC加工を確認したスクリーンショット">
+          <figcaption>
+            <strong>Leaf / NC V-bit</strong>
+            <span>Fusion 読取: 1分57秒。葉形外形とV溝の主サンプル。</span>
+          </figcaption>
+        </figure>
+        <figure class="figure-card">
+          <img src="assets/toumei-sim-square-nc-20260520.png" alt="Fusionで正方形Hybrid NC側加工を確認したスクリーンショット">
+          <figcaption>
+            <strong>Square / Hybrid NC側</strong>
+            <span>Fusion 読取: 2分56秒。NC骨格を持つ総柄比較軸。</span>
+          </figcaption>
+        </figure>
+      </div>
+      <div class="table-wrap">
+        <table class="estimate-table">
+          <thead>
+            <tr>
+              <th>候補</th>
+              <th>確認内容</th>
+              <th>読取時間</th>
+              <th>安全率1.25</th>
+              <th>機械費概算</th>
+              <th>単価根拠</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Square / Laser</td>
+              <td>レーザー細線スコア。外形カットや段取りは別。</td>
+              <td>1:11</td>
+              <td>約1.5分</td>
+              <td>約¥130-150</td>
+              <td>xTool P2S ¥5,000-6,000/h</td>
+            </tr>
+            <tr>
+              <td>Leaf / NC V-bit</td>
+              <td>葉形外形とNC V溝。葉形追加による価格影響の本命。</td>
+              <td>1:57</td>
+              <td>約2.5分</td>
+              <td>約¥210-330</td>
+              <td>NC 3軸 ¥5,000-8,000/h</td>
+            </tr>
+            <tr>
+              <td>Square / Hybrid NC側</td>
+              <td>正方形総柄のNC骨格。Laser細部は別工程。</td>
+              <td>2:56</td>
+              <td>約4.0分</td>
+              <td>約¥330-530</td>
+              <td>NC 3軸 ¥5,000-8,000/h</td>
+            </tr>
+            <tr>
+              <td>Hybrid 合算目安</td>
+              <td>NC側にLaser細線を足した場合の機械費だけの目安。</td>
+              <td>2:56 + 1:11</td>
+              <td>約5.5分</td>
+              <td>約¥460-680</td>
+              <td>NC 3軸 + xTool P2S</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cost-note">
+        単価根拠: Notion「松森木工所 加工費単価の正式共有」。ここでは加工機の稼働時間だけを概算し、材料、研磨、仕上げ、治具、タブ、刃物交換、検品、梱包、設計工数、段取り按分は含めない。Shinx 4-5軸単価で見る場合はNC部分が上振れする。
+      </p>
     </section>
 
     <section class="section">
@@ -591,7 +760,7 @@
           <div class="lane-content">
             <div class="node making"><small>admin</small><h3>管理者確認</h3><p>葉形、正方形、樹種、加工方言、密度、余白を確認する。</p></div>
             <div class="node making"><small>svg</small><h3>SVG / DXF</h3><p>Laser、NC、Hybridで同じ線を使い回さず、加工ごとのデータへ分ける。</p></div>
-            <div class="node making"><small>cam</small><h3>Fusionで概算</h3><p>ツールパスと加工時間を見て、葉形追加による単価影響を確認する。</p></div>
+            <div class="node making"><small>cam</small><h3>Fusionで概算</h3><p>初回シミュレーション時間から、機械費だけの概算を算出する。</p></div>
             <div class="node making"><small>test</small><h3>試作加工</h3><p>線幅、溝深さ、研磨後の残り、手触り、安全Rを現物で見る。</p></div>
           </div>
         </div>
@@ -633,7 +802,7 @@
           <p>Laserは細密な焼き色、NCは60度Vビットで読める太さと間隔、HybridはNCの触感骨格とLaserの細部を分離する。</p>
           <p>次はこの中から試作用データを出し、加工時間と見た目の両方で判断する。</p>
           <div class="links">
-            <a class="link-button" href="../prototypes/stitch-grammar-v02-pilot.html?b=c8eeb88-2">生成模様 v0.4.7 を開く</a>
+            <a class="link-button" href="../prototypes/stitch-grammar-v02-pilot.html?b=3475aeb">生成模様 v0.4.11 を開く</a>
             <a class="link-button" href="#tools">ツール方針を見る</a>
           </div>
         </div>
@@ -649,7 +818,7 @@
         <div class="panel">
           <h3>済んだこと</h3>
           <ul class="checklist">
-            <li><span class="mark">1</span><span>生成模様HTMLをGitHub Pagesで共有可能にした。</span></li>
+            <li><span class="mark">1</span><span>生成模様HTMLをGitHub Pagesで共有可能にし、葉形外寸70mm相当へ更新した。</span></li>
             <li><span class="mark">2</span><span>顧客入力モードと管理者確認モードを分けた。</span></li>
             <li><span class="mark">3</span><span>名前、誕生日、出生時刻、出生地、天気、身長、体重、家族の言葉が生成IDと模様に反映されることを確認した。</span></li>
             <li><span class="mark">4</span><span>162通りの操作テストで、表示欠落、線ゼロ、境界崩れ、コンソールエラーがないことを確認した。</span></li>
@@ -661,7 +830,7 @@
             <li><span class="mark next">1</span><span>Google Forms / Sheetsで、同意つき顧客入力と管理表を設計する。</span></li>
             <li><span class="mark next">2</span><span>Notionに共有URL、判断、未決事項、試作候補を集約する。</span></li>
             <li><span class="mark next">3</span><span>SVG / DXF / CAM出力を、Laser用、NC用、Hybrid用に分けて設計する。</span></li>
-            <li><span class="mark next">4</span><span>Fusion等で加工時間を見て、概算見積もりの根拠を作る。</span></li>
+            <li><span class="mark next">4</span><span>シミュレーション時間を、実加工・仕上げ込みの概算見積もりへ更新する。</span></li>
           </ul>
         </div>
       </div>
@@ -722,7 +891,7 @@
           <ul class="checklist">
             <li><span class="mark next">1</span><span>チームにURLを共有し、葉形外形と模様の統合方向を確認する。</span></li>
             <li><span class="mark next">2</span><span>Google Forms / Sheetsの項目案を作り、個人情報管理の説明文を整理する。</span></li>
-            <li><span class="mark next">3</span><span>Fusionで加工時間を見て、葉形追加による概算単価を整理する。</span></li>
+            <li><span class="mark next">3</span><span>初回加工時間をもとに、葉形追加による概算単価と上振れ条件を整理する。</span></li>
           </ul>
         </div>
         <div class="panel">
@@ -735,13 +904,13 @@
         </div>
       </div>
       <p class="warning">
-        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。加工時間と概算単価は、サンプルデータ作成後のCAM検証で確認します。
+        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。加工時間と概算単価は、スクリーンショット時点の初回シミュレーション値であり、実加工、段取り、研磨、仕上げ、検品後に更新します。
       </p>
     </section>
 
     <footer class="footer">
       <p>
-        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、ローカル共有ブリーフ、生成模様 v0.4.7。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
+        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、Notion「松森木工所 加工費単価の正式共有」、ローカル共有ブリーフ、生成模様 v0.4.11。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
       </p>
       <p>
         参考: <a href="https://support.google.com/docs/answer/2917686?hl=en">Google Docs Editors Help</a> / <a href="https://developers.google.com/apps-script/reference/forms/destination-type">Google Apps Script DestinationType</a>
