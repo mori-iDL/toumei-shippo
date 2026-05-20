@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>とうめいしっぽ 刺し文法 v0.4.5 pilot</title>
+  <title>とうめいしっぽ 生成模様 v0.4.6 pilot</title>
   <style>
     :root {
       --ink: #252321;
@@ -98,6 +98,8 @@
 
     input[type="text"],
     input[type="date"],
+    input[type="time"],
+    input[type="number"],
     select {
       width: 100%;
       border: 1px solid var(--line);
@@ -149,6 +151,30 @@
       background: var(--ink);
       color: #fffdf7;
       border-color: var(--ink);
+    }
+
+    .tool-button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .notice {
+      border: 1px solid rgba(126, 111, 89, 0.22);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, 0.72);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      padding: 10px;
+      margin-bottom: 14px;
+    }
+
+    .notice b {
+      color: var(--ink);
+    }
+
+    .hidden {
+      display: none !important;
     }
 
     .metrics {
@@ -354,12 +380,16 @@
 <body>
   <div class="app">
     <aside>
-      <h1>刺し文法 v0.4.5
-        <span class="subtitle">Toumei Shippo proof of grammar</span>
+      <h1>生成模様 v0.4.6
+        <span class="subtitle">Toumei Shippo direction prototype</span>
       </h1>
+      <div class="notice">
+        <b>方向性確認用</b><br>
+        最終仕様・加工データ・安全基準・価格設計を確定するものではありません。表示値はすべてダミーです。
+      </div>
 
       <div class="section">
-        <div class="section-title">入力</div>
+        <div class="section-title">ダミー入力</div>
         <div class="field">
           <label for="name">名前</label>
           <input id="name" type="text" value="ゆいか" autocomplete="off">
@@ -370,9 +400,51 @@
             <input id="birthday" type="date" value="2025-04-15">
           </div>
           <div class="field">
+            <label for="birthTime">出生時刻</label>
+            <input id="birthTime" type="time" value="09:32">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="birthplace">出生地</label>
+            <select id="birthplace">
+              <option value="morioka" selected>盛岡</option>
+              <option value="iwate">岩手県内</option>
+              <option value="tohoku">東北</option>
+              <option value="other">その他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="weather">天気</label>
+            <select id="weather">
+              <option value="sunny">晴れ</option>
+              <option value="cloudy" selected>くもり</option>
+              <option value="rain">雨</option>
+              <option value="snow">雪</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="height">身長 cm</label>
+            <input id="height" type="number" min="35" max="65" step="0.1" value="49.2">
+          </div>
+          <div class="field">
+            <label for="weight">体重 g</label>
+            <input id="weight" type="number" min="1500" max="5000" step="10" value="3120">
+          </div>
+        </div>
+        <div class="field">
             <label for="seedWord">家族の言葉</label>
             <input id="seedWord" type="text" value="はじめての葉" autocomplete="off">
-          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">利用シーン</div>
+        <div class="segmented shape" id="roleButtons">
+          <button type="button" data-role="customer" class="active">顧客入力</button>
+          <button type="button" data-role="admin">管理者確認</button>
         </div>
       </div>
 
@@ -411,7 +483,7 @@
         </div>
       </div>
 
-      <div class="section">
+      <div class="section" id="adminViewSection">
         <div class="section-title">表示</div>
         <div class="segmented shape" id="viewButtons">
           <button type="button" data-view="piece" class="active">単体</button>
@@ -460,6 +532,10 @@
         <div class="status" id="status">grammar proof, not fabrication output</div>
       </div>
 
+      <div class="notice">
+        葉形と模様の関係性を確認するための試作画面です。今後、加工検証・素材確認・安全基準確認・価格設計を経て調整します。
+      </div>
+
       <section class="stage">
         <div class="svg-pane">
           <div id="preview"></div>
@@ -485,6 +561,7 @@
       shape: 'leaf',
       species: 'onigurumi',
       rhythm: 'odd',
+      role: 'customer',
       view: 'piece'
     };
 
@@ -737,14 +814,19 @@
     function readInputs() {
       const name = $('name').value.trim() || 'あかり';
       const birthday = $('birthday').value || '2025-06-15';
+      const birthTime = $('birthTime').value || '09:32';
+      const birthplace = $('birthplace').value || 'morioka';
+      const weather = $('weather').value || 'cloudy';
+      const height = Number($('height').value || 49);
+      const weight = Number($('weight').value || 3000);
       const seedWord = $('seedWord').value.trim() || '葉';
       const density = Number($('density').value);
       const breath = Number($('breath').value);
       const margin = Number($('margin').value);
       const species = SPECIES[state.species];
-      const seed = hashString(`${name}|${birthday}|${seedWord}|${state.dialect}|${state.shape}|${state.species}|${state.rhythm}`);
+      const seed = hashString(`${name}|${birthday}|${birthTime}|${birthplace}|${weather}|${height}|${weight}|${seedWord}|${state.dialect}|${state.shape}|${state.species}|${state.rhythm}`);
       const rhythm = RHYTHMS[state.rhythm];
-      return { name, birthday, seedWord, density, breath, margin, seed, species, rhythm };
+      return { name, birthday, birthTime, birthplace, weather, height, weight, seedWord, density, breath, margin, seed, species, rhythm };
     }
 
     function pointInSpecies(x, y, species) {
@@ -1275,6 +1357,11 @@
     }
 
     function render() {
+      if (state.role === 'customer' && state.view !== 'piece') {
+        state.view = 'piece';
+        setActive('viewButtons', 'view', state.view);
+      }
+      $('adminViewSection').classList.toggle('hidden', state.role !== 'admin');
       const input = readInputs();
       $('densityVal').textContent = input.density;
       $('breathVal').textContent = input.breath;
@@ -1289,8 +1376,10 @@
       $('fileName').textContent = state.view === 'board'
         ? `toumei_shippo_board_75x900_${state.dialect}_${state.species}_${state.shape}.svg`
         : `toumei_shippo_stitch_${state.dialect}_${state.species}_${state.shape}.svg`;
-      $('status').textContent = `${pattern.dialect.label} / ${pattern.rhythm.label} / ${pattern.species.ja} / ${state.shape} / ${state.view === 'board' ? '75x900 board' : 'piece'}`;
+      $('status').textContent = `${state.role === 'admin' ? '管理者確認' : '顧客入力'} / ${pattern.dialect.label} / ${pattern.rhythm.label} / ${pattern.species.ja} / ${state.shape} / ${state.view === 'board' ? '75x900 board' : 'piece'}`;
       $('title').textContent = `${input.name} の ${pattern.species.ja}`;
+      $('exportBtn').disabled = state.role !== 'admin';
+      $('exportBtn').textContent = state.role === 'admin' ? 'SVG 書出し' : '管理者側でSVG生成';
 
       const counts = pattern.strokes.reduce((acc, s) => {
         acc[s.layer] = (acc[s.layer] || 0) + 1;
@@ -1322,10 +1411,18 @@
         ? '単独紋として中心に成立させる'
         : '中心対称の総柄として、端で切れても続きが読める配置にする';
       const viewText = state.view === 'board'
-        ? '75x900mm材に10個を等間隔配置する板取り確認'
-        : '70mm相当の単体意匠を確認';
+        ? '管理者・工房側で75x900mm材に10個を等間隔配置する板取り確認'
+        : state.role === 'admin'
+          ? '管理者・工房側で70mm相当の単体意匠を確認'
+          : 'お客様側では単体意匠と入力体験だけを確認';
+      const dataText = state.role === 'admin'
+        ? '将来は生成ID・注文情報・同意状態を管理表やCRMへ保存し、製造用SVG/DXF/CAMへ受け渡す想定'
+        : 'この試作では入力値を送信・保存しません。本運用では利用目的、保存先、閲覧権限、削除方針を明示する想定';
       $('ruleList').innerHTML = [
+        `<div><b>試作注記</b> 葉形と模様の関係性を確認するためのプロトタイプ。加工検証・素材確認・安全基準確認を経て調整</div>`,
         `<div><b>独自性</b> 既存図案を写さず、数える・中心・反復・余白を木製玩具向け生成文法へ翻訳</div>`,
+        `<div><b>情報管理</b> ${dataText}</div>`,
+        `<div><b>入力</b> 名前・誕生日・出生時刻・出生地・天気・身長・体重・家族の言葉をダミー値として生成に反映</div>`,
         `<div><b>数える</b> ${pattern.cols} x ${pattern.rows} の奇数グリッド</div>`,
         `<div><b>律</b> ${pattern.rhythm.note}</div>`,
         `<div><b>目立て</b> 最初の段が全体の周期を決める</div>`,
@@ -1374,6 +1471,14 @@
       render();
     });
 
+    $('roleButtons').addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-role]');
+      if (!btn) return;
+      state.role = btn.dataset.role;
+      setActive('roleButtons', 'role', state.role);
+      render();
+    });
+
     $('viewButtons').addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-view]');
       if (!btn) return;
@@ -1387,7 +1492,7 @@
       render();
     });
 
-    ['name', 'birthday', 'seedWord', 'density', 'breath', 'margin'].forEach(id => {
+    ['name', 'birthday', 'birthTime', 'birthplace', 'weather', 'height', 'weight', 'seedWord', 'density', 'breath', 'margin'].forEach(id => {
       $(id).addEventListener('input', render);
     });
 
