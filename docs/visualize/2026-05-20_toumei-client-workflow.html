@@ -1,0 +1,710 @@
+<!doctype html>
+<!--
+  とうめいしっぽ クライアント共有ワークフロー図解
+  目的: 非エンジニアのチームメンバーに、生成模様プロトタイプと顧客入力/製造管理の全体像を伝える
+  出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認 / CLIENT_PREVIEW_WORKFLOW_BRIEF_2026-05-20.md / 生成模様v0.4.7
+  生成日: 2026-05-20
+  /visualize v1.0
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>とうめいしっぽ 共有ワークフロー図解 2026-05-20</title>
+  <style>
+    :root {
+      --bg: #f8f7f3;
+      --surface: #ffffff;
+      --surface-2: #f0eee7;
+      --ink: #1e1d1a;
+      --muted: #6d6960;
+      --line: #ded8cc;
+      --wood: #b58b55;
+      --leaf: #3f7565;
+      --data: #3c6d91;
+      --make: #8a5b3e;
+      --warn: #9a6a26;
+      --soft-leaf: #e7f0eb;
+      --soft-data: #e7eef5;
+      --soft-make: #f3ebe3;
+      --soft-warn: #f7efd8;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(30, 29, 26, 0.04), 0 8px 22px rgba(30, 29, 26, 0.06);
+      --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+      letter-spacing: 0;
+      line-height: 1.65;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 28px;
+      align-items: end;
+      padding: 30px 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--leaf);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .dot {
+      width: 37px;
+      height: 9px;
+      background:
+        radial-gradient(circle at 4.5px 4.5px, var(--leaf) 0 4px, transparent 4.5px),
+        radial-gradient(circle at 18.5px 4.5px, var(--data) 0 4px, transparent 4.5px),
+        radial-gradient(circle at 32.5px 4.5px, var(--make) 0 4px, transparent 4.5px);
+      flex: 0 0 37px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 5vw, 58px);
+      line-height: 1.08;
+      margin: 0;
+      font-weight: 760;
+    }
+
+    .lead {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .summary-box {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-box h2 {
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+
+    .summary-box dl {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .summary-box div {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    dt {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .section {
+      padding: 38px 0 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.28;
+    }
+
+    .section-note {
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .status {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      min-height: 88px;
+    }
+
+    .status span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .status strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .flow {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 148px minmax(0, 1fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .lane:first-child {
+      border-top: 0;
+    }
+
+    .lane-title {
+      display: flex;
+      align-items: center;
+      padding: 18px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink);
+      background: var(--surface-2);
+    }
+
+    .lane-content {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .node {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      min-height: 128px;
+      background: #fff;
+    }
+
+    .node:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -18px;
+      width: 22px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .node h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .node p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .node small {
+      display: inline-flex;
+      margin-bottom: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .customer small { color: var(--leaf); background: var(--soft-leaf); }
+    .data small { color: var(--data); background: var(--soft-data); }
+    .making small { color: var(--make); background: var(--soft-make); }
+    .team small { color: var(--warn); background: var(--soft-warn); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--leaf);
+      margin-top: 2px;
+    }
+
+    .mark.next { background: var(--warn); }
+    .mark.later { background: var(--data); }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .tool {
+      padding: 16px;
+      border-left: 1px solid var(--line);
+      min-height: 160px;
+    }
+
+    .tool:first-child { border-left: 0; }
+
+    .tool h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .tool p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--surface-2);
+      color: var(--muted);
+    }
+
+    .badge.primary {
+      color: var(--leaf);
+      background: var(--soft-leaf);
+    }
+
+    .product-preview {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .sample-board {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      background: #d8bd8d;
+      display: grid;
+      place-items: center;
+      border: 1px solid #c2a36e;
+    }
+
+    .sample-board svg {
+      width: 82%;
+      height: 82%;
+      overflow: visible;
+    }
+
+    .sample-copy h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .sample-copy p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .link-button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .warning {
+      border-left: 4px solid var(--warn);
+      background: var(--soft-warn);
+      padding: 14px 16px;
+      border-radius: 6px;
+      color: #5d4219;
+      font-size: 13px;
+    }
+
+    .footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 940px) {
+      .hero, .split, .product-preview {
+        grid-template-columns: 1fr;
+      }
+
+      .status-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .lane {
+        grid-template-columns: 1fr;
+      }
+
+      .lane-title {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .compare {
+        grid-template-columns: 1fr;
+      }
+
+      .tool {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .tool:first-child { border-top: 0; }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 24px, 1180px);
+        padding-top: 14px;
+      }
+
+      .status-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .lane-content {
+        grid-template-columns: repeat(4, 210px);
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { width: 100%; padding: 0; }
+      .link-button { text-decoration: none; }
+      .flow, .panel, .compare, .product-preview, .summary-box { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> direction prototype / client preview</div>
+        <h1>葉形と模様を、顧客入力から製造までつなぐ。</h1>
+        <p class="lead">
+          とうめいしっぽの生成模様プロトタイプを、チームで判断しやすいように図解した共有ページです。完成仕様ではなく、どのサンプルを加工し、どの導線を本実装へ進めるかを揃えるための地図です。
+        </p>
+      </div>
+      <aside class="summary-box">
+        <h2>現在地</h2>
+        <dl>
+          <div><dt>公開</dt><dd>GitHub Pagesで共有可能</dd></div>
+          <div><dt>アプリ</dt><dd>生成模様 v0.4.7</dd></div>
+          <div><dt>Notion</dt><dd>プロジェクトDB配下で進行中</dd></div>
+          <div><dt>次回</dt><dd>2026-06-10 MTGへ向けた試作判断</dd></div>
+        </dl>
+      </aside>
+    </header>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>今日共有したい判断材料</h2>
+        <p class="section-note">葉形の外形だけではなく、顧客情報、文様生成、加工方言、管理者製造データまでを一つの流れとして見る。</p>
+      </div>
+      <div class="status-strip">
+        <div class="status"><span>1 / 方向性</span><strong>葉形ポイント柄と正方形総柄を比較</strong></div>
+        <div class="status"><span>2 / 生成</span><strong>個人情報由来の生成IDで模様が変化</strong></div>
+        <div class="status"><span>3 / 加工</span><strong>Laser / NC / Hybridを別データ思想で扱う</strong></div>
+        <div class="status"><span>4 / 次</span><strong>試作加工して視認性と安全性を検証</strong></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>全体ワークフロー</h2>
+        <p class="section-note">顧客向けと管理者向けを分ける。顧客には入力体験と意匠確認を見せ、製造データや板取りは管理者側に閉じる。</p>
+      </div>
+      <div class="flow" aria-label="とうめいしっぽ生成模様ワークフロー">
+        <div class="lane">
+          <div class="lane-title">顧客体験</div>
+          <div class="lane-content">
+            <div class="node customer"><small>customer</small><h3>入力する</h3><p>名前、誕生日、出生時刻、出生地、天気、身長、体重、家族の言葉を入力する。</p></div>
+            <div class="node customer"><small>consent</small><h3>同意する</h3><p>利用目的、保存先、閲覧権限、保存期間、削除相談先を明示する。</p></div>
+            <div class="node customer"><small>preview</small><h3>模様を見る</h3><p>顧客側では単体の意匠と入力体験だけを確認する。</p></div>
+            <div class="node customer"><small>story</small><h3>家族の記憶へ</h3><p>入力値は単なる装飾ではなく、家族の選択として木に宿る。</p></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-title">情報管理</div>
+          <div class="lane-content">
+            <div class="node data"><small>form</small><h3>Google Forms</h3><p>最初は低コストにフォームで受付。現在のHTMLとは未接続。</p></div>
+            <div class="node data"><small>sheet</small><h3>Google Sheets</h3><p>回答を行として蓄積し、生成ID、同意状態、製造状態を管理する。</p></div>
+            <div class="node data"><small>notion</small><h3>Notion Hub</h3><p>判断、タスク、通信ログ、関連資料のハブ。外部共有情報と内部情報を分ける。</p></div>
+            <div class="node data"><small>id</small><h3>生成ID</h3><p>顧客入力と製造データを接続するキー。個人情報そのものをファイル名にしない。</p></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-title">管理者・製造</div>
+          <div class="lane-content">
+            <div class="node making"><small>admin</small><h3>管理者確認</h3><p>葉形、正方形、樹種、加工方言、密度、余白を確認する。</p></div>
+            <div class="node making"><small>svg</small><h3>SVG / DXF</h3><p>Laser、NC、Hybridで同じ線を使い回さず、加工ごとのデータへ分ける。</p></div>
+            <div class="node making"><small>layout</small><h3>75 x 900 板取り</h3><p>工房側だけで扱う配置確認。顧客に見せる必要はない。</p></div>
+            <div class="node making"><small>test</small><h3>試作加工</h3><p>線幅、溝深さ、研磨後の残り、手触り、安全Rを現物で見る。</p></div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-title">チーム判断</div>
+          <div class="lane-content">
+            <div class="node team"><small>share</small><h3>URL共有</h3><p>新田さん、阿部さん、内藤さんへ、方向性確認用として共有する。</p></div>
+            <div class="node team"><small>decide</small><h3>優先試作を選ぶ</h3><p>葉形NC、正方形Laser、正方形Hybridなど、目的別に絞る。</p></div>
+            <div class="node team"><small>photo</small><h3>撮影する</h3><p>クラウドファンディングに必要な実物写真と説明素材を集める。</p></div>
+            <div class="node team"><small>cf</small><h3>CFへ進める</h3><p>公開可能な思想と、隠すべき製造ノウハウを分けて情報整理する。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>プロトタイプの見せ方</h2>
+        <p class="section-note">「こぎん刺しの丸写し」ではなく、構造を学んだうえで木製玩具の条件へ翻訳していることを明確にする。</p>
+      </div>
+      <div class="product-preview">
+        <div class="sample-board">
+          <svg viewBox="0 0 100 100" role="img" aria-label="葉形ポイント柄と正方形総柄の概念図">
+            <rect x="7" y="7" width="86" height="86" rx="9" fill="#d1ad79" stroke="#8d6a3f" stroke-width="1"/>
+            <path d="M50 12 C68 15 80 34 77 55 C74 75 58 88 50 91 C42 88 26 75 23 55 C20 34 32 15 50 12 Z" fill="#8f744d" stroke="#5f472b" stroke-width="1.2"/>
+            <path d="M50 20 L50 82" stroke="#6f8055" stroke-width="0.7" stroke-dasharray="4 4"/>
+            <g stroke-linecap="round" stroke-width="2.4">
+              <path d="M42 31 H58" stroke="#2f6f8f"/>
+              <path d="M34 43 H45 M55 43 H66" stroke="#5b93a7"/>
+              <path d="M29 55 H40 M45 55 H55 M60 55 H71" stroke="#2f6f8f"/>
+              <path d="M34 67 H45 M55 67 H66" stroke="#5b93a7"/>
+              <path d="M42 79 H58" stroke="#2f6f8f"/>
+            </g>
+          </svg>
+        </div>
+        <div class="sample-copy">
+          <h3>葉形はポイント柄、正方形は総柄。</h3>
+          <p>葉形は余白と手触りを活かし、中心に一つの紋として成立させる。正方形は上下左右の偏りを抑え、端で切れても続きが読める総柄として扱う。</p>
+          <p>Laserは細密な焼き色、NCは60度Vビットで読める太さと間隔、HybridはNCの触感骨格とLaserの細部を分離する。</p>
+          <div class="links">
+            <a class="link-button" href="../prototypes/stitch-grammar-v02-pilot.html?b=61880d5-2">生成模様 v0.4.7 を開く</a>
+            <a class="link-button" href="#tools">ツール方針を見る</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>何が済んでいて、何が未接続か</h2>
+        <p class="section-note">完成品として誤解されないように、進捗と未実装を明確に分ける。</p>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>済んだこと</h3>
+          <ul class="checklist">
+            <li><span class="mark">1</span><span>生成模様HTMLをGitHub Pagesで共有可能にした。</span></li>
+            <li><span class="mark">2</span><span>顧客入力モードと管理者確認モードを分けた。</span></li>
+            <li><span class="mark">3</span><span>名前、誕生日、出生時刻、出生地、天気、身長、体重、家族の言葉が生成IDと模様に反映されることを確認した。</span></li>
+            <li><span class="mark">4</span><span>162通りの操作テストで、表示欠落、線ゼロ、境界崩れ、コンソールエラーがないことを確認した。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>これから接続すること</h3>
+          <ul class="checklist">
+            <li><span class="mark next">1</span><span>Google Forms / Sheetsで、同意つき顧客入力と管理表を設計する。</span></li>
+            <li><span class="mark next">2</span><span>Notionに共有URL、判断、未決事項、試作候補を集約する。</span></li>
+            <li><span class="mark next">3</span><span>SVG / DXF / CAM出力を、Laser用、NC用、Hybrid用に分けて設計する。</span></li>
+            <li><span class="mark next">4</span><span>試作加工で、視認性、安全R、研磨後の溝残りを確認する。</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tools">
+      <div class="section-head">
+        <h2>ツール方針</h2>
+        <p class="section-note">MiroやFigmaは有効。ただし今は、共有URLで見られるHTML図解とNotionハブを先に固める。</p>
+      </div>
+      <div class="compare">
+        <div class="tool">
+          <h3>Notion</h3>
+          <p>プロジェクトの判断、タスク、通信ログ、関連資料のハブ。</p>
+          <span class="badge primary">最優先</span>
+        </div>
+        <div class="tool">
+          <h3>Google Forms / Sheets</h3>
+          <p>顧客入力と管理表の低コストな最初の実装候補。</p>
+          <span class="badge primary">実務価値大</span>
+        </div>
+        <div class="tool">
+          <h3>HTML図解</h3>
+          <p>非エンジニア向けに、URLだけで共有できる説明資料。</p>
+          <span class="badge primary">今日作る</span>
+        </div>
+        <div class="tool">
+          <h3>Miro</h3>
+          <p>ワークショップや付箋議論には向く。初期共有はHTMLで十分。</p>
+          <span class="badge">後続候補</span>
+        </div>
+        <div class="tool">
+          <h3>Figma</h3>
+          <p>UIを本格設計する段階で有効。今は情報設計を優先。</p>
+          <span class="badge">後続候補</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>次のロードマップ</h2>
+        <p class="section-note">今日の共有から、試作加工、撮影、クラウドファンディングへつなぐ。</p>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>短期</h3>
+          <ul class="checklist">
+            <li><span class="mark next">1</span><span>チームにURLを共有し、葉形と正方形のどちらを優先試作するか決める。</span></li>
+            <li><span class="mark next">2</span><span>Google Forms / Sheetsの項目案を作り、個人情報管理の説明文を整理する。</span></li>
+            <li><span class="mark next">3</span><span>NC試作では線幅、中心間隔、溝深さ、研磨後の見え方を重点確認する。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>中期</h3>
+          <ul class="checklist">
+            <li><span class="mark later">1</span><span>加工済みサンプルを撮影し、クラウドファンディング用の説明素材へ展開する。</span></li>
+            <li><span class="mark later">2</span><span>管理者アプリでSVG / DXF / CAM / 75 x 900板取りを扱えるようにする。</span></li>
+            <li><span class="mark later">3</span><span>必要に応じてFigmaでUI設計、Miroでチームワークショップへ展開する。</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="warning">
+        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。
+      </p>
+    </section>
+
+    <footer class="footer">
+      <p>
+        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、ローカル共有ブリーフ、生成模様 v0.4.7。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
+      </p>
+      <p>
+        参考: <a href="https://support.google.com/docs/answer/2917686?hl=en">Google Docs Editors Help</a> / <a href="https://developers.google.com/apps-script/reference/forms/destination-type">Google Apps Script DestinationType</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
