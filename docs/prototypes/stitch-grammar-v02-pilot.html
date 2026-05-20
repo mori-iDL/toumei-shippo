@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>とうめいしっぽ 生成模様 v0.4.6 pilot</title>
+  <title>とうめいしっぽ 生成模様 v0.4.7 pilot</title>
   <style>
     :root {
       --ink: #252321;
@@ -380,7 +380,7 @@
 <body>
   <div class="app">
     <aside>
-      <h1>生成模様 v0.4.6
+      <h1>生成模様 v0.4.7
         <span class="subtitle">Toumei Shippo direction prototype</span>
       </h1>
       <div class="notice">
@@ -465,10 +465,10 @@
             <option value="sugi">スギ / 細長い楕円</option>
             <option value="karamatsu">カラマツ / 角丸菱形</option>
             <option value="akamatsu">アカマツ / 上尖り卵形</option>
-            <option value="nara">ナラ / 丸みある卵形</option>
+            <option value="nara" selected>ナラ / 丸みある卵形</option>
             <option value="kuri">クリ / 横長楕円</option>
             <option value="yamazakura">ヤマザクラ / 上膨らみ雫形</option>
-            <option value="onigurumi" selected>オニグルミ / 自然石型</option>
+            <option value="onigurumi">オニグルミ / 自然石型</option>
             <option value="itayakaede">イタヤカエデ / 丸み五角形</option>
             <option value="keyaki">ケヤキ / 下広がり扇形</option>
           </select>
@@ -522,6 +522,8 @@
           <div class="metric"><span>目数</span><strong id="gridMetric">13 x 13</strong></div>
           <div class="metric"><span>線</span><strong id="strokeMetric">0</strong></div>
           <div class="metric"><span>目立て</span><strong id="metateMetric">0</strong></div>
+          <div class="metric"><span>生成ID</span><strong id="seedMetric">TS-0000</strong></div>
+          <div class="metric"><span>保存</span><strong id="saveMetric">未送信</strong></div>
         </div>
       </div>
     </aside>
@@ -559,7 +561,7 @@
     const state = {
       dialect: 'nc',
       shape: 'leaf',
-      species: 'onigurumi',
+      species: 'nara',
       rhythm: 'odd',
       role: 'customer',
       view: 'piece'
@@ -811,6 +813,34 @@
       return values.sort((a, b) => a - b);
     }
 
+    function generationId(seed) {
+      return `TS-${(seed >>> 0).toString(36).toUpperCase().slice(0, 6).padStart(6, '0')}`;
+    }
+
+    function timeMinutes(value) {
+      const parts = String(value || '09:32').split(':').map(Number);
+      return (parts[0] || 0) * 60 + (parts[1] || 0);
+    }
+
+    function personalParameters(input) {
+      const weatherMap = { sunny: -0.18, cloudy: 0, rain: 0.16, snow: 0.28 };
+      const placeMap = { morioka: 0.08, iwate: 0, tohoku: -0.08, other: 0.14 };
+      const seedA = (((input.seed >>> 5) % 9) - 4) / 10;
+      const seedB = (((input.seed >>> 13) % 7) - 3) / 10;
+      const heightBias = clamp((input.height - 49) / 16, -0.55, 0.55);
+      const weightBias = clamp((input.weight - 3100) / 2600, -0.55, 0.55);
+      const timeBias = clamp((timeMinutes(input.birthTime) - 720) / 720, -1, 1);
+      return {
+        seedA,
+        seedB,
+        weather: weatherMap[input.weather] || 0,
+        place: placeMap[input.birthplace] || 0,
+        scale: clamp(heightBias * 0.55 + weightBias * 0.45, -0.6, 0.6),
+        time: timeBias,
+        accent: (input.seed >>> 20) % 3
+      };
+    }
+
     function readInputs() {
       const name = $('name').value.trim() || 'あかり';
       const birthday = $('birthday').value || '2025-06-15';
@@ -863,7 +893,8 @@
     function makePattern(input) {
       const dialect = DIALECTS[state.dialect];
       const rng = mulberry32(input.seed);
-      const unit = dialect.unitBase - (input.density - 5) * 0.13;
+      const personal = personalParameters(input);
+      const unit = dialect.unitBase - (input.density - 5) * 0.13 + personal.scale * 0.08;
       const margin = input.margin;
       const usableX = state.shape === 'leaf' ? Math.max(18, input.species.rx * 2 - margin * 1.4) : 70 + unit * 2;
       const usableY = state.shape === 'leaf' ? Math.max(24, input.species.ry * 2 - margin * 1.4) : 70 + unit * 2;
@@ -874,7 +905,7 @@
       const center = 35;
       const rowPitch = usableY / Math.max(1, rows - 1);
       const colPitch = usableX / Math.max(1, cols - 1);
-      const phase = input.seed % 7;
+      const phase = (input.seed + Math.round((personal.weather + personal.place + personal.time) * 10)) % 11;
       const drift = ((input.seed >>> 10) % 3) - 1;
       const strokes = [];
 
@@ -1008,24 +1039,24 @@
         const profile = isNc
           ? {
               dash: clamp(4.45 + densityNorm * 0.18 - breathNorm * 0.14, 4.2, 4.65),
-              rowStep: clamp(5.45 - densityNorm * 0.30 + breathNorm * 0.32, 5.15, 6.0),
-              colStep: clamp(6.95 - densityNorm * 0.30 + breathNorm * 0.22, 6.45, 7.35),
-              outerRadius: clamp(Math.round(3.4 + input.density * 0.16 - input.breath * 0.06), 3, 4),
+              rowStep: clamp(5.45 - densityNorm * 0.30 + breathNorm * 0.32 + personal.seedA * 0.18 + personal.weather * 0.16, 5.15, 6.1),
+              colStep: clamp(6.95 - densityNorm * 0.30 + breathNorm * 0.22 + personal.seedB * 0.28 + personal.place * 0.22, 6.35, 7.45),
+              outerRadius: clamp(Math.round(3.4 + input.density * 0.16 - input.breath * 0.06 + personal.scale * 0.65 + personal.accent * 0.18), 3, 4),
               widthScale: 1.05
             }
           : isHybrid
             ? {
-                dash: clamp(3.1 + densityNorm * 0.22 - breathNorm * 0.12, 2.7, 3.5),
-                rowStep: clamp(3.45 - densityNorm * 0.22 + breathNorm * 0.28, 3.2, 4.1),
-                colStep: clamp(3.35 - densityNorm * 0.18 + breathNorm * 0.22, 3.1, 3.9),
-                outerRadius: clamp(Math.round(6.2 + input.density * 0.24 - input.breath * 0.10), 5, 8),
+                dash: clamp(3.1 + densityNorm * 0.22 - breathNorm * 0.12 + personal.seedA * 0.16, 2.7, 3.6),
+                rowStep: clamp(3.45 - densityNorm * 0.22 + breathNorm * 0.28 + personal.weather * 0.18, 3.2, 4.15),
+                colStep: clamp(3.35 - densityNorm * 0.18 + breathNorm * 0.22 + personal.place * 0.16, 3.1, 4.0),
+                outerRadius: clamp(Math.round(6.2 + input.density * 0.24 - input.breath * 0.10 + personal.scale * 0.9), 5, 8),
                 widthScale: 0.9
               }
             : {
-                dash: clamp(1.82 + densityNorm * 0.12 - breathNorm * 0.06, 1.55, 2.1),
-                rowStep: clamp(2.15 - densityNorm * 0.18 + breathNorm * 0.20, 1.9, 2.55),
-                colStep: clamp(2.05 - densityNorm * 0.16 + breathNorm * 0.16, 1.82, 2.38),
-                outerRadius: clamp(Math.round(9.2 + input.density * 0.34 - input.breath * 0.14), 8, 12),
+                dash: clamp(1.82 + densityNorm * 0.12 - breathNorm * 0.06 + personal.seedA * 0.08, 1.55, 2.15),
+                rowStep: clamp(2.15 - densityNorm * 0.18 + breathNorm * 0.20 + personal.weather * 0.08, 1.9, 2.6),
+                colStep: clamp(2.05 - densityNorm * 0.16 + breathNorm * 0.16 + personal.place * 0.08, 1.82, 2.42),
+                outerRadius: clamp(Math.round(9.2 + input.density * 0.34 - input.breath * 0.14 + personal.scale * 1.2), 8, 12),
                 widthScale: 0.66
               };
         const middleRadius = Math.max(isNc ? 2 : 3, profile.outerRadius - (isNc ? 2 : 3));
@@ -1146,21 +1177,21 @@
         const profile = isNc
           ? {
               rowStep: clamp(5.7 - densityNorm * 0.78 + breathNorm * 0.30, SAFETY.ncMinCenterSpacing, 6.55),
-              colPitch: clamp(13.4 - densityNorm * 1.55 + breathNorm * 0.36, 10.6, 15.4),
-              dash: clamp(5.35 + densityNorm * 0.35 - breathNorm * 0.20, 4.85, 5.9),
+              colPitch: clamp(13.4 - densityNorm * 1.55 + breathNorm * 0.36 + personal.place * 0.45 + personal.seedB * 0.35, 10.6, 15.4),
+              dash: clamp(5.35 + densityNorm * 0.35 - breathNorm * 0.20 + personal.seedA * 0.24, 4.85, 5.95),
               widthScale: 1.0
             }
           : isHybrid
             ? {
-                rowStep: clamp(3.45 - densityNorm * 0.34 + breathNorm * 0.28, 3.1, 4.0),
-                colPitch: clamp(8.2 - densityNorm * 0.70 + breathNorm * 0.42, 7.0, 9.4),
-                dash: clamp(3.2 + densityNorm * 0.20 - breathNorm * 0.12, 2.85, 3.55),
+                rowStep: clamp(3.45 - densityNorm * 0.34 + breathNorm * 0.28 + personal.weather * 0.16, 3.1, 4.05),
+                colPitch: clamp(8.2 - densityNorm * 0.70 + breathNorm * 0.42 + personal.place * 0.24, 7.0, 9.5),
+                dash: clamp(3.2 + densityNorm * 0.20 - breathNorm * 0.12 + personal.seedA * 0.16, 2.85, 3.6),
                 widthScale: 0.82
               }
             : {
-                rowStep: clamp(2.45 - densityNorm * 0.22 + breathNorm * 0.18, 2.15, 2.85),
-                colPitch: clamp(6.4 - densityNorm * 0.48 + breathNorm * 0.26, 5.65, 7.2),
-                dash: clamp(2.15 + densityNorm * 0.15 - breathNorm * 0.08, 1.9, 2.45),
+                rowStep: clamp(2.45 - densityNorm * 0.22 + breathNorm * 0.18 + personal.weather * 0.08, 2.15, 2.9),
+                colPitch: clamp(6.4 - densityNorm * 0.48 + breathNorm * 0.26 + personal.place * 0.12, 5.65, 7.25),
+                dash: clamp(2.15 + densityNorm * 0.15 - breathNorm * 0.08 + personal.seedA * 0.08, 1.9, 2.5),
                 widthScale: 0.92
               };
 
@@ -1240,7 +1271,8 @@
         rhythm: input.rhythm,
         species: input.species,
         mode: state.shape === 'leaf' ? 'single motif' : 'allover tile',
-        seed: input.seed
+        seed: input.seed,
+        generationId: generationId(input.seed)
       };
     }
 
@@ -1272,7 +1304,7 @@
           .map(s => `<line x1="${s.x1.toFixed(2)}" y1="${s.y.toFixed(2)}" x2="${s.x2.toFixed(2)}" y2="${s.y.toFixed(2)}" stroke="${colors[layer]}" stroke-width="${s.width.toFixed(2)}" stroke-linecap="${s.cap}" fill="none"/>`)
           .join('');
         const label = layer === 'skeleton' ? 'structure' : layer;
-        return `<g id="${label}" stroke="${colors[layer]}">${body}</g>`;
+        return `<g id="stitch-layer-${label}" data-layer="${layer}" stroke="${colors[layer]}">${body}</g>`;
       }).join('');
 
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 80 80" role="img" aria-label="stitch grammar preview">
@@ -1373,6 +1405,8 @@
       $('gridMetric').textContent = `${pattern.cols} x ${pattern.rows}`;
       $('strokeMetric').textContent = String(pattern.strokes.length);
       $('metateMetric').textContent = String(pattern.strokes.filter(s => s.layer === 'metate').length);
+      $('seedMetric').textContent = pattern.generationId;
+      $('saveMetric').textContent = state.role === 'admin' ? '管理表へ' : '未送信';
       $('fileName').textContent = state.view === 'board'
         ? `toumei_shippo_board_75x900_${state.dialect}_${state.species}_${state.shape}.svg`
         : `toumei_shippo_stitch_${state.dialect}_${state.species}_${state.shape}.svg`;
@@ -1418,10 +1452,15 @@
       const dataText = state.role === 'admin'
         ? '将来は生成ID・注文情報・同意状態を管理表やCRMへ保存し、製造用SVG/DXF/CAMへ受け渡す想定'
         : 'この試作では入力値を送信・保存しません。本運用では利用目的、保存先、閲覧権限、削除方針を明示する想定';
+      const intakeText = state.role === 'admin'
+        ? '顧客フォームの回答をスプレッドシートで受け、生成IDで管理者側の製造データへ接続する想定。現在のHTMLは未接続'
+        : '本番では同意つき入力フォームから管理表へ送り、この画面は入力体験と意匠確認に限定する想定。現在のHTMLは未接続';
       $('ruleList').innerHTML = [
         `<div><b>試作注記</b> 葉形と模様の関係性を確認するためのプロトタイプ。加工検証・素材確認・安全基準確認を経て調整</div>`,
         `<div><b>独自性</b> 既存図案を写さず、数える・中心・反復・余白を木製玩具向け生成文法へ翻訳</div>`,
         `<div><b>情報管理</b> ${dataText}</div>`,
+        `<div><b>受付導線</b> ${intakeText}</div>`,
+        `<div><b>生成ID</b> ${pattern.generationId} を顧客入力と製造データの接続キーにする想定</div>`,
         `<div><b>入力</b> 名前・誕生日・出生時刻・出生地・天気・身長・体重・家族の言葉をダミー値として生成に反映</div>`,
         `<div><b>数える</b> ${pattern.cols} x ${pattern.rows} の奇数グリッド</div>`,
         `<div><b>律</b> ${pattern.rhythm.note}</div>`,
@@ -1494,6 +1533,7 @@
 
     ['name', 'birthday', 'birthTime', 'birthplace', 'weather', 'height', 'weight', 'seedWord', 'density', 'breath', 'margin'].forEach(id => {
       $(id).addEventListener('input', render);
+      $(id).addEventListener('change', render);
     });
 
     $('exportBtn').addEventListener('click', () => {
