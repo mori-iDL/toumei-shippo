@@ -620,7 +620,7 @@
       <div class="status-strip">
         <div class="status"><span>1 / 方向性</span><strong>葉形ポイント柄と正方形総柄を比較</strong></div>
         <div class="status"><span>2 / 生成</span><strong>個人情報由来の生成IDで模様が変化</strong></div>
-        <div class="status"><span>3 / 見積</span><strong>加工時間から概算単価を見にいく</strong></div>
+        <div class="status"><span>3 / 見積</span><strong>材料・加工・諸経費を分けて概算</strong></div>
         <div class="status"><span>4 / 次</span><strong>試作加工して視認性・安全性・価格感を検証</strong></div>
       </div>
     </section>
@@ -644,7 +644,7 @@
           <ul class="checklist">
             <li><span class="mark next">1</span><span>サンプル用SVG / DXFを出し、Fusion等に読み込む。</span></li>
             <li><span class="mark next">2</span><span>NCとレーザーの初回シミュレーション時間を確認した。</span></li>
-            <li><span class="mark next">3</span><span>加工時間から機械費だけの概算を出し、材料、研磨、仕上げは別途積み上げる。</span></li>
+            <li><span class="mark next">3</span><span>材料費、加工費、仕上げ・検品・梱包、諸経費を分けて積み上げる。</span></li>
           </ul>
         </div>
       </div>
@@ -728,6 +728,71 @@
       </div>
       <p class="cost-note">
         単価根拠: Notion「松森木工所 加工費単価の正式共有」。ここでは加工機の稼働時間だけを概算し、材料、研磨、仕上げ、治具、タブ、刃物交換、検品、梱包、設計工数、段取り按分は含めない。Shinx 4-5軸単価で見る場合はNC部分が上振れする。
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>概算見積の組み立て</h2>
+        <p class="section-note">材料費PDFと加工時間を使い、まずは量産単価に入れるものと、試作開発費として別建てするものを分ける。</p>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>量産単価の基本式</h3>
+          <ul class="checklist">
+            <li><span class="mark">1</span><span>材料費 = 坪単価 ÷ 取数。送料、材料ロス10〜20%、材料掛けは正式見積で加える。</span></li>
+            <li><span class="mark">2</span><span>加工費 = 加工時間 ÷ 60 × 時間単価。LaserとNCは別単価で見る。</span></li>
+            <li><span class="mark">3</span><span>仕上げ・検品・梱包 = [仮] 手作業時間/個 × ¥4,000/h。研磨量と梱包仕様で更新する。</span></li>
+            <li><span class="mark">4</span><span>諸経費 = 小計 × 10%。最後に消費税を分けて表示する。</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>量産単価に混ぜないもの</h3>
+          <ul class="checklist">
+            <li><span class="mark next">1</span><span>初回試作用のデータ作成、CAM調整、テストカットは試作開発費として別建て。</span></li>
+            <li><span class="mark next">2</span><span>治具製作や量産前の条件出しは、数量確定後に按分または別項目化する。</span></li>
+            <li><span class="mark next">3</span><span>材料費は1個あたり数十円台なので、価格差の主因は加工、仕上げ、検品、梱包、試作調整になる。</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top: 16px;">
+        <table class="estimate-table">
+          <thead>
+            <tr>
+              <th>材料グループ</th>
+              <th>PDF坪単価</th>
+              <th>450mm材 5個取り</th>
+              <th>900mm材 9個取り</th>
+              <th>備考</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>スギ / アカマツ / カラマツ</td>
+              <td>¥13,000/坪</td>
+              <td>約¥27/個</td>
+              <td>約¥30/個</td>
+              <td>市産材。材料原価の最小比較軸。</td>
+            </tr>
+            <tr>
+              <td>クリ / ケヤキ</td>
+              <td>¥19,800/坪</td>
+              <td>約¥41/個</td>
+              <td>約¥46/個</td>
+              <td>クリは市産材、ケヤキは県産材。</td>
+            </tr>
+            <tr>
+              <td>ナラ / ヤマザクラ / オニグルミ / イタヤカエデ</td>
+              <td>¥21,000/坪</td>
+              <td>約¥44/個</td>
+              <td>約¥49/個</td>
+              <td>ナラは市産材、他は県産材。今回の意匠候補の中心。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cost-note">
+        材料費計算: 450mm材は96枚/坪 × 5個 = 480個/坪、900mm材は48枚/坪 × 9個 = 432個/坪。PDFは送料別途。正式見積では送料按分、材料ロス、材料掛け、仕上げ仕様を加える。
       </p>
     </section>
 
@@ -904,13 +969,13 @@
         </div>
       </div>
       <p class="warning">
-        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。加工時間と概算単価は、スクリーンショット時点の初回シミュレーション値であり、実加工、段取り、研磨、仕上げ、検品後に更新します。
+        注意: この図解は方向性共有用です。最終仕様、加工条件、安全基準、価格、個人情報運用を確定するものではありません。加工時間と概算単価は、スクリーンショット時点の初回シミュレーション値と材料費PDFからの概算であり、実加工、段取り、研磨、仕上げ、検品後に更新します。
       </p>
     </section>
 
     <footer class="footer">
       <p>
-        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、Notion「松森木工所 加工費単価の正式共有」、ローカル共有ブリーフ、生成模様 v0.4.11。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
+        出典: Notion「とうめいしっぽ」プロジェクトページ read-only確認、Notion「松森木工所 加工費単価の正式共有」、材料費PDF「とうめいしっぽ様（R7.12.4）」、ローカル共有ブリーフ、生成模様 v0.4.11。Google Formsの回答はフォーム内で確認またはリンクしたGoogle Sheetsへ保存できることをGoogle公式ヘルプで確認。Apps Scriptではフォーム回答の保存先としてSpreadsheetを指定できる。
       </p>
       <p>
         参考: <a href="https://support.google.com/docs/answer/2917686?hl=en">Google Docs Editors Help</a> / <a href="https://developers.google.com/apps-script/reference/forms/destination-type">Google Apps Script DestinationType</a>
