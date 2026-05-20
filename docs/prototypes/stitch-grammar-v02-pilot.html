@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>とうめいしっぽ 刺し文法 v0.4.5 pilot</title>
+  <style>
+    :root {
+      --ink: #252321;
+      --muted: #6f6a60;
+      --paper: #f7f4ed;
+      --panel: #fffdf7;
+      --line: #d7cec0;
+      --wood: #d8bd8d;
+      --wood-dark: #8b6a43;
+      --laser: #b94834;
+      --nc: #2f6f8f;
+      --hybrid: #2d5d4f;
+      --focus: #3b6f69;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+    }
+
+    aside {
+      padding: 20px;
+      background: #ece6da;
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    main {
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      line-height: 1.3;
+      margin: 0 0 18px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .section {
+      padding: 14px 0;
+      border-top: 1px solid rgba(126, 111, 89, 0.22);
+    }
+
+    .section:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      background: rgba(255, 253, 247, 0.9);
+      color: var(--ink);
+      min-height: 38px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--focus);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .segmented.shape {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .segmented button,
+    .tool-button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, 0.76);
+      color: var(--ink);
+      min-height: 38px;
+      padding: 8px 9px;
+      cursor: pointer;
+    }
+
+    .segmented button.active {
+      background: var(--ink);
+      color: #fffdf7;
+      border-color: var(--ink);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric {
+      background: rgba(255, 253, 247, 0.62);
+      border: 1px solid rgba(126, 111, 89, 0.18);
+      border-radius: 6px;
+      padding: 9px;
+      min-height: 56px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .metric strong {
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toolbar h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .toolbar .status {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .stage {
+      min-height: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      overflow: hidden;
+    }
+
+    .svg-pane {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      min-width: 0;
+      background:
+        linear-gradient(90deg, rgba(139, 106, 67, 0.05) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(139, 106, 67, 0.05) 1px, transparent 1px),
+        #fbf7ee;
+      background-size: 24px 24px;
+    }
+
+    #preview {
+      width: min(100%, 760px);
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #preview.board-view {
+      width: 100%;
+      aspect-ratio: 12 / 1;
+    }
+
+    #preview svg {
+      width: min(100%, 720px);
+      height: auto;
+      max-height: min(72vh, 720px);
+      display: block;
+    }
+
+    #preview.board-view svg {
+      width: min(100%, 1060px);
+      max-height: 260px;
+    }
+
+    .readout {
+      border-left: 1px solid var(--line);
+      padding: 16px;
+      background: #f1eadf;
+      overflow: auto;
+    }
+
+    .readout h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .layer-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .layer {
+      display: grid;
+      grid-template-columns: 16px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .rule-list b {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer code {
+      color: var(--ink);
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(126, 111, 89, 0.18);
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .readout {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 560px) {
+      main, aside {
+        padding: 14px;
+      }
+
+      .toolbar {
+        display: grid;
+        gap: 6px;
+      }
+
+      .toolbar .status {
+        white-space: normal;
+      }
+
+      .row, .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .segmented {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <h1>刺し文法 v0.4.5
+        <span class="subtitle">Toumei Shippo proof of grammar</span>
+      </h1>
+
+      <div class="section">
+        <div class="section-title">入力</div>
+        <div class="field">
+          <label for="name">名前</label>
+          <input id="name" type="text" value="ゆいか" autocomplete="off">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="birthday">誕生日</label>
+            <input id="birthday" type="date" value="2025-04-15">
+          </div>
+          <div class="field">
+            <label for="seedWord">家族の言葉</label>
+            <input id="seedWord" type="text" value="はじめての葉" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">加工方言</div>
+        <div class="segmented" id="dialectButtons">
+          <button type="button" data-dialect="laser">Laser</button>
+          <button type="button" data-dialect="nc" class="active">NC</button>
+          <button type="button" data-dialect="hybrid">Hybrid</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">樹種</div>
+        <div class="field">
+          <label for="species">木の個性</label>
+          <select id="species">
+            <option value="sugi">スギ / 細長い楕円</option>
+            <option value="karamatsu">カラマツ / 角丸菱形</option>
+            <option value="akamatsu">アカマツ / 上尖り卵形</option>
+            <option value="nara">ナラ / 丸みある卵形</option>
+            <option value="kuri">クリ / 横長楕円</option>
+            <option value="yamazakura">ヤマザクラ / 上膨らみ雫形</option>
+            <option value="onigurumi" selected>オニグルミ / 自然石型</option>
+            <option value="itayakaede">イタヤカエデ / 丸み五角形</option>
+            <option value="keyaki">ケヤキ / 下広がり扇形</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">外形</div>
+        <div class="segmented shape" id="shapeButtons">
+          <button type="button" data-shape="leaf" class="active">Leaf Motif</button>
+          <button type="button" data-shape="square">Tile Square</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">表示</div>
+        <div class="segmented shape" id="viewButtons">
+          <button type="button" data-view="piece" class="active">単体</button>
+          <button type="button" data-view="board">75×900 板取り</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">文法</div>
+        <div class="field">
+          <label>律</label>
+          <div class="segmented" id="rhythmButtons">
+            <button type="button" data-rhythm="odd" class="active">奇数</button>
+            <button type="button" data-rhythm="mixed">混合</button>
+            <button type="button" data-rhythm="even">偶数</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="density">密度 <span id="densityVal">5</span></label>
+          <input id="density" type="range" min="1" max="9" value="5">
+        </div>
+        <div class="field">
+          <label for="breath">余白 <span id="breathVal">4</span></label>
+          <input id="breath" type="range" min="1" max="8" value="4">
+        </div>
+        <div class="field">
+          <label for="margin">安全余白 mm <span id="marginVal">5</span></label>
+          <input id="margin" type="range" min="3" max="8" step="0.5" value="5">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">計測</div>
+        <div class="metrics">
+          <div class="metric"><span>単位</span><strong id="unitMetric">4.8mm</strong></div>
+          <div class="metric"><span>目数</span><strong id="gridMetric">13 x 13</strong></div>
+          <div class="metric"><span>線</span><strong id="strokeMetric">0</strong></div>
+          <div class="metric"><span>目立て</span><strong id="metateMetric">0</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <h2 id="title">木と子どもと家族の時間</h2>
+        <div class="status" id="status">grammar proof, not fabrication output</div>
+      </div>
+
+      <section class="stage">
+        <div class="svg-pane">
+          <div id="preview"></div>
+        </div>
+        <div class="readout">
+          <h3>層</h3>
+          <div class="layer-list" id="layerList"></div>
+          <h3>読み</h3>
+          <div class="rule-list" id="ruleList"></div>
+        </div>
+      </section>
+
+      <div class="footer">
+        <div><code id="fileName">toumei_shippo_stitch_grammar.svg</code></div>
+        <button class="tool-button" type="button" id="exportBtn">SVG 書出し</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      dialect: 'nc',
+      shape: 'leaf',
+      species: 'onigurumi',
+      rhythm: 'odd',
+      view: 'piece'
+    };
+
+    const SAFETY = {
+      ncBitDiameter: 6,
+      ncToolRadius: 3,
+      ncVBitAngle: 60,
+      ncPreviewFaceWidth: 1.15,
+      ncMinCenterSpacing: 4.8,
+      ncSandingAllowanceDepth: 0.2,
+      minOuterRadius: 6,
+      preferredOuterRadius: 8,
+      minInfantToyWidth: 32,
+      minInfantToyLength: 58
+    };
+
+    const DIALECTS = {
+      laser: {
+        label: 'Laser',
+        unitBase: 3.0,
+        width: 0.24,
+        process: 'score/fill/cut',
+        output: 'SVG vector layers: score centerlines + optional filled engrave shapes + separate cut outline',
+        colors: {
+          skeleton: '#d14c35',
+          detail: '#df7652',
+          breath: '#e2ad88',
+          metate: '#9a2d25',
+          axis: '#b18450'
+        }
+      },
+      nc: {
+        label: 'NC',
+        unitBase: 5.2,
+        width: 1.15,
+        minCenterSpacing: 4.8,
+        process: '60deg V-bit trace/engrave',
+        output: 'CAM intent: constant-width centerlines for Trace, closed groove profiles only when using Engrave',
+        colors: {
+          skeleton: '#2f6f8f',
+          detail: '#5b93a7',
+          breath: '#91b8c2',
+          metate: '#1f4f66',
+          axis: '#5f6d47'
+        }
+      },
+      hybrid: {
+        label: 'Hybrid',
+        unitBase: 3.8,
+        width: 0.72,
+        minCenterSpacing: 3.4,
+        process: 'score + tactile V-groove',
+        output: 'Separate laser score detail from NC tactile skeleton; never reuse the same path set blindly',
+        colors: {
+          skeleton: '#2d5d4f',
+          detail: '#b94834',
+          breath: '#d6a46f',
+          metate: '#1d473d',
+          axis: '#3b6f69'
+        }
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const RHYTHMS = {
+      odd: {
+        label: '奇数律',
+        note: '1,3,5で縦長の菱性を保つ',
+        length: (n) => odd(n)
+      },
+      mixed: {
+        label: '混合律',
+        note: '奇数を主に、部分的に偶数を混ぜる',
+        length: (n, phase) => phase % 5 === 0 ? even(n) : odd(n)
+      },
+      even: {
+        label: '偶数律',
+        note: '2,4,6で横長の別方言に寄せる',
+        length: (n) => even(n)
+      }
+    };
+
+    const SPECIES = {
+      sugi: {
+        ja: 'スギ',
+        en: 'Cryptomeria / Cedar',
+        origin: '盛岡市産',
+        feel: '柔らか・温かい',
+        note: '縦長楕円',
+        ratio: '1:1.8',
+        rx: 18.5,
+        ry: 30.5,
+        fillA: '#c8b89a',
+        fillB: '#7a5c3a',
+        path: 'M35 5.5 C46 5.5 54 19 54 35 C54 51 46 64.5 35 64.5 C24 64.5 16 51 16 35 C16 19 24 5.5 35 5.5 Z'
+      },
+      karamatsu: {
+        ja: 'カラマツ',
+        en: 'Larch',
+        origin: '盛岡市産',
+        feel: '飴色・渋い',
+        note: '角丸菱形',
+        ratio: '1:1.6',
+        rx: 20.5,
+        ry: 31,
+        fillA: '#d4a96a',
+        fillB: '#8b5e2a',
+        path: 'M35 5.5 C47 8 55 22 55 35 C55 48 47 62 35 65.5 C23 62 15 48 15 35 C15 22 23 8 35 5.5 Z'
+      },
+      akamatsu: {
+        ja: 'アカマツ',
+        en: 'Red Pine',
+        origin: '岩手県の木',
+        feel: '脂・力強い',
+        note: '上尖り卵形',
+        ratio: '1:1.5',
+        rx: 21.5,
+        ry: 30,
+        fillA: '#c9936a',
+        fillB: '#6b3a1f',
+        path: 'M35 5.5 C48 8 56 24 56 40 C55 55 46 65 35 65 C24 65 15 55 14 40 C14 24 22 8 35 5.5 Z'
+      },
+      nara: {
+        ja: 'ナラ',
+        en: 'Oak',
+        origin: '盛岡市産',
+        feel: '虎斑・艶',
+        note: '丸みある卵形',
+        ratio: '1:1.4',
+        rx: 22,
+        ry: 29,
+        fillA: '#c8b080',
+        fillB: '#6b5030',
+        path: 'M35 6 C47 7 56 21 56 36 C56 51 46 64 35 66 C24 64 14 51 14 36 C14 21 23 7 35 6 Z'
+      },
+      kuri: {
+        ja: 'クリ',
+        en: 'Chestnut',
+        origin: '盛岡市産',
+        feel: '力強い年輪',
+        note: '横長楕円',
+        ratio: '1.3:1',
+        rx: 30,
+        ry: 22,
+        fillA: '#b8955a',
+        fillB: '#5a3a18',
+        path: 'M5 35 C5 22 18 13 35 13 C52 13 65 22 65 35 C65 48 52 57 35 57 C18 57 5 48 5 35 Z'
+      },
+      yamazakura: {
+        ja: 'ヤマザクラ',
+        en: 'Mountain Cherry',
+        origin: '岩手県産',
+        feel: '赤み・緻密',
+        note: '上膨らみ雫形',
+        ratio: '1:1.3',
+        rx: 24,
+        ry: 28,
+        fillA: '#e8b4b0',
+        fillB: '#8b4a48',
+        path: 'M35 6 C49 6 60 18 61 33 C61 50 48 64 35 66 C22 64 9 50 9 33 C10 18 21 6 35 6 Z'
+      },
+      onigurumi: {
+        ja: 'オニグルミ',
+        en: 'Japanese Walnut',
+        origin: '岩手県産',
+        feel: '深褐色・滑らか',
+        note: '自然石型',
+        ratio: '1:1.1',
+        rx: 28,
+        ry: 30,
+        fillA: '#9a8870',
+        fillB: '#3a2e22',
+        path: 'M35 6 C50 8 61 22 61 38 C60 53 47 65 32 65 C19 64 9 52 9 38 C10 23 21 9 35 6 Z'
+      },
+      itayakaede: {
+        ja: 'イタヤカエデ',
+        en: 'Itaya Maple',
+        origin: '岩手県産',
+        feel: '白肌・絹光沢',
+        note: '丸み五角形',
+        ratio: '1:1.1',
+        rx: 28,
+        ry: 30,
+        fillA: '#e8dfc0',
+        fillB: '#9a8858',
+        path: 'M35 5.5 C47 7 59 20 61 34 C62 48 49 62 35 65 C21 62 8 48 9 34 C11 20 23 7 35 5.5 Z'
+      },
+      keyaki: {
+        ja: 'ケヤキ',
+        en: 'Zelkova',
+        origin: '岩手県産',
+        feel: '杢目・堅牢',
+        note: '下広がり扇形',
+        ratio: '1.2:1',
+        rx: 30,
+        ry: 26,
+        fillA: '#c8a86a',
+        fillB: '#5a3e1a',
+        path: 'M35 11 C49 11 62 23 64 37 C66 52 51 64 35 65 C19 64 4 52 6 37 C8 23 21 11 35 11 Z'
+      }
+    };
+
+    function hashString(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function() {
+        a |= 0;
+        a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function odd(n) {
+      const rounded = Math.max(1, Math.round(n));
+      return rounded % 2 === 0 ? rounded + 1 : rounded;
+    }
+
+    function even(n) {
+      const rounded = Math.max(2, Math.round(n));
+      return rounded % 2 === 0 ? rounded : rounded + 1;
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function vGrooveDepth(faceWidth) {
+      return faceWidth / (2 * Math.tan((SAFETY.ncVBitAngle / 2) * Math.PI / 180));
+    }
+
+    function symmetricOffsets(limit, step, includeZero = true) {
+      const values = includeZero ? [0] : [];
+      for (let offset = step; offset <= limit + 0.01; offset += step) {
+        values.push(-offset, offset);
+      }
+      return values.sort((a, b) => a - b);
+    }
+
+    function readInputs() {
+      const name = $('name').value.trim() || 'あかり';
+      const birthday = $('birthday').value || '2025-06-15';
+      const seedWord = $('seedWord').value.trim() || '葉';
+      const density = Number($('density').value);
+      const breath = Number($('breath').value);
+      const margin = Number($('margin').value);
+      const species = SPECIES[state.species];
+      const seed = hashString(`${name}|${birthday}|${seedWord}|${state.dialect}|${state.shape}|${state.species}|${state.rhythm}`);
+      const rhythm = RHYTHMS[state.rhythm];
+      return { name, birthday, seedWord, density, breath, margin, seed, species, rhythm };
+    }
+
+    function pointInSpecies(x, y, species) {
+      const nx = (x - 35) / species.rx;
+      const ny = (y - 35) / species.ry;
+      const skew = state.species === 'keyaki' ? 0.08 * Math.max(0, ny) : 0;
+      const base = Math.pow(nx + skew, 2) + Math.pow(ny, 2);
+      if (state.species === 'karamatsu') return Math.abs(nx) + Math.abs(ny) * 0.88 <= 1.18;
+      if (state.species === 'yamazakura') return base <= 1.05 && y >= 10 && y <= 65;
+      return base <= 1.02;
+    }
+
+    function insideShape(x1, y, x2, shape, margin, species) {
+      if (shape === 'square') {
+        const edgeQuiet = state.dialect === 'nc' ? 4.2 : state.dialect === 'hybrid' ? 3.0 : 2.0;
+        const crossesLeft = x1 <= -0.7;
+        const crossesRight = x2 >= 70.7;
+        const clearStart = crossesLeft || x1 >= edgeQuiet;
+        const clearEnd = crossesRight || x2 <= 70 - edgeQuiet;
+        if (x2 < -0.7 || x1 > 70.7) return false;
+        if (y < edgeQuiet || y > 70 - edgeQuiet) return false;
+        return clearStart && clearEnd;
+      }
+      const samples = 7;
+      for (let i = 0; i <= samples; i++) {
+        const t = i / samples;
+        const x = x1 + (x2 - x1) * t;
+        if (x < margin || x > 70 - margin || y < margin || y > 70 - margin) return false;
+        if (shape === 'leaf' && !pointInSpecies(x, y, species)) return false;
+      }
+      return true;
+    }
+
+    function makePattern(input) {
+      const dialect = DIALECTS[state.dialect];
+      const rng = mulberry32(input.seed);
+      const unit = dialect.unitBase - (input.density - 5) * 0.13;
+      const margin = input.margin;
+      const usableX = state.shape === 'leaf' ? Math.max(18, input.species.rx * 2 - margin * 1.4) : 70 + unit * 2;
+      const usableY = state.shape === 'leaf' ? Math.max(24, input.species.ry * 2 - margin * 1.4) : 70 + unit * 2;
+      const rows = odd(Math.floor(usableY / unit));
+      const cols = odd(Math.floor(usableX / unit));
+      const rowHalf = Math.floor(rows / 2);
+      const colHalf = Math.floor(cols / 2);
+      const center = 35;
+      const rowPitch = usableY / Math.max(1, rows - 1);
+      const colPitch = usableX / Math.max(1, cols - 1);
+      const phase = input.seed % 7;
+      const drift = ((input.seed >>> 10) % 3) - 1;
+      const strokes = [];
+
+      function add(row, col, lengthUnits, layer, widthScale = 1) {
+        const phaseForLength = phase + row + col + (layer === 'metate' ? 1 : 0);
+        const length = input.rhythm.length(lengthUnits, phaseForLength);
+        const y = center + row * rowPitch;
+        const x = center + col * colPitch;
+        const dashCount = Math.max(1, Math.ceil(length / 2));
+        const dashStep = state.rhythm === 'even' ? 2.15 : 1.95;
+        const dashWidth = colPitch * (state.dialect === 'nc' ? 0.88 : 0.72);
+        const runWidth = (dashCount - 1) * dashStep * colPitch + dashWidth;
+        const runStart = x - runWidth / 2;
+
+        for (let i = 0; i < dashCount; i++) {
+          const cx = runStart + dashWidth / 2 + i * dashStep * colPitch;
+          const x1 = cx - dashWidth / 2;
+          const x2 = cx + dashWidth / 2;
+          if (!insideShape(x1, y, x2, state.shape, margin, input.species)) continue;
+          strokes.push({
+            x1, x2, y,
+            layer,
+            width: dialect.width * widthScale,
+            cap: state.dialect === 'nc' || layer === 'skeleton' || layer === 'metate' ? 'round' : 'butt'
+          });
+        }
+      }
+
+      function addSpan(row, col, lengthUnits, layer, widthScale = 1) {
+        const phaseForLength = phase + row + col + (layer === 'metate' ? 1 : 0);
+        const length = input.rhythm.length(lengthUnits, phaseForLength);
+        const y = center + row * rowPitch;
+        const x = center + col * colPitch;
+        const spanWidth = Math.max(colPitch * 0.72, length * colPitch * (state.dialect === 'nc' ? 0.92 : 0.84));
+        const x1 = x - spanWidth / 2;
+        const x2 = x + spanWidth / 2;
+        if (!insideShape(x1, y, x2, state.shape, margin, input.species)) return;
+        strokes.push({
+          x1, x2, y,
+          layer,
+          width: dialect.width * widthScale,
+          cap: state.dialect === 'nc' || layer === 'skeleton' || layer === 'metate' ? 'round' : 'butt'
+        });
+      }
+
+      function addMetate(row = 0, colStart = -colHalf, colEnd = colHalf) {
+        const pulse = state.rhythm === 'even' ? 2 : 1;
+        for (let col = colStart; col <= colEnd; col += 2) {
+          if (((col - colStart) / 2 + phase) % Math.max(2, input.breath + 1) === 0) continue;
+          add(row, col + drift * 0.18, pulse, 'metate', state.dialect === 'laser' ? 0.8 : 0.68);
+        }
+      }
+
+      function addDiamondField(rowCenter, colCenter, halfRows, maxLen, layerBase = 'skeleton', options = {}) {
+        const hollow = Boolean(options.hollow);
+        const innerVoid = Math.max(1, options.innerVoid || 2);
+        const widthScale = options.widthScale || 1;
+        const axisEvery = options.axisEvery || 0;
+        const place = options.span ? addSpan : add;
+
+        for (let dr = -halfRows; dr <= halfRows; dr++) {
+          const absR = Math.abs(dr);
+          const growth = halfRows - absR;
+          const outerLen = input.rhythm.length(clamp(1 + growth * 2, 1, maxLen), phase + dr);
+          const row = rowCenter + dr;
+          const scale = widthScale * (absR === 0 ? 1.05 : 0.82);
+
+          if (hollow && absR < halfRows && outerLen > innerVoid + 2) {
+            const edge = Math.max(2, Math.floor(outerLen / 2));
+            const sideLen = state.dialect === 'nc' ? 3 : 1;
+            place(row, colCenter - edge, sideLen, layerBase, scale);
+            place(row, colCenter + edge, sideLen, layerBase, scale);
+            if (axisEvery && (Math.abs(row) + phase) % axisEvery === 0) {
+              place(row, colCenter, state.rhythm === 'even' ? 2 : 1, 'axis', 0.56);
+            }
+          } else {
+            place(row, colCenter, outerLen, layerBase, scale);
+          }
+        }
+      }
+
+      function addDiamondOutline(rowCenter, colCenter, halfRows, maxLen, layerBase = 'skeleton', widthScale = 1) {
+        for (let dr = -halfRows; dr <= halfRows; dr++) {
+          const absR = Math.abs(dr);
+          const len = input.rhythm.length(clamp(1 + (halfRows - absR) * 2, 1, maxLen), phase + dr);
+          const row = rowCenter + dr;
+          const edge = Math.max(2, Math.floor(len / 2));
+
+          if (absR === halfRows) {
+            addSpan(row, colCenter, state.rhythm === 'even' ? 2 : 1, layerBase, widthScale * 0.82);
+          } else {
+            addSpan(row, colCenter - edge, state.rhythm === 'even' ? 2 : 1, layerBase, widthScale * 0.82);
+            addSpan(row, colCenter + edge, state.rhythm === 'even' ? 2 : 1, layerBase, widthScale * 0.82);
+            if (absR === 0) addSpan(row, colCenter, state.rhythm === 'even' ? 2 : 1, 'axis', 0.48);
+          }
+        }
+      }
+
+      function addEnclosure(rowCenter, colCenter, halfRows, maxLen) {
+        const ringRows = halfRows + (state.dialect === 'laser' ? 2 : 1);
+        const ringMax = maxLen + (state.dialect === 'nc' ? 2 : 4);
+        addDiamondField(rowCenter, colCenter, ringRows, ringMax, 'skeleton', {
+          hollow: true,
+          innerVoid: state.dialect === 'nc' ? 4 : 3,
+          widthScale: state.dialect === 'nc' ? 0.95 : 0.78,
+          axisEvery: 3,
+          span: true
+        });
+      }
+
+      function addFlow(rowFrom, rowTo, side, layer = 'detail') {
+        const span = Math.max(1, rowTo - rowFrom);
+        for (let row = rowFrom; row <= rowTo; row++) {
+          const t = (row - rowFrom) / span;
+          const wave = Math.sin(t * Math.PI);
+          const curve = side * Math.round(2 + wave * Math.max(2, colHalf * 0.38));
+          const len = state.dialect === 'nc' ? 3 : (wave > 0.6 ? 3 : 1);
+          if ((row + phase) % Math.max(2, input.breath + 1) === 0) {
+            addSpan(row, curve, state.rhythm === 'even' ? 2 : 1, 'breath', 0.52);
+          } else {
+            addSpan(row, curve, len, layer, state.dialect === 'nc' ? 0.72 : 0.68);
+          }
+        }
+      }
+
+      function addLeafSingleMotif() {
+        const densityNorm = (input.density - 5) / 4;
+        const breathNorm = (input.breath - 4) / 4;
+        const isNc = state.dialect === 'nc';
+        const isHybrid = state.dialect === 'hybrid';
+        const profile = isNc
+          ? {
+              dash: clamp(4.45 + densityNorm * 0.18 - breathNorm * 0.14, 4.2, 4.65),
+              rowStep: clamp(5.45 - densityNorm * 0.30 + breathNorm * 0.32, 5.15, 6.0),
+              colStep: clamp(6.95 - densityNorm * 0.30 + breathNorm * 0.22, 6.45, 7.35),
+              outerRadius: clamp(Math.round(3.4 + input.density * 0.16 - input.breath * 0.06), 3, 4),
+              widthScale: 1.05
+            }
+          : isHybrid
+            ? {
+                dash: clamp(3.1 + densityNorm * 0.22 - breathNorm * 0.12, 2.7, 3.5),
+                rowStep: clamp(3.45 - densityNorm * 0.22 + breathNorm * 0.28, 3.2, 4.1),
+                colStep: clamp(3.35 - densityNorm * 0.18 + breathNorm * 0.22, 3.1, 3.9),
+                outerRadius: clamp(Math.round(6.2 + input.density * 0.24 - input.breath * 0.10), 5, 8),
+                widthScale: 0.9
+              }
+            : {
+                dash: clamp(1.82 + densityNorm * 0.12 - breathNorm * 0.06, 1.55, 2.1),
+                rowStep: clamp(2.15 - densityNorm * 0.18 + breathNorm * 0.20, 1.9, 2.55),
+                colStep: clamp(2.05 - densityNorm * 0.16 + breathNorm * 0.16, 1.82, 2.38),
+                outerRadius: clamp(Math.round(9.2 + input.density * 0.34 - input.breath * 0.14), 8, 12),
+                widthScale: 0.66
+              };
+        const middleRadius = Math.max(isNc ? 2 : 3, profile.outerRadius - (isNc ? 2 : 3));
+        const innerRadius = Math.max(1, middleRadius - (isNc ? 1 : 2));
+        const breathSkip = input.breath >= 7 ? 3 : input.breath >= 5 ? 4 : 0;
+
+        function dashMm(row, col, lengthMm, layer, widthScale = 1) {
+          const y = center + row * profile.rowStep;
+          const x = center + col * profile.colStep;
+          const x1 = x - lengthMm / 2;
+          const x2 = x + lengthMm / 2;
+          if (!insideShape(x1, y, x2, state.shape, margin, input.species)) return;
+          strokes.push({
+            x1, x2, y,
+            layer,
+            width: dialect.width * widthScale,
+            cap: 'round'
+          });
+        }
+
+        function mirror(row, col, lengthMm, layer, widthScale = 1) {
+          if (Math.abs(col) < 0.001) {
+            dashMm(row, 0, lengthMm, layer, widthScale);
+            return;
+          }
+          dashMm(row, -col, lengthMm, layer, widthScale);
+          dashMm(row, col, lengthMm, layer, widthScale);
+        }
+
+        function ring(radius, layer, widthScale, skipEvery = 0, inset = 0) {
+          for (let row = -radius; row <= radius; row += 1) {
+            const edge = radius - Math.abs(row);
+            if (skipEvery && edge > 0 && (Math.abs(row) + phase) % skipEvery === 0) continue;
+            const col = Math.max(0, edge - inset);
+            const rowWeight = row === 0 ? 1.08 : Math.abs(row) === radius ? 0.86 : 1;
+            const length = profile.dash * rowWeight;
+            if (edge === 0) {
+              dashMm(row, 0, length, layer, widthScale * 0.92);
+            } else {
+              mirror(row, col, length, layer, widthScale);
+            }
+          }
+        }
+
+        ring(profile.outerRadius, 'skeleton', profile.widthScale);
+        ring(middleRadius, isNc ? 'detail' : 'breath', profile.widthScale * (isNc ? 0.92 : 0.74), isNc ? breathSkip : 0, isNc ? 0 : 0.35);
+        ring(innerRadius, isNc ? 'metate' : 'detail', profile.widthScale * (isNc ? 0.88 : 0.62), input.breath >= 8 ? 2 : 0, isNc ? 0 : 0.25);
+
+        const metateRows = isNc ? [-2, 0, 2] : [-3, -1, 0, 1, 3];
+        metateRows.forEach(row => {
+          const len = profile.dash * (row === 0 ? (isNc ? 0.92 : 1.18) : 0.88);
+          dashMm(row, 0, len, 'metate', profile.widthScale * (isNc ? 0.86 : 0.58));
+        });
+
+        if (!isNc) {
+          [-2, 2].forEach(row => mirror(row, 1.5, profile.dash * 0.82, 'axis', 0.62));
+        }
+
+        if (isHybrid) {
+          ring(2, 'axis', 0.5, 0, 0.2);
+        }
+      }
+
+      function addDiamondRing(rowCenter, colCenter, radius, options = {}) {
+        const short = state.rhythm === 'even' ? 2 : 1;
+        const rowScale = options.rowScale || 1;
+        const colScale = options.colScale || 1;
+        const layer = options.layer || 'skeleton';
+        const widthScale = options.widthScale || 1;
+        const length = options.length || short;
+
+        for (let row = -radius; row <= radius; row += 1) {
+          const edge = radius - Math.abs(row);
+          const targetRow = rowCenter + row * rowScale;
+          if (edge === 0) {
+            add(targetRow, colCenter, length, layer, widthScale);
+          } else {
+            add(targetRow, colCenter - edge * colScale, length, layer, widthScale);
+            add(targetRow, colCenter + edge * colScale, length, layer, widthScale);
+          }
+        }
+      }
+
+      function addTileMotif(rowCenter, colCenter, variant, compact = 1) {
+        const short = state.rhythm === 'even' ? 2 : 1;
+        const colScale = state.dialect === 'nc' ? 1.04 : 0.92;
+        const primaryRadius = state.dialect === 'nc' ? 2 : 3;
+        const secondaryRadius = Math.max(1, primaryRadius - 1);
+
+        addDiamondRing(rowCenter, colCenter, primaryRadius, {
+          rowScale: compact,
+          colScale,
+          layer: 'skeleton',
+          widthScale: state.dialect === 'nc' ? 0.84 : 0.58,
+          length: short
+        });
+
+        if (state.dialect !== 'nc' || variant % 2 === 0) {
+          addDiamondRing(rowCenter, colCenter, secondaryRadius, {
+            rowScale: compact,
+            colScale,
+            layer: variant % 3 === 0 ? 'detail' : 'breath',
+            widthScale: state.dialect === 'nc' ? 0.62 : 0.46,
+            length: short
+          });
+        }
+
+        if (state.dialect === 'hybrid' && variant % 4 === 0) {
+          add(rowCenter, colCenter, short, 'metate', 0.44);
+        }
+      }
+
+      function addSquareAllover() {
+        const densityNorm = (input.density - 5) / 4;
+        const breathNorm = (input.breath - 4) / 4;
+        const isNc = state.dialect === 'nc';
+        const isHybrid = state.dialect === 'hybrid';
+        const profile = isNc
+          ? {
+              rowStep: clamp(5.7 - densityNorm * 0.78 + breathNorm * 0.30, SAFETY.ncMinCenterSpacing, 6.55),
+              colPitch: clamp(13.4 - densityNorm * 1.55 + breathNorm * 0.36, 10.6, 15.4),
+              dash: clamp(5.35 + densityNorm * 0.35 - breathNorm * 0.20, 4.85, 5.9),
+              widthScale: 1.0
+            }
+          : isHybrid
+            ? {
+                rowStep: clamp(3.45 - densityNorm * 0.34 + breathNorm * 0.28, 3.1, 4.0),
+                colPitch: clamp(8.2 - densityNorm * 0.70 + breathNorm * 0.42, 7.0, 9.4),
+                dash: clamp(3.2 + densityNorm * 0.20 - breathNorm * 0.12, 2.85, 3.55),
+                widthScale: 0.82
+              }
+            : {
+                rowStep: clamp(2.45 - densityNorm * 0.22 + breathNorm * 0.18, 2.15, 2.85),
+                colPitch: clamp(6.4 - densityNorm * 0.48 + breathNorm * 0.26, 5.65, 7.2),
+                dash: clamp(2.15 + densityNorm * 0.15 - breathNorm * 0.08, 1.9, 2.45),
+                widthScale: 0.92
+              };
+
+        function shiftedOffsets(limit, pitch, shift) {
+          if (Math.abs(shift) < 0.001) return symmetricOffsets(limit, pitch, true);
+          const values = [];
+          for (let offset = shift; offset <= limit + 0.01; offset += pitch) {
+            values.push(-offset, offset);
+          }
+          return values.sort((a, b) => a - b);
+        }
+
+        function dashMm(x, y, lengthMm, layer, widthScale = 1) {
+          const x1 = x - lengthMm / 2;
+          const x2 = x + lengthMm / 2;
+          if (!insideShape(x1, y, x2, state.shape, margin, input.species)) return;
+          strokes.push({
+            x1, x2, y,
+            layer,
+            width: dialect.width * widthScale,
+            cap: state.dialect === 'laser' && layer === 'breath' ? 'butt' : 'round'
+          });
+        }
+
+        const yOffsets = symmetricOffsets(35 + profile.rowStep, profile.rowStep, true);
+        yOffsets.forEach(offsetY => {
+          const y = center + offsetY;
+          const rowBand = Math.round(Math.abs(offsetY) / profile.rowStep);
+          const shifted = rowBand % 2 === 1;
+          const offsetsX = shiftedOffsets(35 + profile.colPitch, profile.colPitch, shifted ? profile.colPitch / 2 : 0);
+
+          offsetsX.forEach(offsetX => {
+            const colBand = Math.round(Math.abs(offsetX) / profile.colPitch);
+            const breathCut = (rowBand + colBand + phase) % Math.max(3, input.breath + 1) === 0;
+            const layer = breathCut
+              ? 'breath'
+              : rowBand % 4 === 0
+                ? 'skeleton'
+                : rowBand % 4 === 2
+                  ? 'detail'
+                  : 'metate';
+            const scale = layer === 'skeleton' ? 1.03 : layer === 'metate' ? 0.86 : layer === 'detail' ? 0.78 : isNc ? 0.82 : 0.66;
+            const length = profile.dash * (layer === 'skeleton' ? 1.08 : layer === 'breath' ? 0.76 : 0.94);
+            dashMm(center + offsetX, y, length, layer, profile.widthScale * scale);
+          });
+        });
+
+        if (!isNc) {
+          const fineY = shiftedOffsets(35 + profile.rowStep, profile.rowStep, profile.rowStep / 2);
+          fineY.forEach(offsetY => {
+            const y = center + offsetY;
+            const rowBand = Math.round(Math.abs(offsetY) / profile.rowStep);
+            const shifted = rowBand % 2 === 0;
+            const offsetsX = shiftedOffsets(35 + profile.colPitch, profile.colPitch, shifted ? profile.colPitch / 2 : 0);
+            offsetsX.forEach(offsetX => {
+              const colBand = Math.round(Math.abs(offsetX) / profile.colPitch);
+              if ((rowBand + colBand + input.breath) % 3 === 0) return;
+              dashMm(center + offsetX, y, profile.dash * 0.62, 'axis', profile.widthScale * (isHybrid ? 0.52 : 0.70));
+            });
+          });
+        }
+      }
+
+      if (state.shape === 'leaf') {
+        addLeafSingleMotif();
+      } else {
+        addSquareAllover();
+      }
+
+      return {
+        unit,
+        rows,
+        cols,
+        margin,
+        strokes,
+        dialect,
+        rhythm: input.rhythm,
+        species: input.species,
+        mode: state.shape === 'leaf' ? 'single motif' : 'allover tile',
+        seed: input.seed
+      };
+    }
+
+    function leafPath(species) {
+      return species.path;
+    }
+
+    function buildSvg(pattern, exportMode = false) {
+      const colors = pattern.dialect.colors;
+      const board = `<rect x="2.5" y="2.5" width="75" height="75" rx="4" fill="${pattern.species.fillA}"/><path d="M16 8 C11 24 17 43 11 72 M31 8 C26 25 32 44 25 72 M48 8 C45 27 50 45 44 72 M63 8 C59 28 65 47 58 72" stroke="${pattern.species.fillB}" stroke-width="0.28" opacity="0.34" fill="none"/>`;
+      const squareRadius = SAFETY.preferredOuterRadius;
+      const shape = state.shape === 'leaf'
+        ? `<path d="${leafPath(pattern.species)}" fill="url(#wood-fill)" stroke="#6b5536" stroke-width="0.36"/>`
+        : `<rect x="0" y="0" width="70" height="70" rx="${squareRadius}" fill="url(#wood-fill)" stroke="#6b5536" stroke-width="0.36"/>`;
+      const safe = state.shape === 'leaf'
+        ? `<path d="${leafPath(pattern.species)}" transform="translate(35 35) scale(${(70 - pattern.margin * 2) / 70}) translate(-35 -35)" fill="none" stroke="#6b5536" stroke-width="0.22" stroke-dasharray="1.2 1.2" opacity="0.5"/>`
+        : `<rect x="0" y="0" width="70" height="70" rx="${squareRadius}" fill="none" stroke="#6b5536" stroke-width="0.22" stroke-dasharray="1.2 1.2" opacity="0.55"/>`;
+      const clipShape = state.shape === 'leaf'
+        ? `<path d="${leafPath(pattern.species)}"/>`
+        : `<rect x="0" y="0" width="70" height="70" rx="${squareRadius}"/>`;
+      const grain = `<path d="M12 2 C8 19 14 39 9 68 M24 2 C20 18 27 41 22 68 M36 2 C32 19 39 42 34 68 M49 2 C45 18 53 39 47 68 M61 2 C57 20 64 41 59 68" stroke="${pattern.species.fillB}" stroke-width="0.22" opacity="0.22" fill="none"/>`;
+      const axis = state.shape === 'leaf'
+        ? `<line x1="35" y1="${pattern.margin}" x2="35" y2="${70 - pattern.margin}" stroke="${colors.axis}" stroke-width="0.18" stroke-dasharray="1 1.6" opacity="0.65"/>`
+        : '';
+      const layers = ['metate', 'skeleton', 'detail', 'breath', 'axis'];
+      const groups = layers.map(layer => {
+        const body = pattern.strokes
+          .filter(s => s.layer === layer)
+          .map(s => `<line x1="${s.x1.toFixed(2)}" y1="${s.y.toFixed(2)}" x2="${s.x2.toFixed(2)}" y2="${s.y.toFixed(2)}" stroke="${colors[layer]}" stroke-width="${s.width.toFixed(2)}" stroke-linecap="${s.cap}" fill="none"/>`)
+          .join('');
+        const label = layer === 'skeleton' ? 'structure' : layer;
+        return `<g id="${label}" stroke="${colors[layer]}">${body}</g>`;
+      }).join('');
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 80 80" role="img" aria-label="stitch grammar preview">
+  <defs>
+    <radialGradient id="wood-fill" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="${pattern.species.fillA}"/>
+      <stop offset="100%" stop-color="${pattern.species.fillB}"/>
+    </radialGradient>
+    <clipPath id="shape-clip">${clipShape}</clipPath>
+  </defs>
+  <g id="board">${board}</g>
+  <g id="product" transform="translate(5 5)">
+    ${shape}
+    ${safe}
+    <g clip-path="url(#shape-clip)">
+      ${grain}
+      ${axis}
+      ${groups}
+    </g>
+  </g>
+</svg>`;
+      return exportMode ? svg : svg;
+    }
+
+    function buildBoardSvg(pattern) {
+      const colors = pattern.dialect.colors;
+      const squareRadius = SAFETY.preferredOuterRadius;
+      const count = 10;
+      const piece = 70;
+      const boardW = 900;
+      const boardH = 75;
+      const gap = (boardW - count * piece) / (count + 1);
+      const y = (boardH - piece) / 2;
+      const layers = ['metate', 'skeleton', 'detail', 'breath', 'axis'];
+
+      function clipShape() {
+        return state.shape === 'leaf'
+          ? `<path d="${leafPath(pattern.species)}"/>`
+          : `<rect x="0" y="0" width="70" height="70" rx="${squareRadius}"/>`;
+      }
+
+      function productAt(index) {
+        const x = gap + index * (piece + gap);
+        const clipId = `piece-clip-${index}`;
+        const shape = state.shape === 'leaf'
+          ? `<path d="${leafPath(pattern.species)}" fill="url(#board-wood-fill)" stroke="#6b5536" stroke-width="0.36"/>`
+          : `<rect x="0" y="0" width="70" height="70" rx="${squareRadius}" fill="url(#board-wood-fill)" stroke="#6b5536" stroke-width="0.36"/>`;
+        const grain = `<path d="M12 2 C8 19 14 39 9 68 M24 2 C20 18 27 41 22 68 M36 2 C32 19 39 42 34 68 M49 2 C45 18 53 39 47 68 M61 2 C57 20 64 41 59 68" stroke="${pattern.species.fillB}" stroke-width="0.22" opacity="0.2" fill="none"/>`;
+        const axis = state.shape === 'leaf'
+          ? `<line x1="35" y1="${pattern.margin}" x2="35" y2="${70 - pattern.margin}" stroke="${colors.axis}" stroke-width="0.18" stroke-dasharray="1 1.6" opacity="0.45"/>`
+          : '';
+        const groups = layers.map(layer => {
+          const body = pattern.strokes
+            .filter(s => s.layer === layer)
+            .map(s => `<line x1="${s.x1.toFixed(2)}" y1="${s.y.toFixed(2)}" x2="${s.x2.toFixed(2)}" y2="${s.y.toFixed(2)}" stroke="${colors[layer]}" stroke-width="${s.width.toFixed(2)}" stroke-linecap="${s.cap}" fill="none"/>`)
+            .join('');
+          return `<g data-layer="${layer}">${body}</g>`;
+        }).join('');
+        return `<clipPath id="${clipId}">${clipShape()}</clipPath>
+  <g transform="translate(${x.toFixed(2)} ${y.toFixed(2)})">
+    ${shape}
+    <g clip-path="url(#${clipId})">
+      ${grain}
+      ${axis}
+      ${groups}
+    </g>
+  </g>`;
+      }
+
+      const products = Array.from({ length: count }, (_, index) => productAt(index)).join('\n');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="900mm" height="75mm" viewBox="0 0 900 75" role="img" aria-label="75 by 900 millimeter board layout preview">
+  <defs>
+    <radialGradient id="board-wood-fill" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="${pattern.species.fillA}"/>
+      <stop offset="100%" stop-color="${pattern.species.fillB}"/>
+    </radialGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="74" rx="3" fill="#d5bd91" stroke="#6b5536" stroke-width="0.45"/>
+  <path d="M20 7 C55 16 82 4 120 13 C175 26 226 2 286 13 C340 25 398 5 455 14 C511 23 574 4 630 13 C694 24 748 5 812 13 C846 18 875 10 894 14" stroke="#8b6a43" stroke-width="0.34" opacity="0.24" fill="none"/>
+  ${products}
+</svg>`;
+    }
+
+    function render() {
+      const input = readInputs();
+      $('densityVal').textContent = input.density;
+      $('breathVal').textContent = input.breath;
+      $('marginVal').textContent = input.margin;
+      const pattern = makePattern(input);
+      $('preview').classList.toggle('board-view', state.view === 'board');
+      $('preview').innerHTML = state.view === 'board' ? buildBoardSvg(pattern) : buildSvg(pattern);
+      $('unitMetric').textContent = `${pattern.unit.toFixed(1)}mm`;
+      $('gridMetric').textContent = `${pattern.cols} x ${pattern.rows}`;
+      $('strokeMetric').textContent = String(pattern.strokes.length);
+      $('metateMetric').textContent = String(pattern.strokes.filter(s => s.layer === 'metate').length);
+      $('fileName').textContent = state.view === 'board'
+        ? `toumei_shippo_board_75x900_${state.dialect}_${state.species}_${state.shape}.svg`
+        : `toumei_shippo_stitch_${state.dialect}_${state.species}_${state.shape}.svg`;
+      $('status').textContent = `${pattern.dialect.label} / ${pattern.rhythm.label} / ${pattern.species.ja} / ${state.shape} / ${state.view === 'board' ? '75x900 board' : 'piece'}`;
+      $('title').textContent = `${input.name} の ${pattern.species.ja}`;
+
+      const counts = pattern.strokes.reduce((acc, s) => {
+        acc[s.layer] = (acc[s.layer] || 0) + 1;
+        return acc;
+      }, {});
+      const layerNames = {
+        metate: '目立て',
+        skeleton: '骨格',
+        detail: '細部',
+        breath: '余白',
+        axis: '中心'
+      };
+      $('layerList').innerHTML = ['metate', 'skeleton', 'detail', 'breath', 'axis'].map(layer => {
+        const color = pattern.dialect.colors[layer];
+        return `<div class="layer"><span class="swatch" style="background:${color}"></span><span>${layerNames[layer]}</span><b>${counts[layer] || 0}</b></div>`;
+      }).join('');
+
+      const dialectText = {
+        laser: 'Scoreは線、Engraveは閉じた面、Cutは外形として分ける',
+        nc: '60°Vビット用に中心線Traceと閉じた溝Engraveを分ける',
+        hybrid: 'Laser細部とNC触感骨格を別データとして持つ'
+      };
+      const geometryText = {
+        laser: `Score線幅 ${DIALECTS.laser.width.toFixed(2)}mm preview。焼き色で細密を読ませる`,
+        nc: `V溝面幅 ${DIALECTS.nc.width.toFixed(2)}mm preview / 深さ約 ${vGrooveDepth(DIALECTS.nc.width).toFixed(2)}mm / 最小中心間隔 ${SAFETY.ncMinCenterSpacing.toFixed(1)}mm`,
+        hybrid: `NC骨格 ${DIALECTS.hybrid.width.toFixed(2)}mm preview とLaser細部を分離`
+      };
+      const modeText = state.shape === 'leaf'
+        ? '単独紋として中心に成立させる'
+        : '中心対称の総柄として、端で切れても続きが読める配置にする';
+      const viewText = state.view === 'board'
+        ? '75x900mm材に10個を等間隔配置する板取り確認'
+        : '70mm相当の単体意匠を確認';
+      $('ruleList').innerHTML = [
+        `<div><b>独自性</b> 既存図案を写さず、数える・中心・反復・余白を木製玩具向け生成文法へ翻訳</div>`,
+        `<div><b>数える</b> ${pattern.cols} x ${pattern.rows} の奇数グリッド</div>`,
+        `<div><b>律</b> ${pattern.rhythm.note}</div>`,
+        `<div><b>目立て</b> 最初の段が全体の周期を決める</div>`,
+        `<div><b>構成</b> ${modeText}</div>`,
+        `<div><b>配置</b> ${viewText}</div>`,
+        `<div><b>中心</b> 軸から囲みと流れへ展開</div>`,
+        `<div><b>加工寸法</b> ${geometryText[state.dialect]}</div>`,
+        `<div><b>余白</b> ${input.breath} の周期で呼吸を作る</div>`,
+        `<div><b>樹種</b> ${pattern.species.note} / ${pattern.species.ratio} / ${pattern.species.feel}</div>`,
+        `<div><b>方言</b> ${dialectText[state.dialect]}</div>`,
+        `<div><b>出力</b> ${pattern.dialect.output}</div>`,
+        `<div><b>外形</b> NC φ${SAFETY.ncBitDiameter}mm前提、入隅R${SAFETY.ncToolRadius}mm以上・出隅R${SAFETY.preferredOuterRadius}mm目安で丸める</div>`
+      ].join('');
+
+      window.__lastPattern = pattern;
+      window.__lastInput = input;
+    }
+
+    function setActive(containerId, attr, value) {
+      document.querySelectorAll(`#${containerId} button`).forEach(btn => {
+        btn.classList.toggle('active', btn.dataset[attr] === value);
+      });
+    }
+
+    $('dialectButtons').addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-dialect]');
+      if (!btn) return;
+      state.dialect = btn.dataset.dialect;
+      setActive('dialectButtons', 'dialect', state.dialect);
+      render();
+    });
+
+    $('shapeButtons').addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-shape]');
+      if (!btn) return;
+      state.shape = btn.dataset.shape;
+      setActive('shapeButtons', 'shape', state.shape);
+      render();
+    });
+
+    $('rhythmButtons').addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-rhythm]');
+      if (!btn) return;
+      state.rhythm = btn.dataset.rhythm;
+      setActive('rhythmButtons', 'rhythm', state.rhythm);
+      render();
+    });
+
+    $('viewButtons').addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-view]');
+      if (!btn) return;
+      state.view = btn.dataset.view;
+      setActive('viewButtons', 'view', state.view);
+      render();
+    });
+
+    $('species').addEventListener('change', (event) => {
+      state.species = event.target.value;
+      render();
+    });
+
+    ['name', 'birthday', 'seedWord', 'density', 'breath', 'margin'].forEach(id => {
+      $(id).addEventListener('input', render);
+    });
+
+    $('exportBtn').addEventListener('click', () => {
+      const pattern = window.__lastPattern || makePattern(readInputs());
+      const svg = state.view === 'board' ? buildBoardSvg(pattern) : buildSvg(pattern, true);
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = $('fileName').textContent;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    render();
+  </script>
+</body>
+</html>
