@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>とうめいしっぽ 生成模様 v0.4.7 pilot</title>
+  <title>とうめいしっぽ 生成模様 v0.4.11 pilot</title>
   <style>
     :root {
       --ink: #252321;
@@ -817,6 +817,114 @@
       return faceWidth / (2 * Math.tan((SAFETY.ncVBitAngle / 2) * Math.PI / 180));
     }
 
+    const normalizedLeafCache = new Map();
+
+    function pathCoordinatePairs(path) {
+      const values = (path.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+      const pairs = [];
+      for (let i = 0; i < values.length - 1; i += 2) {
+        pairs.push({ x: values[i], y: values[i + 1] });
+      }
+      return pairs;
+    }
+
+    function pathBounds(path) {
+      const pairs = pathCoordinatePairs(path);
+      return {
+        minX: Math.min(...pairs.map(p => p.x)),
+        maxX: Math.max(...pairs.map(p => p.x)),
+        minY: Math.min(...pairs.map(p => p.y)),
+        maxY: Math.max(...pairs.map(p => p.y))
+      };
+    }
+
+    function normalizePointTo70(point, bounds) {
+      return {
+        x: (point.x - bounds.minX) * 70 / (bounds.maxX - bounds.minX),
+        y: (point.y - bounds.minY) * 70 / (bounds.maxY - bounds.minY)
+      };
+    }
+
+    function normalizePathTo70(path) {
+      const bounds = pathBounds(path);
+      let index = 0;
+      return path.replace(/-?\d+(?:\.\d+)?/g, (value) => {
+        const numeric = Number(value);
+        const isX = index % 2 === 0;
+        index += 1;
+        const min = isX ? bounds.minX : bounds.minY;
+        const span = (isX ? bounds.maxX - bounds.minX : bounds.maxY - bounds.minY) || 1;
+        return ((numeric - min) * 70 / span).toFixed(3).replace(/\.?0+$/, '');
+      });
+    }
+
+    function cubicAt(p0, p1, p2, p3, t) {
+      const mt = 1 - t;
+      return {
+        x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
+        y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y
+      };
+    }
+
+    function samplePath(path) {
+      const tokens = path.match(/[A-Za-z]|-?\d+(?:\.\d+)?/g) || [];
+      const points = [];
+      let i = 0;
+      let command = '';
+      let current = { x: 0, y: 0 };
+      let start = null;
+
+      function isCommand(token) {
+        return /^[A-Za-z]$/.test(token);
+      }
+
+      while (i < tokens.length) {
+        if (isCommand(tokens[i])) command = tokens[i++];
+        if (command === 'M') {
+          current = { x: Number(tokens[i++]), y: Number(tokens[i++]) };
+          start = current;
+          points.push(current);
+        } else if (command === 'C') {
+          while (i < tokens.length && !isCommand(tokens[i])) {
+            const c1 = { x: Number(tokens[i++]), y: Number(tokens[i++]) };
+            const c2 = { x: Number(tokens[i++]), y: Number(tokens[i++]) };
+            const end = { x: Number(tokens[i++]), y: Number(tokens[i++]) };
+            for (let step = 1; step <= 16; step += 1) {
+              points.push(cubicAt(current, c1, c2, end, step / 16));
+            }
+            current = end;
+          }
+        } else if (command === 'Z' || command === 'z') {
+          if (start) points.push(start);
+        } else {
+          break;
+        }
+      }
+      return points;
+    }
+
+    function normalizedLeaf(species) {
+      if (!normalizedLeafCache.has(species)) {
+        const bounds = pathBounds(species.path);
+        normalizedLeafCache.set(species, {
+          path: normalizePathTo70(species.path),
+          polygon: samplePath(species.path).map(point => normalizePointTo70(point, bounds))
+        });
+      }
+      return normalizedLeafCache.get(species);
+    }
+
+    function pointInPolygon(x, y, polygon) {
+      let inside = false;
+      for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+        const pi = polygon[i];
+        const pj = polygon[j];
+        const intersects = ((pi.y > y) !== (pj.y > y)) && (x < (pj.x - pi.x) * (y - pi.y) / (pj.y - pi.y) + pi.x);
+        if (intersects) inside = !inside;
+      }
+      return inside;
+    }
+
     function symmetricOffsets(limit, step, includeZero = true) {
       const values = includeZero ? [0] : [];
       for (let offset = step; offset <= limit + 0.01; offset += step) {
@@ -872,13 +980,7 @@
     }
 
     function pointInSpecies(x, y, species) {
-      const nx = (x - 35) / species.rx;
-      const ny = (y - 35) / species.ry;
-      const skew = state.species === 'keyaki' ? 0.08 * Math.max(0, ny) : 0;
-      const base = Math.pow(nx + skew, 2) + Math.pow(ny, 2);
-      if (state.species === 'karamatsu') return Math.abs(nx) + Math.abs(ny) * 0.88 <= 1.18;
-      if (state.species === 'yamazakura') return base <= 1.05 && y >= 10 && y <= 65;
-      return base <= 1.02;
+      return pointInPolygon(x, y, normalizedLeaf(species).polygon);
     }
 
     function insideShape(x1, y, x2, shape, margin, species) {
@@ -908,8 +1010,9 @@
       const personal = personalParameters(input);
       const unit = dialect.unitBase - (input.density - 5) * 0.13 + personal.scale * 0.08;
       const margin = input.margin;
-      const usableX = state.shape === 'leaf' ? Math.max(18, input.species.rx * 2 - margin * 1.4) : 70 + unit * 2;
-      const usableY = state.shape === 'leaf' ? Math.max(24, input.species.ry * 2 - margin * 1.4) : 70 + unit * 2;
+      const leafUsable = Math.max(24, 70 - margin * 2);
+      const usableX = state.shape === 'leaf' ? leafUsable : 70 + unit * 2;
+      const usableY = state.shape === 'leaf' ? leafUsable : 70 + unit * 2;
       const rows = odd(Math.floor(usableY / unit));
       const cols = odd(Math.floor(usableX / unit));
       const rowHalf = Math.floor(rows / 2);
@@ -1289,7 +1392,7 @@
     }
 
     function leafPath(species) {
-      return species.path;
+      return normalizedLeaf(species).path;
     }
 
     function buildSvg(pattern, exportMode = false) {
@@ -1453,6 +1556,9 @@
         nc: `V溝面幅 ${DIALECTS.nc.width.toFixed(2)}mm preview / 深さ約 ${vGrooveDepth(DIALECTS.nc.width).toFixed(2)}mm / 最小中心間隔 ${SAFETY.ncMinCenterSpacing.toFixed(1)}mm`,
         hybrid: `NC骨格 ${DIALECTS.hybrid.width.toFixed(2)}mm preview とLaser細部を分離`
       };
+      const shapeSizeText = state.shape === 'leaf'
+        ? '葉形外寸は完成外寸70mm相当。工具径オフセット後の内側線ではなく、Fusion/CAM側BORDERと同じ外形基準'
+        : '正方形外寸は70 x 70mm相当。角Rは安全側の丸みを維持';
       const modeText = state.shape === 'leaf'
         ? '単独紋として中心に成立させる'
         : '中心対称の総柄として、端で切れても続きが読める配置にする';
@@ -1479,6 +1585,7 @@
         `<div><b>目立て</b> 最初の段が全体の周期を決める</div>`,
         `<div><b>構成</b> ${modeText}</div>`,
         `<div><b>配置</b> ${viewText}</div>`,
+        `<div><b>外寸</b> ${shapeSizeText}</div>`,
         `<div><b>中心</b> 軸から囲みと流れへ展開</div>`,
         `<div><b>加工寸法</b> ${geometryText[state.dialect]}</div>`,
         `<div><b>余白</b> ${input.breath} の周期で呼吸を作る</div>`,
